@@ -1,6 +1,6 @@
 # goym
 
-API десктопного приложения Яндекс.Музыки для Go.
+Неофициальное API десктопного приложения Яндекс.Музыки для Go.
 
 Брал методы [из этой документации](https://www.cherkashin.dev/yandex-music-open-api).
 И [еще тут](https://github.com/MarshalX/yandex-music-api) можно полезные вещи найти.
