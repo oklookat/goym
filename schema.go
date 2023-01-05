@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+/**
+TODO(?)
+https://github.com/deepmap/oapi-codegen
+https://github.com/acherkashin/yandex-music-open-api/blob/main/src/yandex-music.yaml
+**/
+
 const (
 	ApiUrl   = "https://api.music.yandex.net"
 	ApiUsers = ApiUrl + "/users"

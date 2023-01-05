@@ -63,7 +63,8 @@ type Tokens struct {
 // Приложение начинает периодически запрашивать OAuth-токен, передавая device_code.
 func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) (err error) {
 	if ctx.Err() != nil {
-		return ctx.Err()
+		err = ErrCancelled
+		return
 	}
 
 	if codes == nil {
