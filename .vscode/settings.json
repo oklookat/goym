@@ -1,0 +1,10 @@
+{
+    "go.addTags": {
+        "tags": "json",
+        "options": "",
+        "promptForTags": false,
+        "transform": "camelcase",
+        "template": ""
+    },
+    "go.testFlags": ["-v", "-count=1"], // -count=1 disables test cache
+}
