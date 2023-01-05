@@ -35,7 +35,7 @@ func (c *Client) new() {
 	c.low = req.C()
 
 	// uncomment for debug
-	c.low.DevMode()
+	//c.low.DevMode()
 
 	c.low.SetUserAgent("oklookat/goym").SetCommonHeader("Content-Type", "application/json")
 }
