@@ -33,11 +33,19 @@ type Client struct {
 
 func (c *Client) new() {
 	c.low = req.C()
-
-	// uncomment for debug
-	//c.low.DevMode()
-
 	c.low.SetUserAgent("oklookat/goym").SetCommonHeader("Content-Type", "application/json")
+}
+
+func (c *Client) EnableDevMode() {
+	c.low.EnableDumpAll()
+	c.low.EnableDebugLog()
+	c.low.EnableTraceAll()
+}
+
+func (c *Client) DisableDevMode() {
+	c.low.DisableDumpAll()
+	c.low.DisableDebugLog()
+	c.low.DisableTraceAll()
 }
 
 // Create request.
