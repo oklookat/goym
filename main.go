@@ -1,9 +1,9 @@
-package main
+package goym
 
 import (
 	"errors"
 
-	"github.com/oklookat/goym/auth"
+	"github.com/oklookat/goym/goymauth"
 	"github.com/oklookat/goym/holly"
 )
 
@@ -12,7 +12,7 @@ type Client struct {
 	self   holly.Client
 }
 
-func New(tokens *auth.Tokens) (*Client, error) {
+func New(tokens *goymauth.Tokens) (*Client, error) {
 	if tokens == nil {
 		return nil, errors.New("nil tokens")
 	}
