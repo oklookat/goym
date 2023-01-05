@@ -1,6 +1,10 @@
 package goym
 
-import "github.com/oklookat/goym/holly"
+import (
+	"strconv"
+
+	"github.com/oklookat/goym/holly"
+)
 
 // Найти.
 //
@@ -10,15 +14,14 @@ import "github.com/oklookat/goym/holly"
 //
 // eType - тип. Используйте константу SearchType_.
 //
+// Если eType будет не SearchType_All, то в результатах поиска будет отсутствовать поле Best.
+//
 // exact - не исправлять запрос, искать ровно то, что написано в query.
-func (c *Client) Search(query string, page int, eType string, exact bool) (data *GetResponse[*Search], err error) {
-	data = &GetResponse[*Search]{}
+func (c *Client) Search(query string, page int, eType string, exact bool) (data *TypicalResponse[*Search], err error) {
+	data = &TypicalResponse[*Search]{}
 	var endpoint = genApiPath([]string{"search"})
 
-	var noCorrect = "false"
-	if exact {
-		noCorrect = "true"
-	}
+	var noCorrect = strconv.FormatBool(exact)
 
 	var resp *holly.Response
 	resp, err = c.self.R().SetError(data).SetResult(data).SetQueryParams(map[string]string{
@@ -29,15 +32,15 @@ func (c *Client) Search(query string, page int, eType string, exact bool) (data 
 	}).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
 }
 
 // Подсказать что-нибудь по поисковому запросу.
-func (c *Client) SearchSuggest(query string) (data *GetResponse[*Suggestions], err error) {
-	data = &GetResponse[*Suggestions]{}
+func (c *Client) SearchSuggest(query string) (data *TypicalResponse[*Suggestions], err error) {
+	data = &TypicalResponse[*Suggestions]{}
 	var endpoint = genApiPath([]string{"search", "suggest"})
 
 	var resp *holly.Response
@@ -46,7 +49,7 @@ func (c *Client) SearchSuggest(query string) (data *GetResponse[*Suggestions], e
 	}).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return

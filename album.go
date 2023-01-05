@@ -11,8 +11,8 @@ import (
 // withTracks - получить альбом с треками?
 //
 // Если да, то треки будут в Volumes и Duplicates.
-func (c *Client) GetAlbum(albumId int64, withTracks bool) (data *GetResponse[*Album], err error) {
-	data = &GetResponse[*Album]{}
+func (c *Client) GetAlbum(albumId int64, withTracks bool) (data *TypicalResponse[*Album], err error) {
+	data = &TypicalResponse[*Album]{}
 
 	var par = []string{"albums", i2s(albumId)}
 	if withTracks {
@@ -24,19 +24,19 @@ func (c *Client) GetAlbum(albumId int64, withTracks bool) (data *GetResponse[*Al
 	resp, err = c.self.R().SetError(data).SetResult(data).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
 }
 
 // Получить альбомы по id.
-func (c *Client) GetAlbums(albumIds []int64) (data *GetResponse[[]*Album], err error) {
+func (c *Client) GetAlbums(albumIds []int64) (data *TypicalResponse[[]*Album], err error) {
 	if albumIds == nil {
 		err = errors.New("nil albumIds")
 		return
 	}
-	data = &GetResponse[[]*Album]{}
+	data = &TypicalResponse[[]*Album]{}
 
 	var endpoint = genApiPath([]string{"albums"})
 
@@ -47,7 +47,7 @@ func (c *Client) GetAlbums(albumIds []int64) (data *GetResponse[[]*Album], err e
 	resp, err = c.self.R().SetError(data).SetResult(data).SetFormData(form).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
@@ -57,14 +57,14 @@ func (c *Client) GetAlbums(albumIds []int64) (data *GetResponse[[]*Album], err e
 func (c *Client) LikeAlbum(albumId int64) (err error) {
 	var endpoint = genApiPath([]string{"users", c.UserId, "likes", "albums", "add"})
 
-	var data = &GetResponse[any]{}
+	var data = &TypicalResponse[any]{}
 	var resp *holly.Response
 	resp, err = c.self.R().SetError(data).SetResult(data).SetFormData(map[string]string{
 		"album-id": i2s(albumId),
 	}).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
@@ -74,12 +74,12 @@ func (c *Client) LikeAlbum(albumId int64) (err error) {
 func (c *Client) UnlikeAlbum(albumId int64) (err error) {
 	var endpoint = genApiPath([]string{"users", c.UserId, "likes", "albums", i2s(albumId), "remove"})
 
-	var data = &GetResponse[any]{}
+	var data = &TypicalResponse[any]{}
 	var resp *holly.Response
 	resp, err = c.self.R().SetError(data).SetResult(data).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return

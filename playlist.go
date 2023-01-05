@@ -5,8 +5,8 @@ import (
 )
 
 // Получение списка плейлистов пользователя.
-func (c *Client) GetUserPlaylists(userId int64) (data *GetResponse[[]*Playlist], err error) {
-	data = &GetResponse[[]*Playlist]{}
+func (c *Client) GetUserPlaylists(userId int64) (data *TypicalResponse[[]*Playlist], err error) {
+	data = &TypicalResponse[[]*Playlist]{}
 
 	var endpoint = genApiPath([]string{"users", i2s(userId), "playlists", "list"})
 
@@ -14,15 +14,15 @@ func (c *Client) GetUserPlaylists(userId int64) (data *GetResponse[[]*Playlist],
 	resp, err = c.self.R().SetError(data).SetResult(data).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
 }
 
 // Получить плейлист пользователя по ID.
-func (c *Client) GetUserPlaylist(userId int64, playListId int64) (data *GetResponse[*Playlist], err error) {
-	data = &GetResponse[*Playlist]{}
+func (c *Client) GetUserPlaylist(userId int64, playListId int64) (data *TypicalResponse[*Playlist], err error) {
+	data = &TypicalResponse[*Playlist]{}
 
 	var endpoint = genApiPath([]string{"users", i2s(userId), "playlists", i2s(playListId)})
 
@@ -30,15 +30,15 @@ func (c *Client) GetUserPlaylist(userId int64, playListId int64) (data *GetRespo
 	resp, err = c.self.R().SetError(data).SetResult(data).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
 }
 
 // Создать плейлист.
-func (c *Client) CreatePlaylist(playlistName string, isPublic bool) (data *GetResponse[*Playlist], err error) {
-	data = &GetResponse[*Playlist]{}
+func (c *Client) CreatePlaylist(playlistName string, isPublic bool) (data *TypicalResponse[*Playlist], err error) {
+	data = &TypicalResponse[*Playlist]{}
 
 	var endpoint = genApiPath([]string{"users", c.UserId, "playlists", "create"})
 	var visibility = Visibility_Private
@@ -53,15 +53,15 @@ func (c *Client) CreatePlaylist(playlistName string, isPublic bool) (data *GetRe
 	}).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
 }
 
 // Переименовать плейлист.
-func (c *Client) RenamePlaylist(playListId int64, newName string) (data *GetResponse[*Playlist], err error) {
-	data = &GetResponse[*Playlist]{}
+func (c *Client) RenamePlaylist(playListId int64, newName string) (data *TypicalResponse[*Playlist], err error) {
+	data = &TypicalResponse[*Playlist]{}
 
 	var endpoint = genApiPath([]string{"users", c.UserId, "playlists", i2s(playListId), "name"})
 
@@ -71,7 +71,7 @@ func (c *Client) RenamePlaylist(playListId int64, newName string) (data *GetResp
 	}).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
@@ -81,20 +81,20 @@ func (c *Client) RenamePlaylist(playListId int64, newName string) (data *GetResp
 func (c *Client) DeletePlaylist(playListId int64) (err error) {
 	var endpoint = genApiPath([]string{"users", c.UserId, "playlists", i2s(playListId), "delete"})
 
-	var hErr = &GetResponse[any]{}
+	var hErr = &TypicalResponse[any]{}
 	var resp *holly.Response
 	resp, err = c.self.R().SetError(hErr).Delete(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, hErr)
+		err = checkTypicalResponse(resp, hErr)
 	}
 
 	return
 }
 
 // Получить рекомендации на основе плейлиста.
-func (c *Client) GetPlaylistRecommendations(playListId int64) (data *GetResponse[*PlaylistRecommendations], err error) {
-	data = &GetResponse[*PlaylistRecommendations]{}
+func (c *Client) GetPlaylistRecommendations(playListId int64) (data *TypicalResponse[*PlaylistRecommendations], err error) {
+	data = &TypicalResponse[*PlaylistRecommendations]{}
 
 	var endpoint = genApiPath([]string{"users", c.UserId, "playlists", i2s(playListId), "recommendations"})
 
@@ -102,7 +102,7 @@ func (c *Client) GetPlaylistRecommendations(playListId int64) (data *GetResponse
 	resp, err = c.self.R().SetError(data).SetResult(data).Get(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return
@@ -111,8 +111,8 @@ func (c *Client) GetPlaylistRecommendations(playListId int64) (data *GetResponse
 // Изменить видимость плейлиста.
 //
 // makePublic: true = сделать публичным, false = приватным.
-func (c *Client) ChangePlaylistVisibility(playListId int64, makePublic bool) (data *GetResponse[*Playlist], err error) {
-	data = &GetResponse[*Playlist]{}
+func (c *Client) ChangePlaylistVisibility(playListId int64, makePublic bool) (data *TypicalResponse[*Playlist], err error) {
+	data = &TypicalResponse[*Playlist]{}
 
 	var endpoint = genApiPath([]string{"users", c.UserId, "playlists", i2s(playListId), "visibility"})
 	var visibility = Visibility_Private
@@ -126,7 +126,7 @@ func (c *Client) ChangePlaylistVisibility(playListId int64, makePublic bool) (da
 	}).Post(endpoint)
 
 	if err == nil {
-		err = checkGetResponse(resp, data)
+		err = checkTypicalResponse(resp, data)
 	}
 
 	return

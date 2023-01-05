@@ -21,7 +21,7 @@ const (
 )
 
 // Обычно ответ выглядит так.
-type GetResponse[T any] struct {
+type TypicalResponse[T any] struct {
 	InvocationInfo *InvocationInfo `json:"invocationInfo"`
 
 	// Если не nil, то поле result будет nil.
