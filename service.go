@@ -6,17 +6,33 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/oklookat/goym/holly"
+	"github.com/oklookat/goym/vantuz"
 )
 
 // int в строку (десятичная система).
-func i2s[T int | int64 | int32](val T) string {
+func i2s[T int | int64 | int32 | uint](val T) string {
 	return strconv.FormatInt(int64(val), 10)
 }
 
 // строку в int64 (десятичная система).
 func s2i64(val string) (int64, error) {
 	return strconv.ParseInt(val, 10, 64)
+}
+
+// bool в строку.
+func b2s(val bool) string {
+	return strconv.FormatBool(val)
+}
+
+// true = VisibilityPublic
+//
+// false = VisibilityPrivate
+func visibilityToString(public bool) string {
+	var visibility = VisibilityPrivate
+	if public {
+		visibility = VisibilityPublic
+	}
+	return visibility
 }
 
 // Пример:
@@ -75,23 +91,21 @@ func i64Join(data []int64) string {
 // 	return strings.Join(pairs, ",")
 // }
 
-// Проверить TypicalResponse на наличие ошибки. Если есть, возвращает error, в которой будет сообщение.
-func checkTypicalResponse[T any](resp *holly.Response, data *TypicalResponse[T]) (err error) {
+// Проверить TypicalResponse на наличие ошибки (поле Error).
+//
+// Если ошибка есть, возвращает error с сообщением.
+func checkTypicalResponse[T any](resp *vantuz.Response, data *TypicalResponse[T]) error {
 	if resp == nil {
-		err = errors.New("nil response")
-		return
+		return errors.New("nil response")
 	}
 	if data == nil {
-		err = errors.New("nil data")
-		return
+		return errors.New("nil data")
 	}
 	if resp.IsSuccess() {
-		return
+		return nil
 	}
 	if data.Error == nil {
-		err = errors.New("nil data.Error")
-		return
+		return errors.New("nil data.Error")
 	}
-	err = fmt.Errorf("%v: %v", data.Error.Name, data.Error.Message)
-	return
+	return fmt.Errorf("%v: %v", data.Error.Name, data.Error.Message)
 }

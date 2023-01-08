@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/oklookat/goym/holly"
+	"github.com/oklookat/goym/vantuz"
 )
 
 const (
@@ -61,15 +61,13 @@ type Tokens struct {
 }
 
 // Приложение начинает периодически запрашивать OAuth-токен, передавая device_code.
-func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) (err error) {
+func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) error {
 	if ctx.Err() != nil {
-		err = ErrCancelled
-		return
+		return ErrCancelled
 	}
 
 	if codes == nil {
-		err = errors.New("nil codes")
-		return
+		return errors.New("nil codes")
 	}
 
 	var form = map[string]string{
@@ -85,9 +83,8 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 		"client_secret": client_secret,
 	}
 
-	var resp *holly.Response
 	var tokensErr = &tokensError{}
-	var request = holly.C().R().
+	var request = vantuz.C().R().
 		SetFormData(form).
 		SetResult(t).SetError(tokensErr)
 
@@ -105,41 +102,36 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 	for {
 		select {
 		case <-tokensExpired.C:
-			err = errors.New("tokens expired")
-			return
+			return errors.New("tokens expired")
 		case <-requestSleep.C:
 
 			if ctx.Err() != nil {
-				err = ErrCancelled
-				return
+				return ErrCancelled
 			}
 
-			if resp, err = request.Post(token_endpoint); err != nil {
-				return
+			resp, err := request.Post(token_endpoint)
+			if err != nil {
+				return err
 			}
 
 			if resp.IsSuccess() {
 				t.setRefreshAfter()
-				return
+				return err
 			}
 
 			if len(tokensErr.Error) < 1 {
-				err = errors.New("statusCode != 200, but tokensErr is empty")
-				return
+				return errors.New("statusCode != 200, but tokensErr is empty")
 			}
 
 			switch tokensErr.Error {
 			default:
-				err = errors.New(tokensErr.Error)
-				return
+				return errors.New(tokensErr.Error)
 			case errAuthorizationPending:
 				continue
 			case errInvalidClient:
-				err = errors.New("broken client_id or client_secret")
-				return
+				return errors.New("broken client_id or client_secret")
 			case errInvalidGrant:
-				err = errors.New("incorrect or expired confirmation code")
-				return
+				return errors.New("incorrect or expired confirmation code")
 			}
 		}
 	}
@@ -150,14 +142,13 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 // Если обновление не требуется, возвращает nil.
 //
 // https://yandex.ru/dev/id/doc/dg/oauth/reference/refresh-client.html
-func (t *Tokens) Refresh() (refreshed *Tokens, err error) {
+func (t *Tokens) Refresh() (*Tokens, error) {
 	if t.RefreshAfter < 1 {
-		err = errors.New("empty RefreshAfter (broken token?)")
-		return
+		return nil, errors.New("empty RefreshAfter (broken token?)")
 	}
 
 	if !t.isNeedToRefresh() {
-		return
+		return nil, nil
 	}
 
 	var form = map[string]string{
@@ -171,30 +162,24 @@ func (t *Tokens) Refresh() (refreshed *Tokens, err error) {
 		"client_secret": client_secret,
 	}
 
+	var refreshed = &Tokens{}
 	var tokenErr = &tokensError{}
-	var request = holly.C().R().
+	var request = vantuz.C().R().
 		SetFormData(form).
 		SetResult(refreshed).SetError(tokenErr)
 
-	var resp *holly.Response
-	if resp, err = request.Post(token_endpoint); err != nil {
-		refreshed = nil
-		return
+	resp, err := request.Post(token_endpoint)
+	if err != nil {
+		return nil, err
 	}
 
 	if resp.IsError() {
-		err = errors.New(tokenErr.Error)
-		return
-	}
-
-	if refreshed == nil {
-		err = errors.New("nil tokens")
-		return
+		return nil, errors.New(tokenErr.Error)
 	}
 
 	refreshed.setRefreshAfter()
 
-	return
+	return refreshed, err
 }
 
 // Устанавливает RefreshAfter.

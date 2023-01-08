@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/oklog/ulid/v2"
-	"github.com/oklookat/goym/holly"
+	"github.com/oklookat/goym/vantuz"
 )
 
 // Первый шаг.
@@ -73,32 +73,30 @@ func (c *confirmationCodes) New(login string) (err error) {
 }
 
 // Отправить запрос.
-func (c *confirmationCodes) Send(ctx context.Context) (codes *confirmationCodesResponse, err error) {
+func (c *confirmationCodes) Send(ctx context.Context) (*confirmationCodesResponse, error) {
 	if !c.isNewCalled {
-		err = errors.New("you must call New() first")
-		return
+		return nil, errors.New("you must call New() first")
 	}
-	codes = &confirmationCodesResponse{}
 
-	var request = holly.C().R().
+	var codes = &confirmationCodesResponse{}
+	var request = vantuz.C().R().
 		SetFormData(c.form).
 		SetResult(codes)
 
 	if ctx.Err() != nil {
-		err = ErrCancelled
-		return
+		return nil, ErrCancelled
 	}
 
-	var resp *holly.Response
-	resp, err = request.Post(code_endpoint)
+	resp, err := request.Post(code_endpoint)
 	if err != nil {
-		return
+		return nil, err
 	}
+
 	if !resp.IsSuccess() {
 		err = fmt.Errorf("%+v", resp.Error())
 	}
 
-	return
+	return codes, err
 }
 
 // Создать форму, чтобы отправить ее вместе с запросом.

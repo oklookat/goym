@@ -2,8 +2,6 @@ package goym
 
 import (
 	"errors"
-
-	"github.com/oklookat/goym/holly"
 )
 
 // Получить альбом по id.
@@ -11,76 +9,61 @@ import (
 // withTracks - получить альбом с треками?
 //
 // Если да, то треки будут в Volumes и Duplicates.
-func (c *Client) GetAlbum(albumId int64, withTracks bool) (data *TypicalResponse[*Album], err error) {
-	data = &TypicalResponse[*Album]{}
-
-	var par = []string{"albums", i2s(albumId)}
+func (c *Client) GetAlbum(albumId int64, withTracks bool) (*TypicalResponse[Album], error) {
+	var endP = []string{"albums", i2s(albumId)}
 	if withTracks {
-		par = append(par, "with-tracks")
+		endP = append(endP, "with-tracks")
 	}
-	var endpoint = genApiPath(par)
+	var endpoint = genApiPath(endP)
 
-	var resp *holly.Response
-	resp, err = c.self.R().SetError(data).SetResult(data).Get(endpoint)
-
+	var data = &TypicalResponse[Album]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
 
-	return
+	return data, err
 }
 
 // Получить альбомы по id.
-func (c *Client) GetAlbums(albumIds []int64) (data *TypicalResponse[[]*Album], err error) {
+func (c *Client) GetAlbums(albumIds []int64) (*TypicalResponse[[]Album], error) {
 	if albumIds == nil {
-		err = errors.New("nil albumIds")
-		return
+		return nil, errors.New("nil albumIds")
 	}
-	data = &TypicalResponse[[]*Album]{}
-
 	var endpoint = genApiPath([]string{"albums"})
 
-	var form = make(map[string]string)
-	form["album-ids"] = i64Join(albumIds)
-
-	var resp *holly.Response
-	resp, err = c.self.R().SetError(data).SetResult(data).SetFormData(form).Post(endpoint)
-
+	var data = &TypicalResponse[[]Album]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).
+		SetFormData(formAlbumIds(albumIds)).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
 
-	return
+	return data, err
 }
 
 // Лайкнуть альбом.
-func (c *Client) LikeAlbum(albumId int64) (err error) {
-	var endpoint = genApiPath([]string{"users", c.UserId, "likes", "albums", "add"})
+func (c *Client) LikeAlbum(albumId int64) error {
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", "add"})
 
 	var data = &TypicalResponse[any]{}
-	var resp *holly.Response
-	resp, err = c.self.R().SetError(data).SetResult(data).SetFormData(map[string]string{
-		"album-id": i2s(albumId),
-	}).Post(endpoint)
-
+	resp, err := c.self.R().SetError(data).SetResult(data).SetFormData(formAlbumId(albumId)).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
 
-	return
+	return err
 }
 
 // Убрать лайк с альбома.
-func (c *Client) UnlikeAlbum(albumId int64) (err error) {
-	var endpoint = genApiPath([]string{"users", c.UserId, "likes", "albums", i2s(albumId), "remove"})
+func (c *Client) UnlikeAlbum(albumId int64) error {
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", i2s(albumId), "remove"})
 
 	var data = &TypicalResponse[any]{}
-	var resp *holly.Response
-	resp, err = c.self.R().SetError(data).SetResult(data).Post(endpoint)
-
+	resp, err := c.self.R().SetError(data).SetResult(data).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
 
-	return
+	return err
 }

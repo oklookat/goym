@@ -3,27 +3,19 @@ package goym
 import (
 	"encoding/json"
 	"strconv"
-	"time"
 )
 
-/**
-TODO(?)
-https://github.com/deepmap/oapi-codegen
-https://github.com/acherkashin/yandex-music-open-api/blob/main/src/yandex-music.yaml
-**/
-
 const (
-	ApiUrl   = "https://api.music.yandex.net"
-	ApiUsers = ApiUrl + "/users"
+	ApiUrl = "https://api.music.yandex.net"
 
-	Visibility_Private = "private"
-	Visibility_Public  = "public"
+	VisibilityPrivate = "private"
+	VisibilityPublic  = "public"
 
-	SearchType_Artist  = "artist"
-	SearchType_Album   = "album"
-	SearchType_Track   = "track"
-	SearchType_Podcast = "podcast"
-	SearchType_All     = "all"
+	SearchTypeArtist  = "artist"
+	SearchTypeAlbum   = "album"
+	SearchTypeTrack   = "track"
+	SearchTypePodcast = "podcast"
+	SearchTypeAll     = "all"
 )
 
 // Обычно ответ выглядит так.
@@ -56,18 +48,18 @@ type UserSettings struct {
 
 	// Видимость музыкальной библиотеки.
 	//
-	// используйте константы Visibility
+	// Используйте константы Visibility.
 	UserMusicVisibility string `json:"userMusicVisibility"`
 
 	// ???
 	//
-	// используйте константы Visibility
+	// Используйте константы Visibility.
 	UserSocialVisibility string `json:"userSocialVisibility"`
 
 	AdsDisabled bool `json:"adsDisabled"`
 
 	// example: 2019-04-14T14:55:50+00:00
-	Modified time.Time `json:"modified"`
+	Modified string `json:"modified"`
 
 	RbtDisabled string `json:"rbtDisabled"`
 
@@ -75,7 +67,7 @@ type UserSettings struct {
 	//
 	// black | default
 	//
-	// example: black
+	// Example: black.
 	Theme string `json:"theme"`
 
 	AutoPlayRadio    bool `json:"autoPlayRadio"`
@@ -98,10 +90,10 @@ type InvocationInfo struct {
 
 // Ошибка. Ошибка валидации, например.
 type Error struct {
-	// example: validate
+	// example: validate.
 	Name string `json:"name"`
 
-	// example: Parameters requirements are not met
+	// example: Parameters requirements are not met.
 	Message string `json:"message"`
 }
 
@@ -117,68 +109,68 @@ type Label struct {
 type Account struct {
 	// Текущая дата и время
 	//
-	// example: 2021-03-17T18:13:40+00:00
-	Now time.Time `json:"now"`
+	// example: 2021-03-17T18:13:40+00:00.
+	Now string `json:"now"`
 
-	// Уникальный идентификатор
+	// Уникальный идентификатор.
 	UID int64 `json:"uid"`
 
-	// Виртуальное имя (обычно e-mail)
+	// Виртуальное имя (обычно e-mail).
 	Login string `json:"login"`
 
-	// Полное имя (имя и фамилия)
+	// Полное имя (имя и фамилия).
 	FullName string `json:"fullName"`
 
-	// Фамилия
+	// Фамилия.
 	SecondName string `json:"secondName"`
 
-	// Имя
+	// Имя.
 	FirstName string `json:"firstName"`
 
-	// Отображаемое имя
+	// Отображаемое имя.
 	DisplayName string `json:"displayName"`
 
-	// Доступен ли сервис
+	// Доступен ли сервис.
 	ServiceAvailable bool `json:"serviceAvailable"`
 
-	// Является ли пользователем чьим-то другим
+	// Является ли пользователем чьим-то другим.
 	HostedUser bool `json:"hostedUser"`
 
-	// Мобильные номера
+	// Мобильные номера.
 	PassportPhones []struct {
 		Phone string `json:"phone"`
 	} `json:"passport-phones"`
 }
 
 type Album struct {
-	// Идентификатор альбома
+	// Идентификатор альбома.
 	ID int64 `json:"id"`
 
-	// Название альбома
+	// Название альбома.
 	Title string `json:"title"`
 
-	// Мета тип (single, podcast, music, remix)
+	// Мета тип (single, podcast, music, remix).
 	MetaType string `json:"metaType"`
 
-	// например: "single"
+	// например: "single".
 	Type *string `json:"type"`
 
-	// например: "Remix"
+	// например: "Remix".
 	Version *string `json:"version"`
 
-	// Год релиза
+	// Год релиза.
 	Year int `json:"year"`
 
-	// Дата релиза в формате ISO 8601
+	// Дата релиза в формате ISO 8601.
 	ReleaseDate string `json:"releaseDate"`
 
-	// Ссылка на обложку
+	// Ссылка на обложку.
 	CoverUri string `json:"coverUri"`
 
-	// Ссылка на превью Open Graph
+	// Ссылка на превью Open Graph.
 	OgImage string `json:"ogImage"`
 
-	// Жанр музыки
+	// Жанр музыки.
 	Genre string `json:"genre"`
 
 	// Количество треков.
@@ -187,13 +179,13 @@ type Album struct {
 	// Количество лайков.
 	LikesCount int `json:"likesCount"`
 
-	// Является ли альбом новым
+	// Является ли альбом новым.
 	Recent bool `json:"recent"`
 
-	// Популярен ли альбом у слушателей
+	// Популярен ли альбом у слушателей.
 	VeryImportant bool `json:"veryImportant"`
 
-	// Артисты
+	// Артисты.
 	Artists []*Artist `json:"artists"`
 
 	// Лейблы.
@@ -203,19 +195,19 @@ type Album struct {
 	// (?) Слайсы строк используются при поиске, а слайсы структур в остальных случаях.
 	Labels []any `json:"labels"`
 
-	// Доступен ли альбом
+	// Доступен ли альбом.
 	Available bool `json:"available"`
 
-	// Доступен ли альбом для пользователей с подпиской
+	// Доступен ли альбом для пользователей с подпиской.
 	AvailableForPremiumUsers bool `json:"availableForPremiumUsers"`
 
-	// Доступен ли альбом из приложения для телефона
+	// Доступен ли альбом из приложения для телефона.
 	AvailableForMobile bool `json:"availableForMobile"`
 
-	// Доступен ли альбом частично для пользователей без подписки
+	// Доступен ли альбом частично для пользователей без подписки.
 	AvailablePartially bool `json:"availablePartially"`
 
-	// ID лучших треков альбома
+	// ID лучших треков альбома.
 	Bests []int64 `json:"bests"`
 
 	// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
@@ -244,21 +236,21 @@ type Artist struct {
 type Cover struct {
 	// Если не nil, значит остальные поля структуры будут nil.
 	//
-	// пример ошибки: "cover doesn't exist"
+	// Example: "cover doesn't exist".
 	Error *string `json:"error"`
 
 	Custom *bool `json:"custom"`
 
-	// Существует когда поле type = "pic"
+	// Существует когда поле type = "pic".
 	Dir *string `json:"dir"`
 
-	// pic | mosaic
+	// pic | mosaic.
 	Type *string `json:"type"`
 
-	// Существует когда поле type = "mosaic"
+	// Существует когда поле type = "mosaic".
 	ItemsUri []string `json:"itemsUri"`
 
-	// Существует когда поле type = "pic"
+	// Существует когда поле type = "pic".
 	Uri *string `json:"uri"`
 
 	Version *string `json:"version"`
@@ -266,16 +258,16 @@ type Cover struct {
 
 // Владелец. Владелец плейлиста, например.
 type Owner struct {
-	// id
+	// id.
 	Uid int64 `json:"uid"`
 
-	// Логин
+	// Логин.
 	Login string `json:"login"`
 
-	// Имя
+	// Имя.
 	Name string `json:"name"`
 
-	// Пол
+	// Пол.
 	Sex string `json:"sex"`
 
 	// (?) Плейлист от редакции.
@@ -291,13 +283,14 @@ type Track struct {
 	// int64 | string
 	ID     int64  `json:"-"`
 	RealId string `json:"realId"`
+
 	// Название.
 	Title string `json:"title"`
 
-	// OWN
+	// OWN.
 	TrackSource string `json:"trackSource"`
 
-	// Лейбл
+	// Лейбл.
 	Major                    *Label `json:"major"`
 	Available                bool   `json:"available"`
 	AvailableForPremiumUsers bool   `json:"availableForPremiumUsers"`
@@ -478,7 +471,7 @@ type PlaylistRecommendations struct {
 	Tracks []*Track `json:"tracks"`
 }
 
-// Дополнительная информация о треке
+// Дополнительная информация о треке.
 type Supplement struct {
 	// Уникальный идентификатор дополнительной информации.
 	Id     string           `json:"id"`
@@ -516,7 +509,7 @@ type Lyrics struct {
 	Url string `json:"url"`
 }
 
-// Видеоклипы
+// Видеоклипы.
 type VideoSupplement struct {
 	// URL на обложку видео.
 	Cover string `json:"cover"`
@@ -540,131 +533,132 @@ type VideoSupplement struct {
 	Embed string `json:"embed"`
 }
 
-// Видео
+// Видео.
 type Video struct {
-	// Название видео
+	// Название видео.
 	Title string `json:"title"`
 
-	// Ссылка на изображение
+	// Ссылка на изображение.
 	Cover string `json:"cover"`
 
-	// Ссылка на видео
+	// Ссылка на видео.
 	EmbedUrl string `json:"embedUrl"`
 
-	// Сервис поставляющий видео
+	// Сервис поставляющий видео.
 	Provider string `json:"provider"`
 
 	// Уникальный идентификатор видео на сервисе.
 	ProviderVideoId string `json:"providerVideoId"`
 
-	// Ссылка на видео Youtube
+	// Ссылка на видео YouTube.
 	YoutubeUrl string `json:"youtubeUrl"`
 
-	// Ссылка на изображение
+	// Ссылка на изображение.
 	ThumbnailUrl string `json:"thumbnailUrl"`
 
-	// Длительность видео в секундах
+	// Длительность видео в секундах.
 	Duration int64 `json:"duration"`
 
-	// Текст
+	// Текст.
 	Text string `json:"text"`
 
-	// HTML тег для встраивания в разметку страницы
+	// HTML тег для встраивания в разметку страницы.
 	HtmlAutoPlayVideoPlayer string `json:"htmlAutoPlayVideoPlayer"`
 
-	// example: ["RUSSIA_PREMIUM", "RUSSIA"]
+	// example: ["RUSSIA_PREMIUM", "RUSSIA"].
 	Regions []string `json:"regions"`
 }
 
 type PlaylistId struct {
-	// Уникальный идентификатор пользователя владеющим плейлистом
+	// Уникальный идентификатор пользователя владеющим плейлистом.
 	Uid int64 `json:"uid"`
 
-	// Уникальный идентификатор плейлиста
+	// Уникальный идентификатор плейлиста.
 	Kind int64 `json:"kind"`
 }
 
-// Список похожих треков на другой трек
+// Список похожих треков на другой трек.
 type SimilarTracks struct {
 	Track *Track `json:"track"`
-	// Похожие треки
+	// Похожие треки.
 	SimilarTracks []*Track `json:"similarTracks"`
 }
 
-// Список треков
+// Список треков.
 type TracksLibrary struct {
 	Library struct {
-		// Уникальный идентификатор пользователя
+		// Уникальный идентификатор пользователя.
 		Uid int64 `json:"uid"`
 
 		Revision int64 `json:"revision"`
 
-		// Список треков в укороченной версии
+		// Список треков в укороченной версии.
 		Tracks []*TrackShort `json:"tracks"`
 	} `json:"library"`
 }
 
-// Укороченная версия трека с неполными данными
+// Укороченная версия трека с неполными данными.
 type TrackShort struct {
-	// Уникальный идентификатор трека
+	// Уникальный идентификатор трека.
 	Id string `json:"id"`
 
-	// Уникальный идентификатор альбома
+	// Уникальный идентификатор альбома.
 	AlbumId string `json:"albumId"`
 
-	// Дата
+	// Дата.
 	Timestamp string `json:"timestamp"`
 }
 
-// Информация о вариантах загрузки трека
+// Информация о вариантах загрузки трека.
 type TrackDownloadInfo struct {
-	// Кодек аудиофайла (mp3, aac)
+	// Кодек аудиофайла (mp3, aac).
 	Codec string `json:"codec"`
 
-	// Усиление
+	// Усиление.
 	Gain bool `json:"gain"`
 
-	// Предварительный просмотр
+	// Предварительный просмотр.
 	Preview bool `json:"preview"`
 
 	// Ссылка на XML документ содержащий данные для загрузки трека
 	//
-	// В этом URL также необходимо иметь auth header. Без него или будет 401, или будет массив с mp3/128.
+	// При переходе по этому
+	// URL также необходимо иметь auth header. Без него или будет 401, или будет массив с mp3/128.
 	//
 	// Если собираетесь сделать загрузку mp3, смотрите в эту сторону:
 	// https://github.com/MarshalX/yandex-music-api/blob/main/yandex_music/download_info.py
 	DownloadInfoUrl string `json:"downloadInfoUrl"`
 
-	// Прямая ли ссылка
+	// Прямая ли ссылка.
 	Direct bool `json:"direct"`
 
-	// Битрейт аудиофайла в кбит/с
+	// Битрейт аудиофайла в кбит/с.
 	BitrateInKbps int `json:"bitrateInKbps"`
 }
 
-// Результаты поиска
+// Результаты поиска.
 type Search struct {
-	// Был ли исправлен запрос
+	// Был ли исправлен запрос.
 	MisspellCorrected bool `json:"misspellCorrected"`
 
-	// Было ли отключено исправление результата
+	// Было ли отключено исправление результата.
 	Nocorrect bool `json:"nocorrect"`
 
-	// Поисковой запрос (оригинальный или исправленный)
+	// Поисковой запрос (оригинальный или исправленный).
 	Text string `json:"text"`
 
-	// Исправленный поисковой запрос
+	// Исправленный поисковой запрос.
 	MisspellResult string `json:"misspellResult"`
 
-	// Оригинальный поисковой запрос
+	// Оригинальный поисковой запрос.
 	MisspellOriginal string `json:"misspellOriginal"`
 
-	// ID запроса
+	// ID запроса.
 	SearchResultId *string `json:"searchResultId"`
 
 	// artist | album | track | podcast | all
 	//
-	// Default: all
+	// Default: all.
 	Type string `json:"type"`
 
 	// Текущая страница. Доступно, при использовании параметра type.
@@ -673,28 +667,28 @@ type Search struct {
 	// Результатов на странице. Доступно, при использовании параметра type.
 	PerPage *int64 `json:"perPage"`
 
-	// Лучший результат
+	// Лучший результат.
 	Best *Best[any] `json:"best"`
 
-	// Найденные альбомы
+	// Найденные альбомы.
 	Albums *SearchResult[Album] `json:"albums"`
 
-	// Найденные артисты
+	// Найденные артисты.
 	Artists *SearchResult[Artist] `json:"artists"`
 
-	// Найденные плейлисты
+	// Найденные плейлисты.
 	Playlists *SearchResult[Playlist] `json:"playlists"`
 
-	// Найденные треки
+	// Найденные треки.
 	Tracks *SearchResult[Track] `json:"tracks"`
 
-	// Найденные видео
+	// Найденные видео.
 	Videos *SearchResult[Video] `json:"videos"`
 
-	// Найденные подкасты
+	// Найденные подкасты.
 	Podcasts *SearchResult[any] `json:"podcasts"`
 
-	// Найденные эписозды подкастов
+	// Найденные эписозды подкастов.
 	PodcastEpisodes *SearchResult[any] `json:"podcast_episodes"`
 }
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/oklookat/goym/goymauth"
-	"github.com/oklookat/goym/holly"
+	"github.com/oklookat/goym/vantuz"
 )
 
 // Получить Client для запросов к API.
@@ -16,7 +16,7 @@ func New(tokens *goymauth.Tokens) (*Client, error) {
 	}
 
 	var cl = &Client{
-		self: *holly.AC(tokens.AccessToken),
+		self: *vantuz.AC(tokens.AccessToken),
 	}
 
 	// get uid
@@ -24,15 +24,27 @@ func New(tokens *goymauth.Tokens) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp == nil {
+		return nil, errors.New("nil response")
+	}
 
-	cl.UserId = i2s(resp.Result.Account.UID)
+	var result = resp.Result
+	if result.Account == nil {
+		return nil, errors.New("nil account")
+	}
+
+	cl.UserId = resp.Result.Account.UID
+	cl.userId = i2s(cl.UserId)
 	return cl, err
 }
 
 // Клиент для запросов к API.
 type Client struct {
-	UserId string
-	self   holly.Client
+	UserId int64
+
+	// Для создания эндпоинтов.
+	userId string
+	self   vantuz.Client
 }
 
 // Включить вывод HTTP запросов в консоль.
