@@ -14,11 +14,17 @@ import (
 )
 
 func newRequest(cl *Client, limit *rate.Limiter) *Request {
-	return &Request{
+	var r = &Request{
 		cl:      cl,
 		limiter: limit,
 		headers: make(map[string]string),
 	}
+	if cl.headers != nil {
+		for k, v := range cl.headers {
+			r.headers[k] = v
+		}
+	}
+	return r
 }
 
 // HTTP Request.
@@ -128,9 +134,6 @@ func (r *Request) before(req *http.Request) error {
 		return errors.New("nil before()")
 	}
 
-	for k, v := range r.cl.headers {
-		req.Header.Set(k, v)
-	}
 	for k, v := range r.headers {
 		req.Header.Set(k, v)
 	}

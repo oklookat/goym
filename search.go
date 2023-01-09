@@ -11,7 +11,7 @@ package goym
 // Если eType будет не SearchType_All, то в результатах поиска будет отсутствовать поле Best.
 //
 // exact - не исправлять запрос, искать ровно то, что написано в query.
-func (c *Client) Search(text string, page uint, _type string, nocorrect bool) (*TypicalResponse[Search], error) {
+func (c *Client) Search(text string, page uint32, _type string, nocorrect bool) (*TypicalResponse[Search], error) {
 	var endpoint = genApiPath([]string{"search"})
 	var query = searchQuery(text, page, _type, nocorrect)
 

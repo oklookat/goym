@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
-	"github.com/oklog/ulid/v2"
 	"github.com/oklookat/goym/vantuz"
 )
 
@@ -65,8 +63,8 @@ type confirmationCodesResponse struct {
 func (c *confirmationCodes) New(login string) (err error) {
 	c.clientId = client_id
 	c.login = login
-	c.deviceId = c.generateUlid()
-	c.deviceName, err = c.getHostname()
+	c.deviceId = generateUlid()
+	c.deviceName, err = getHostname()
 	c.makeForm()
 	c.isNewCalled = true
 	return
@@ -106,21 +104,4 @@ func (c *confirmationCodes) makeForm() {
 	form["device_id"] = c.deviceId
 	form["device_name"] = c.deviceName
 	c.form = form
-}
-
-// Получить имя устройства, и дописать к нему "/goym".
-//
-// Дописываем, чтобы в списке входов в аккаунт пользователя
-// было видно, что вход выполнен через API.
-func (c *confirmationCodes) getHostname() (name string, err error) {
-	if name, err = os.Hostname(); err != nil {
-		return
-	}
-	name += "/goym"
-	return
-}
-
-// Генерирует ULID.
-func (c *confirmationCodes) generateUlid() string {
-	return ulid.Make().String()
 }

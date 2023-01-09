@@ -10,8 +10,8 @@ import (
 )
 
 // int в строку (десятичная система).
-func i2s[T int | int64 | int32 | uint](val T) string {
-	return strconv.FormatInt(int64(val), 10)
+func i2s[T int | int64 | int32 | uint32](val T) string {
+	return fmt.Sprintf("%d", val)
 }
 
 // строку в int64 (десятичная система).

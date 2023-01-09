@@ -11,11 +11,12 @@ const (
 	VisibilityPrivate = "private"
 	VisibilityPublic  = "public"
 
-	SearchTypeArtist  = "artist"
-	SearchTypeAlbum   = "album"
-	SearchTypeTrack   = "track"
-	SearchTypePodcast = "podcast"
-	SearchTypeAll     = "all"
+	SearchTypeArtist   = "artist"
+	SearchTypeAlbum    = "album"
+	SearchTypeTrack    = "track"
+	SearchTypePodcast  = "podcast"
+	SearchTypePlaylist = "playlist"
+	SearchTypeAll      = "all"
 )
 
 // Обычно ответ выглядит так.
@@ -418,6 +419,8 @@ type Playlist struct {
 
 	// Треки.
 	Tracks []*TrackItem `json:"tracks"`
+
+	Revision int `json:"revision"`
 }
 
 type Pager struct {
@@ -656,40 +659,40 @@ type Search struct {
 	// ID запроса.
 	SearchResultId *string `json:"searchResultId"`
 
-	// artist | album | track | podcast | all
+	// artist | album | track | podcast | playlist
 	//
 	// Default: all.
 	Type string `json:"type"`
 
-	// Текущая страница. Доступно, при использовании параметра type.
+	// Текущая страница. Доступно при использовании параметра type.
 	Page *int64 `json:"page"`
 
-	// Результатов на странице. Доступно, при использовании параметра type.
+	// Результатов на странице. Доступно при использовании параметра type.
 	PerPage *int64 `json:"perPage"`
 
 	// Лучший результат.
-	Best *Best[any] `json:"best"`
+	Best Best[*any] `json:"best"`
 
 	// Найденные альбомы.
-	Albums *SearchResult[Album] `json:"albums"`
+	Albums SearchResult[*Album] `json:"albums"`
 
 	// Найденные артисты.
-	Artists *SearchResult[Artist] `json:"artists"`
+	Artists SearchResult[*Artist] `json:"artists"`
 
 	// Найденные плейлисты.
-	Playlists *SearchResult[Playlist] `json:"playlists"`
+	Playlists SearchResult[*Playlist] `json:"playlists"`
 
 	// Найденные треки.
-	Tracks *SearchResult[Track] `json:"tracks"`
+	Tracks SearchResult[*Track] `json:"tracks"`
 
 	// Найденные видео.
-	Videos *SearchResult[Video] `json:"videos"`
+	Videos SearchResult[*Video] `json:"videos"`
 
 	// Найденные подкасты.
-	Podcasts *SearchResult[any] `json:"podcasts"`
+	Podcasts SearchResult[*any] `json:"podcasts"`
 
 	// Найденные эписозды подкастов.
-	PodcastEpisodes *SearchResult[any] `json:"podcast_episodes"`
+	PodcastEpisodes SearchResult[*any] `json:"podcast_episodes"`
 }
 
 type SearchResult[T any] struct {

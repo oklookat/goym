@@ -48,31 +48,30 @@ const (
 // то при следующем запросе к Яндексу, авторизация будет отменена. Будет возвращена ошибка ErrCancelled.
 func New(ctx context.Context,
 	login string,
-	typingCode func(url string, code string)) (tokens *Tokens, err error) {
+	code func(url string, code string)) (*Tokens, error) {
 	if ctx == nil {
-		err = errors.New("nil ctx")
-		return
+		return nil, errors.New("nil ctx")
 	}
-	if typingCode == nil {
-		err = errors.New("nil typingCode")
-		return
+	if code == nil {
+		return nil, errors.New("nil code")
 	}
 
 	// запрашиваем коды.
 	var firstStep = confirmationCodes{}
-	if err = firstStep.New(login); err != nil {
-		return
+	if err := firstStep.New(login); err != nil {
+		return nil, err
 	}
-	var codes = &confirmationCodesResponse{}
-	if codes, err = firstStep.Send(ctx); err != nil {
-		return
+
+	codes, err := firstStep.Send(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// пользователь идет вводить код на странице Яндекса...
-	go typingCode(codes.VerificationUrl, codes.UserCode)
+	go code(codes.VerificationUrl, codes.UserCode)
 
 	// проверяем ввод. Если пользователь ввел верный код, выдаем токен.
-	tokens = &Tokens{}
+	var tokens = &Tokens{}
 	err = tokens.Request(ctx, codes)
-	return
+	return tokens, err
 }

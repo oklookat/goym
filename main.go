@@ -15,8 +15,13 @@ func New(tokens *goymauth.Tokens) (*Client, error) {
 		return nil, errors.New("nil tokens")
 	}
 
+	var vCl = vantuz.C().
+		SetGlobalHeaders(map[string]string{
+			"User-Agent":    "oklookat/goym",
+			"Authorization": "OAuth " + tokens.AccessToken,
+		})
 	var cl = &Client{
-		self: *vantuz.AC(tokens.AccessToken),
+		self: vCl,
 	}
 
 	// get uid
@@ -44,7 +49,7 @@ type Client struct {
 
 	// Для создания эндпоинтов.
 	userId string
-	self   vantuz.Client
+	self   *vantuz.Client
 }
 
 // Включить вывод HTTP запросов в консоль.
