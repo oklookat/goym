@@ -1,140 +1,175 @@
 package goym
 
 import (
-	"errors"
+	"github.com/oklookat/goym/schema"
 )
 
+// Получить лайкнутые треки.
+//
+// GET /users/{userId}/likes/tracks
+func (c Client) GetLikedTracks() (*schema.TracksLibrary, error) {
+	return c.getLikedDislikedTracks(true)
+}
+
+// Получить дизлайкнутые треки.
+//
+// GET /users/{userId}/dislikes/tracks
+func (c Client) GetDislikedTracks() (*schema.TracksLibrary, error) {
+	return c.getLikedDislikedTracks(false)
+}
+
 // Получить (диз)лайкнутые треки.
-func (c *Client) GetLikedDislikedTracks(liked bool) (*TypicalResponse[TracksLibrary], error) {
+func (c Client) getLikedDislikedTracks(liked bool) (*schema.TracksLibrary, error) {
 	var endP = "likes"
 	if !liked {
 		endP = "dislikes"
 	}
-	var endpoint = genApiPath([]string{"users", c.userId, endP, "tracks"})
 
-	var data = &TypicalResponse[TracksLibrary]{}
+	var endpoint = genApiPath([]string{"users", c.userId, endP, "tracks"})
+	var data = &schema.TypicalResponse[*schema.TracksLibrary]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
-// Поставить/снять лайк у трека/треков.
+// Поставить лайк треку.
 //
-// like = true - поставить лайк
-//
-// like = false - убрать лайк
-func (c *Client) LikeUnlikeTracks(trackIds []int64, like bool) error {
-	if len(trackIds) == 0 {
-		return errors.New("nil trackIds")
+// POST /users/{userId}/likes/tracks/add
+func (c Client) LikeTrack(track *schema.Track) error {
+	if track == nil {
+		return ErrNilTrack
+	}
+	var body = schema.LikeTrackRequestBody{
+		TrackId: track.ID,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
 	}
 
-	// Интересный факт:
-	// Если в add-multiple будет один трек, типа {"track-ids": "idтрека"}, то ничего не произойдет.
-	// Чтобы что-то прозошло, в track-ids надо указать не просто id трека,
-	// а id трека и альбома через двоеточие. Например {"track-ids": "idтрека:idальбома"}.
-	// Но так как у нас есть метод add, то заморачиваться не надо.
-
-	var endP string
-
-	var form map[string]string
-	if !like || len(trackIds) > 1 {
-		if !like {
-			// если убрать лайки
-			endP = "remove"
-		} else {
-			// если треков много
-			endP = "add-multiple"
-		}
-		form = formTrackIds(trackIds)
-	} else if len(trackIds) < 2 {
-		// если трек один
-		endP = "add"
-		form = formTrackId(trackIds[0])
-	}
-
-	var endpoint = genApiPath([]string{"users", c.userId, "likes", "tracks", endP})
-
-	var data = &TypicalResponse[any]{}
-	resp, err := c.self.R().SetError(data).SetFormData(form).Post(endpoint)
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "tracks", "add"})
+	var data = &schema.TypicalResponse[any]{}
+	resp, err := c.self.R().SetError(data).SetFormUrlValues(vals).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
+	return err
+}
 
+// Поставить лайки трекам.
+//
+// POST /users/{userId}/likes/tracks/add-multiple
+func (c Client) LikeTracks(tracks []*schema.Track) error {
+	return c.likeUnlikeTracks(tracks, true)
+}
+
+// Убрать лайки с треков.
+//
+// POST /users/{userId}/likes/tracks/remove
+func (c Client) UnlikeTracks(tracks []*schema.Track) error {
+	return c.likeUnlikeTracks(tracks, false)
+}
+
+// Поставить лайки трекам.
+//
+// Убрать лайки с треков.
+func (c Client) likeUnlikeTracks(tracks []*schema.Track, like bool) error {
+	if tracks == nil {
+		return ErrNilTracks
+	}
+	var body = schema.LikeUnlikeTracksRequestBody{}
+	body.SetIds(tracks)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+
+	var endEndPoint = "add-multiple"
+	if !like {
+		endEndPoint = "remove"
+	}
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "tracks", endEndPoint})
+	var data = &schema.TypicalResponse[any]{}
+	resp, err := c.self.R().SetError(data).SetFormUrlValues(vals).Post(endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
 	return err
 }
 
 // Получить трек по id.
-func (c *Client) GetTrackById(trackId int64) (*TypicalResponse[[]Track], error) {
+func (c Client) GetTrackById(trackId int64) ([]*schema.Track, error) {
 	var endpoint = genApiPath([]string{"tracks", i2s(trackId)})
-
-	var data = &TypicalResponse[[]Track]{}
+	var data = &schema.TypicalResponse[[]*schema.Track]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Получить треки по id.
-//
-// key - track id
-//
-// value - album id.
-func (c *Client) GetTracksById(trackIds []int64) (*TypicalResponse[[]Track], error) {
+func (c Client) GetTracksByIds(trackIds []int64) ([]*schema.Track, error) {
 	if trackIds == nil {
-		return nil, errors.New("nil trackIds")
+		return nil, ErrNilTrackIds
+	}
+	var body = schema.GetTracksByIdsRequestBody{
+		TrackIds: trackIds,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
 	}
 
 	var endpoint = genApiPath([]string{"tracks"})
-
-	var data = &TypicalResponse[[]Track]{}
-	resp, err := c.self.R().SetError(data).SetFormData(formTrackIds(trackIds)).SetResult(data).Post(endpoint)
+	var data = &schema.TypicalResponse[[]*schema.Track]{}
+	resp, err := c.self.R().SetError(data).SetFormUrlValues(vals).SetResult(data).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
-// Получить (диз)лайкнутые треки.
-func (c *Client) GetTrackDownloadInfo(trackId int64) (*TypicalResponse[[]TrackDownloadInfo], error) {
-	var endpoint = genApiPath([]string{"tracks", i2s(trackId), "download-info"})
-
-	var data = &TypicalResponse[[]TrackDownloadInfo]{}
+// Получить информацию о загрузке трека.
+func (c Client) GetTrackDownloadInfo(t *schema.Track) ([]*schema.TrackDownloadInfo, error) {
+	if t == nil {
+		return nil, ErrNilTrack
+	}
+	var endpoint = genApiPath([]string{"tracks", i2s(t.ID), "download-info"})
+	var data = &schema.TypicalResponse[[]*schema.TrackDownloadInfo]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Получение дополнительной информации о треке (Текст песни, видео, и т.д.).
-func (c *Client) GetTrackSupplement(trackId int64) (*TypicalResponse[Supplement], error) {
-	var endpoint = genApiPath([]string{"tracks", i2s(trackId), "supplement"})
-
-	var data = &TypicalResponse[Supplement]{}
+func (c Client) GetTrackSupplement(t *schema.Track) (*schema.Supplement, error) {
+	if t == nil {
+		return nil, ErrNilTrack
+	}
+	var endpoint = genApiPath([]string{"tracks", i2s(t.ID), "supplement"})
+	var data = &schema.TypicalResponse[*schema.Supplement]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Получение похожих треков.
-func (c *Client) GetSimilarTracks(trackId int64) (*TypicalResponse[SimilarTracks], error) {
-	var endpoint = genApiPath([]string{"tracks", i2s(trackId), "similar"})
-
-	var data = &TypicalResponse[SimilarTracks]{}
+func (c Client) GetSimilarTracks(t *schema.Track) (*schema.SimilarTracks, error) {
+	if t == nil {
+		return nil, ErrNilTrack
+	}
+	var endpoint = genApiPath([]string{"tracks", i2s(t.ID), "similar"})
+	var data = &schema.TypicalResponse[*schema.SimilarTracks]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }

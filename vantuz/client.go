@@ -15,7 +15,7 @@ type Client struct {
 	headers map[string]string
 
 	// logger.
-	logger *Logger
+	logger Logger
 }
 
 // Create request.

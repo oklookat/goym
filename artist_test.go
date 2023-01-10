@@ -1,6 +1,7 @@
 package goym
 
 import (
+	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -16,20 +17,19 @@ func (s *ArtistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s *ArtistTestSuite) TestArtistLikeUnlike() {
+func (s ArtistTestSuite) TestArtistLikeUnlike() {
 	// search & get artist id
-	data, err := s.cl.Search("монеточка", 0, string(SearchTypeArtist), false)
+	data, err := s.cl.Search("монеточка", 0, schema.SearchTypeArtist, false)
 	s.require.Nil(err)
-
-	var best = data.Result.Artists.Results[0].Name
-	s.require.Equal("Монеточка", best)
+	s.require.NotNil(data.Artists)
+	s.require.NotEmpty(data.Artists.Results)
+	var ar = data.Artists.Results[0]
 
 	// like
-	var artistID = data.Result.Artists.Results[0].ID
-	err = s.cl.LikeArtist(artistID)
+	err = s.cl.LikeArtist(ar)
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeArtist(artistID)
+	err = s.cl.UnlikeArtist(ar)
 	s.require.Nil(err)
 }

@@ -1,4 +1,4 @@
-package goymauth
+package auth
 
 import (
 	"context"
@@ -78,7 +78,7 @@ func (c *confirmationCodes) Send(ctx context.Context) (*confirmationCodesRespons
 
 	var codes = &confirmationCodesResponse{}
 	var request = vantuz.C().R().
-		SetFormData(c.form).
+		SetFormUrlMap(c.form).
 		SetResult(codes)
 
 	if ctx.Err() != nil {

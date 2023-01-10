@@ -1,11 +1,28 @@
 package goym
 
-// Лайкнуть артиста.
-func (c *Client) LikeArtist(artistId int64) error {
-	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists", "add"})
+import (
+	"github.com/oklookat/goym/schema"
+)
 
-	var data = &TypicalResponse[any]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetFormData(formArtistId(artistId)).Post(endpoint)
+// Лайкнуть артиста.
+//
+// POST /users/{userId}/likes/artists/add
+func (c Client) LikeArtist(a *schema.Artist) error {
+	if a == nil {
+		return ErrNilArtist
+	}
+
+	var body = schema.LikeArtistRequestBody{
+		ArtistId: a.ID,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists", "add"})
+	var data = &schema.TypicalResponse[any]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
@@ -14,10 +31,14 @@ func (c *Client) LikeArtist(artistId int64) error {
 }
 
 // Убрать лайк с артиста.
-func (c *Client) UnlikeArtist(artistId int64) error {
-	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists", i2s(artistId), "remove"})
-
-	var data = &TypicalResponse[any]{}
+//
+// POST /users/{userId}/likes/artists/{artistId}/remove
+func (c Client) UnlikeArtist(a *schema.Artist) error {
+	if a == nil {
+		return ErrNilArtist
+	}
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists", i2s(a.ID), "remove"})
+	var data = &schema.TypicalResponse[any]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)

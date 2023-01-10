@@ -1,4 +1,4 @@
-package goymauth
+package auth
 
 import (
 	"context"
@@ -85,7 +85,7 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 
 	var tokensErr = &tokensError{}
 	var request = vantuz.C().R().
-		SetFormData(form).
+		SetFormUrlMap(form).
 		SetResult(t).SetError(tokensErr)
 
 	// таймер когда токены истекут
@@ -165,7 +165,7 @@ func (t *Tokens) Refresh() (*Tokens, error) {
 	var refreshed = &Tokens{}
 	var tokenErr = &tokensError{}
 	var request = vantuz.C().R().
-		SetFormData(form).
+		SetFormUrlMap(form).
 		SetResult(refreshed).SetError(tokenErr)
 
 	resp, err := request.Post(token_endpoint)

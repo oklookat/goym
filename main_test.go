@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
-	"github.com/oklookat/goym/goymauth"
+	"github.com/oklookat/goym/auth"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -41,7 +41,7 @@ func getClient(t *testing.T) *Client {
 	refreshAfter, err := s2i64(os.Getenv("REFRESH_AFTER"))
 	require.Nil(err)
 
-	var tok = &goymauth.Tokens{
+	var tok = &auth.Tokens{
 		TokenType:    os.Getenv("TOKEN_TYPE"),
 		AccessToken:  os.Getenv("ACCESS_TOKEN"),
 		ExpiresIn:    expiresIn,

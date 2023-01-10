@@ -1,163 +1,136 @@
 package goym
 
-// Получение списка плейлистов пользователя.
-func (c *Client) GetUserPlaylists(userId int64) (*TypicalResponse[[]*Playlist], error) {
-	var endpoint = genApiPath([]string{"users", i2s(userId), "playlists", "list"})
+import "github.com/oklookat/goym/schema"
 
-	var data = &TypicalResponse[[]*Playlist]{}
+// Получение списка плейлистов пользователя.
+//
+// GET /users/{userId}/playlists/list
+func (c Client) GetUserPlaylists(userId int64) ([]*schema.Playlist, error) {
+	var endpoint = genApiPath([]string{"users", i2s(userId), "playlists", "list"})
+	var data = &schema.TypicalResponse[[]*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
-// Получить плейлист пользователя по ID.
-func (c *Client) GetUserPlaylist(userId int64, kind int64) (*TypicalResponse[*Playlist], error) {
+// Получение плейлиста по уникальному идентификатору.
+//
+// GET /users/{userId}/playlists/{kind}
+func (c Client) GetUserPlaylistById(userId int64, kind int64) (*schema.Playlist, error) {
 	var endpoint = genApiPath([]string{"users", i2s(userId), "playlists", i2s(kind)})
-
-	var data = &TypicalResponse[*Playlist]{}
+	var data = &schema.TypicalResponse[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Создать плейлист.
-func (c *Client) CreatePlaylist(name string, public bool) (*TypicalResponse[*Playlist], error) {
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", "create"})
+//
+// POST /users/{userId}/playlists/create
+func (c Client) CreatePlaylist(name string, vis schema.Visibility) (*schema.Playlist, error) {
+	var body = schema.CreatePlaylistRequestBody{
+		Title:      name,
+		Visibility: vis,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
 
-	var data = &TypicalResponse[*Playlist]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetFormData(formTitleVisibility(name, public)).Post(endpoint)
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", "create"})
+	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Переименовать плейлист.
-func (c *Client) RenamePlaylist(kind int64, newName string) (*TypicalResponse[*Playlist], error) {
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(kind), "name"})
+//
+// POST /users/{userId}/playlists/{kind}/name
+func (c Client) RenamePlaylist(pl *schema.Playlist, newName string) (*schema.Playlist, error) {
+	if pl == nil {
+		return nil, ErrNilPlaylist
+	}
+	var body = schema.RenamePlaylistRequestBody{
+		Value: newName,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
 
-	var data = &TypicalResponse[*Playlist]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetFormData(formValue(newName)).Post(endpoint)
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "name"})
+	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Удалить плейлист.
-func (c *Client) DeletePlaylist(kind int64) error {
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(kind), "delete"})
-
-	var data = &TypicalResponse[any]{}
+//
+// POST /users/{userId}/playlists/{kind}/delete
+func (c Client) DeletePlaylist(pl *schema.Playlist) error {
+	if pl == nil {
+		return ErrNilPlaylist
+	}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "delete"})
+	var data = &schema.TypicalResponse[any]{}
 	resp, err := c.self.R().SetError(data).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
 	return err
 }
 
 // Получить рекомендации на основе плейлиста.
 //
 // Только для плейлистов, созданных пользователем.
-func (c *Client) GetPlaylistRecommendations(kind int64) (*TypicalResponse[*PlaylistRecommendations], error) {
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(kind), "recommendations"})
-
-	var data = &TypicalResponse[*PlaylistRecommendations]{}
+//
+// Если в плейлисте нет треков, рекомендаций не будет.
+//
+// GET /users/{userId}/playlists/{kind}/recommendations
+func (c Client) GetPlaylistRecommendations(pl *schema.Playlist) (*schema.PlaylistRecommendations, error) {
+	if pl == nil {
+		return nil, ErrNilPlaylist
+	}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "recommendations"})
+	var data = &schema.TypicalResponse[*schema.PlaylistRecommendations]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Изменить видимость плейлиста.
 //
-// makePublic: true = сделать публичным, false = приватным.
-func (c *Client) ChangePlaylistVisibility(kind int64, public bool) (*TypicalResponse[*Playlist], error) {
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(kind), "visibility"})
+// POST /users/{userId}/playlists/{kind}/visibility
+func (c Client) ChangePlaylistVisibility(pl *schema.Playlist, vis schema.Visibility) (*schema.Playlist, error) {
+	if pl == nil {
+		return nil, ErrNilPlaylist
+	}
+	var body = schema.ChangePlaylistVisibilityRequestBody{
+		Value: vis,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
 
-	var data = &TypicalResponse[*Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "visibility"})
+	var data = &schema.TypicalResponse[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
-		SetFormData(formValue(visibilityToString(public))).Post(endpoint)
+		SetFormUrlValues(vals).Post(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
-
-// // Добавить треки в плейлист.
-// func (c *Client) AddPlaylistTracks(pl *Playlist, tr []*Track) (*TypicalResponse[*Playlist], error) {
-// 	if pl == nil {
-// 		return nil, errors.New("nil playlist")
-// 	}
-// 	if len(tr) == 0 {
-// 		return nil, errors.New("empty tracks")
-// 	}
-
-// 	var op = playlistChange{}
-// 	op.New(pl)
-// 	var diff = &playlistDiff{}
-// 	err := diff.NewInsert(pl, tr)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	op.AddDiff(diff)
-// 	form, err := op.GetForm()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "change"})
-// 	var data = &TypicalResponse[*Playlist]{}
-// 	resp, err := c.self.R().SetError(data).SetResult(data).
-// 		SetFormData(form).Post(endpoint)
-// 	if err == nil {
-// 		err = checkTypicalResponse(resp, data)
-// 	}
-
-// 	return data, err
-// }
-
-// // Удалить треки из плейлиста.
-// //
-// // from - позиция в плейлисте, откуда начать
-// //
-// // to - позиция в плейлисте, где закончить
-// func (c *Client) RemovePlaylistTracks(pl *Playlist, from int, to int) (*TypicalResponse[*Playlist], error) {
-// 	if pl == nil {
-// 		return nil, errors.New("nil playlist")
-// 	}
-
-// 	var op = playlistChange{}
-// 	op.New(pl)
-// 	var diff = &playlistDiff{}
-// 	if err := diff.NewDelete(pl, from, to); err != nil {
-// 		return nil, err
-// 	}
-// 	op.AddDiff(diff)
-// 	form, err := op.GetForm()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "change"})
-// 	var data = &TypicalResponse[*Playlist]{}
-// 	resp, err := c.self.R().SetError(data).SetResult(data).
-// 		SetFormData(form).Post(endpoint)
-// 	if err == nil {
-// 		err = checkTypicalResponse(resp, data)
-// 	}
-
-// 	return data, err
-// }

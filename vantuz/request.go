@@ -85,7 +85,21 @@ func (r *Request) SetResult(res any) *Request {
 }
 
 // application/x-www-form-urlencoded
-func (r *Request) SetFormData(data map[string]string) *Request {
+func (r *Request) SetFormUrlValues(data url.Values) *Request {
+	if data == nil {
+		return r
+	}
+
+	var encoded = data.Encode()
+	r.body = strings.NewReader(encoded)
+	r.setContentType("application/x-www-form-urlencoded")
+	r.setContentLength(len(encoded))
+
+	return r
+}
+
+// application/x-www-form-urlencoded
+func (r *Request) SetFormUrlMap(data map[string]string) *Request {
 	if data == nil {
 		return r
 	}
@@ -103,19 +117,9 @@ func (r *Request) SetFormData(data map[string]string) *Request {
 	return r
 }
 
-// Set request query params.
-func (r *Request) SetQueryParams(params map[string]string) *Request {
-	if params == nil {
-		return r
-	}
-	if r.params == nil {
-		r.params = make(url.Values)
-	}
-
-	for k, v := range params {
-		r.params.Set(k, v)
-	}
-
+// Set query params.
+func (r *Request) SetQueryParams(params url.Values) *Request {
+	r.params = params
 	return r
 }
 
@@ -166,20 +170,14 @@ func (r *Request) exec(method string, urld string) (resp *Response, err error) {
 		return nil, err
 	}
 
-	go func() {
-		r.cl.logger.log("==== Request: %v ====", req.URL)
-		for k, v := range req.Header {
-			r.cl.logger.log("%s: %s", k, strings.Join(v, ","))
-		}
-	}()
+	r.cl.logger.request(req)
 
 	client := &http.Client{}
 	hResp, err := client.Do(req)
-	r.cl.logger.log("==== Response: %v (%v) ====", req.URL, hResp.StatusCode)
 	if err != nil {
 		return
 	}
-
+	r.cl.logger.response(hResp)
 	if err = r.unmarshalResponse(hResp); err != nil {
 		return
 	}
@@ -201,7 +199,8 @@ func (r *Request) unmarshalResponse(resp *http.Response) error {
 		return err
 	}
 	defer resp.Body.Close()
-	r.cl.logger.log("Body: %s", string(body))
+
+	r.cl.logger.body(body)
 
 	if r.err != nil && isHttpError(resp.StatusCode) {
 		return json.Unmarshal(body, r.err)

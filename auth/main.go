@@ -1,4 +1,4 @@
-package goymauth
+package auth
 
 import (
 	"context"

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/goym/vantuz"
 )
 
@@ -24,17 +25,6 @@ func b2s(val bool) string {
 	return strconv.FormatBool(val)
 }
 
-// true = VisibilityPublic
-//
-// false = VisibilityPrivate
-func visibilityToString(public bool) string {
-	var visibility = VisibilityPrivate
-	if public {
-		visibility = VisibilityPublic
-	}
-	return visibility
-}
-
 // Пример:
 //
 // genApiPath([]string{"users", i2s(1234), "playlists", "list"})
@@ -45,7 +35,7 @@ func genApiPath(paths []string) string {
 		return ""
 	}
 
-	var base = ApiUrl
+	var base = schema.ApiUrl
 	for i := range paths {
 		base += "/" + paths[i]
 	}
@@ -71,30 +61,10 @@ func i64Join(data []int64) string {
 	return strings.Join(converted, ",")
 }
 
-// Например:
-//
-// val = map[int64]int64{29238706: 7019818, 29238706: 83063895}
-//
-// результат: "29238706:7019818,29238706:83063895"
-// func i64ColonJoin(data map[int64]int64) string {
-// 	if data == nil {
-// 		return ""
-// 	}
-
-// 	var pairs = []string{}
-// 	for id, albumId := range data {
-// 		var idStr = i2s(id)
-// 		var albumIdStr = i2s(albumId)
-// 		pairs = append(pairs, idStr+":"+albumIdStr)
-// 	}
-
-// 	return strings.Join(pairs, ",")
-// }
-
-// Проверить TypicalResponse на наличие ошибки (поле Error).
+// Проверить goymschema.schema.TypicalResponse на наличие ошибки (поле Error).
 //
 // Если ошибка есть, возвращает error с сообщением.
-func checkTypicalResponse[T any](resp *vantuz.Response, data *TypicalResponse[T]) error {
+func checkTypicalResponse[T any](resp *vantuz.Response, data *schema.TypicalResponse[T]) error {
 	if resp == nil {
 		return errors.New("nil response")
 	}

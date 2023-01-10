@@ -1,38 +1,58 @@
 package goym
 
+import "github.com/oklookat/goym/schema"
+
 // Найти.
 //
 // text - текст запроса
 //
 // page - страница. Первая страница начинается с нуля.
 //
-// _type - тип. Используйте константу SearchType_.
+// sType - тип поиска.
 //
 // Если eType будет не SearchType_All, то в результатах поиска будет отсутствовать поле Best.
 //
-// exact - не исправлять запрос, искать ровно то, что написано в query.
-func (c *Client) Search(text string, page uint32, _type string, nocorrect bool) (*TypicalResponse[Search], error) {
-	var endpoint = genApiPath([]string{"search"})
-	var query = searchQuery(text, page, _type, nocorrect)
+// noCorrect - исправить опечатки?
+//
+// GET /search
+func (c Client) Search(text string, page uint16, sType schema.SearchType, noCorrect bool) (*schema.Search, error) {
+	var query = schema.SearchQueryParams{
+		Text:      text,
+		Page:      page,
+		Type:      sType,
+		NoCorrect: noCorrect,
+	}
+	vals, err := schema.ParamsToValues(query)
+	if err != nil {
+		return nil, err
+	}
 
-	var data = &TypicalResponse[Search]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(query).Get(endpoint)
+	var endpoint = genApiPath([]string{"search"})
+	var data = &schema.TypicalResponse[*schema.Search]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }
 
 // Подсказать что-нибудь по поисковому запросу.
-func (c *Client) SearchSuggest(query string) (*TypicalResponse[Suggestions], error) {
-	var endpoint = genApiPath([]string{"search", "suggest"})
+//
+// GET /search/suggest
+func (c Client) SearchSuggest(part string) (*schema.Suggestions[any], error) {
+	var query = schema.SearchSuggestQueryParams{
+		Part: part,
+	}
+	vals, err := schema.ParamsToValues(query)
+	if err != nil {
+		return nil, err
+	}
 
-	var data = &TypicalResponse[Suggestions]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(searchSuggestQuery(query)).Get(endpoint)
+	var endpoint = genApiPath([]string{"search", "suggest"})
+	var data = &schema.TypicalResponse[*schema.Suggestions[any]]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
-
-	return data, err
+	return data.Result, err
 }

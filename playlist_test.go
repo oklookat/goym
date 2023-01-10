@@ -1,6 +1,7 @@
 package goym
 
 import (
+	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -16,40 +17,34 @@ func (s *PlaylistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s *PlaylistTestSuite) TestGetUserPlaylists() {
+func (s PlaylistTestSuite) TestGetUserPlaylists() {
 	_, err := s.cl.GetUserPlaylists(s.cl.UserId)
 	s.require.Nil(err)
 }
 
-// GetUserPlaylist()
 // CreatePlaylist()
+// GetUserPlaylistById()
 // RenamePlaylist()
 // DeletePlaylist()
 // ChangePlaylistVisibility()
 // AddTracksToPlaylist()
 // GetPlaylistRecommendations()
-func (s *PlaylistTestSuite) TestPlaylistCRUD() {
-	// CreatePlaylist
-	resp, err := s.cl.CreatePlaylist("goymtesting", false)
+func (s PlaylistTestSuite) TestPlaylistCRUD() {
+	pl, err := s.cl.CreatePlaylist("goymtesting", schema.VisibilityPublic)
 	s.require.Nil(err)
-	var pl = resp.Result
+	s.require.NotNil(pl.Kind)
 
-	// GetUserPlaylist
-	same, err := s.cl.GetUserPlaylist(s.cl.UserId, pl.Kind)
+	pl2, err := s.cl.GetUserPlaylistById(s.cl.UserId, pl.Kind)
 	s.require.Nil(err)
-	s.require.Equal(pl.Kind, same.Result.Kind)
+	s.require.Equal(pl.Kind, pl2.Kind)
 
-	// RenamePlaylist
-	resp, err = s.cl.RenamePlaylist(pl.Kind, "goymtesting (renamed)")
-	var renamed = resp.Result
+	pl3, err := s.cl.RenamePlaylist(pl2, "goymtesting (renamed)")
 	s.require.Nil(err)
-	s.require.Equal(pl.Kind, renamed.Kind)
+	s.require.Equal(pl2.Kind, pl3.Kind)
 
-	// ChangePlaylistVisibility
-	resp, err = s.cl.ChangePlaylistVisibility(renamed.Kind, true)
+	pl4, err := s.cl.ChangePlaylistVisibility(pl3, schema.VisibilityPrivate)
 	s.require.Nil(err)
-	var changed = resp.Result
-	s.require.Equal(pl.Kind, changed.Kind)
+	s.require.Equal(pl3.Kind, pl4.Kind)
 
 	// AddPlaylistTracks (add)
 	// tracksResp, err := s.cl.Search("dubstep", 0, SearchTypeTrack, false)
@@ -83,6 +78,6 @@ func (s *PlaylistTestSuite) TestPlaylistCRUD() {
 	// s.require.Equal(changed2.Kind, changed3.Kind)
 
 	// DeletePlaylist
-	err = s.cl.DeletePlaylist(changed.Kind)
+	err = s.cl.DeletePlaylist(pl4)
 	s.require.Nil(err)
 }

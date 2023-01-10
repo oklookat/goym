@@ -1,6 +1,7 @@
 package goym
 
 import (
+	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -16,38 +17,63 @@ func (s *AlbumTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s *AlbumTestSuite) TestGetAlbum() {
-	data, err := s.cl.GetAlbum(231541, false)
+func (s AlbumTestSuite) getAlbumId() int64 {
+	res, err := s.cl.Search("crystal castles iii", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
-
-	var title = data.Result.Title
-	s.require.Equal("Club Bizarre", title)
+	s.require.NotNil(res)
+	s.require.NotEmpty(res.Albums.Results)
+	return res.Albums.Results[0].ID
 }
 
-func (s *AlbumTestSuite) TestGetAlbumWithTracks() {
-	data, err := s.cl.GetAlbum(231541, true)
+func (s AlbumTestSuite) getAlbumIds() []int64 {
+	res, err := s.cl.Search("moby", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
-
-	var title = data.Result.Title
-	s.require.Equal("Club Bizarre", title)
-
-	s.require.NotEmpty(data.Result.Volumes)
+	s.require.NotNil(res)
+	s.require.NotEmpty(res.Albums.Results)
+	var ids = []int64{}
+	for i, al := range res.Albums.Results {
+		ids = append(ids, al.ID)
+		if i == 5 {
+			break
+		}
+	}
+	return ids
 }
 
-func (s *AlbumTestSuite) TestGetAlbums() {
-	data, err := s.cl.GetAlbums([]int64{1944241})
+func (s AlbumTestSuite) TestGetAlbumById() {
+	// without tracks
+	var id = s.getAlbumId()
+	data, err := s.cl.GetAlbumById(id, false)
 	s.require.Nil(err)
+	s.require.Positive(data.ID)
 
-	var title = data.Result[0].Title
-	s.require.Equal("Ocean Death", title)
+	// with tracks
+	data, err = s.cl.GetAlbumById(231541, true)
+	s.require.Nil(err)
+	s.require.Positive(data.ID)
+	s.require.NotEmpty(data.Volumes)
 }
 
-func (s *AlbumTestSuite) TestLikeAlbum() {
-	var err = s.cl.LikeAlbum(1944241)
+func (s AlbumTestSuite) TestGetAlbumsByIds() {
+	var ids = s.getAlbumIds()
+	albums, err := s.cl.GetAlbumsByIds(ids)
 	s.require.Nil(err)
+	s.require.NotEmpty(albums)
+	s.require.Positive(albums[0].ID)
 }
 
-func (s *AlbumTestSuite) TestUnlikeAlbum() {
-	var err = s.cl.UnlikeAlbum(1944241)
+func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
+	res, err := s.cl.Search("mujuice downshifting", 0, schema.SearchTypeAlbum, false)
+	s.require.Nil(err)
+	s.require.NotNil(res)
+	s.require.NotEmpty(res.Albums.Results)
+	var al = res.Albums.Results[0]
+
+	// like
+	err = s.cl.LikeAlbum(al)
+	s.require.Nil(err)
+
+	// unlike
+	err = s.cl.UnlikeAlbum(al)
 	s.require.Nil(err)
 }
