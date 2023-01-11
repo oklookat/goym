@@ -1,9 +1,18 @@
 package schema
 
+import (
+	"errors"
+	"net/url"
+
+	"github.com/google/go-querystring/query"
+)
+
 type Visibility string
 type SearchType string
 
 const (
+	errPrefix = "goym/schema: "
+
 	ApiUrl = "https://api.music.yandex.net"
 
 	VisibilityPrivate  Visibility = "private"
@@ -14,6 +23,12 @@ const (
 	SearchTypePodcast  SearchType = "podcast"
 	SearchTypePlaylist SearchType = "playlist"
 	SearchTypeAll      SearchType = "all"
+)
+
+var (
+	ErrNilTrack    = errors.New(errPrefix + "nil track")
+	ErrNilTracks   = errors.New(errPrefix + "nil tracks")
+	ErrNilPlaylist = errors.New(errPrefix + "nil playlist")
 )
 
 // Обычно ответ выглядит так.
@@ -47,4 +62,15 @@ type Error struct {
 
 	// example: Parameters requirements are not met.
 	Message string `json:"message"`
+}
+
+// Преобразовать struct (НЕ указатель на struct) в url.Values.
+//
+// Доступно для структур, название которых заканчивается на "Params" и "Body".
+//
+// Но не всегда. В некоторых структурах есть дополнительные методы. Читайте доки (c).
+//
+// После получения Values можно сделать Encode(), и отправить GET или POST (request body).
+func ParamsToValues(s any) (url.Values, error) {
+	return query.Values(s)
 }

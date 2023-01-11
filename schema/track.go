@@ -12,8 +12,10 @@ type Track struct {
 	// Например, при получении альбома с треками, ID будет string.
 	//
 	// int64 | string
-	ID     int64  `json:"-"`
-	RealId string `json:"realId"`
+	ID int64 `json:"-"`
+
+	// Обычно равен ID.
+	RealID string `json:"realId"`
 
 	// Название.
 	Title string `json:"title"`
@@ -100,7 +102,7 @@ type R128 struct {
 }
 
 type TrackItem struct {
-	Id            int64  `json:"id"`
+	ID            int64  `json:"id"`
 	Track         *Track `json:"track"`
 	Timestamp     string `json:"timestamp"`
 	OriginalIndex int    `json:"originalIndex"`
@@ -110,7 +112,7 @@ type TrackItem struct {
 // Дополнительная информация о треке.
 type Supplement struct {
 	// Уникальный идентификатор дополнительной информации.
-	Id     string           `json:"id"`
+	ID     string           `json:"id"`
 	Lyrics *Lyrics          `json:"lyrics"`
 	Videos *VideoSupplement `json:"videos"`
 
@@ -124,7 +126,7 @@ type Supplement struct {
 // Текст трека.
 type Lyrics struct {
 	// Уникальный идентификатор текста трека.
-	Id int64 `json:"id"`
+	ID int64 `json:"id"`
 
 	// Первые строки текст песни.
 	Lyrics string `json:"lyrics"`
@@ -168,7 +170,7 @@ type SimilarTracks struct {
 // Укороченная версия трека с неполными данными.
 type TrackShort struct {
 	// Уникальный идентификатор трека.
-	Id string `json:"id"`
+	ID string `json:"id"`
 
 	// Уникальный идентификатор альбома.
 	AlbumId string `json:"albumId"`

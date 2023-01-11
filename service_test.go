@@ -1,23 +1,27 @@
 package goym
 
-import "testing"
+import (
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+)
 
-func TestI2s(t *testing.T) {
+type ServiceTestSuite struct {
+	suite.Suite
+	require *require.Assertions
+}
+
+func (s *ServiceTestSuite) SetupSuite() {
+	s.require = s.Require()
+}
+
+func (s *ServiceTestSuite) TestI2s() {
 	var i int = 1234
-	var i64 int64 = 531135531
 	var i32 int32 = 15135135
-	var ui32 uint32 = 1551335113
-
-	if res := i2s(i); res != "1234" {
-		t.Fatalf("expected: %v, got: %v", i, res)
-	}
-	if res := i2s(i64); res != "531135531" {
-		t.Fatalf("expected: %v, got: %v", i, res)
-	}
-	if res := i2s(i32); res != "15135135" {
-		t.Fatalf("expected: %v, got: %v", i, res)
-	}
-	if res := i2s(ui32); res != "1551335113" {
-		t.Fatalf("expected: %v, got: %v", i, res)
-	}
+	var i64 int64 = 531135531
+	res := i2s(i)
+	s.require.Equal(res, "1234")
+	res = i2s(i32)
+	s.require.Equal(res, "15135135")
+	res = i2s(i64)
+	s.require.Equal(res, "531135531")
 }

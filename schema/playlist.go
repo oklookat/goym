@@ -1,21 +1,27 @@
 package schema
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type Playlist struct {
 	// Владелец плейлиста.
 	Owner *Owner `json:"owner"`
 
-	// UUID.
+	// ?
 	PlaylistUuid string `json:"playlistUuid"`
 
-	// ???
-	Uid int64 `json:"uid"`
+	// ?
+	UID int64 `json:"uid"`
 
 	// Обычно используется для операций над плейлистом.
 	Kind int64 `json:"kind"`
 
-	// Меняется плейлист - меняется revision (+1).
+	// Что-то типа версии плейлиста.
+	// Если плейлист изменился: добавили, удалили треки,
+	// то Revision прибавляется на 1.
 	Revision int `json:"revision"`
 
 	// Описание.
@@ -46,6 +52,8 @@ type Playlist struct {
 	Visibility string `json:"visibility"`
 
 	// Треки.
+	//
+	// Может быть nil. Зависит от метода, которым получен плейлист.
 	Tracks []*TrackItem `json:"tracks"`
 }
 
@@ -59,7 +67,7 @@ type PlaylistRecommendations struct {
 
 type PlaylistId struct {
 	// Уникальный идентификатор пользователя владеющим плейлистом.
-	Uid int64 `json:"uid"`
+	UID int64 `json:"uid"`
 
 	// Уникальный идентификатор плейлиста.
 	Kind int64 `json:"kind"`
@@ -90,13 +98,94 @@ type RenamePlaylistRequestBody struct {
 	Value string `url:"value"`
 }
 
+// Доступны методы Add() и Delete()
+//
 // POST /users/{userId}/playlists/{kind}/change-relative
-// TODO
-type AddTracksToPlaylistRequestBody struct {
-	// Используй '{"diff":{"op":"insert","at":0,"tracks":[{"id":"20599729","albumId":"2347459"}]}}' - для добавления,
-	// {"diff":{"op":"delete","from":0,"to":1,"tracks":[{"id":"20599729","albumId":"2347459"}]}} - для удаления треков
-	Diff     string `url:"diff"`
+//
+// POST /users/{userId}/playlists/{kind}/change
+type AddDeleteTracksToPlaylistRequestBody struct {
+	// Playlist difference. Операция над плейлистом.
+	Diff string `url:"diff"`
+
+	// см. Playlist.Revision.
 	Revision string `url:"revision"`
+}
+
+// Добавить треки в плейлист.
+func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []*Track) error {
+	if len(tracks) == 0 {
+		return ErrNilTracks
+	}
+	if err := a.fillBase(pl); err != nil {
+		return err
+	}
+
+	var trackObjs = []string{}
+	for _, t := range tracks {
+		if len(t.Albums) == 0 {
+			return fmt.Errorf(errPrefix+"track (id %d) without albums", t.ID)
+		}
+		trackObjs = append(trackObjs, a.getTrackObj(t.ID, t.Albums[0].ID))
+	}
+
+	var at = strconv.Itoa(pl.TrackCount)      // добавить треки в конец плейлиста
+	tracksObj := strings.Join(trackObjs, ",") // trackobj,trackobj,trackobj
+
+	// {"diff":{"op":"insert","at":144,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
+	a.Diff = fmt.Sprintf(`{"diff":{"op":"insert","at":%s,"tracks":[%s]}}`, at, tracksObj)
+	return nil
+}
+
+// Удалить трек из плейлиста.
+//
+// track - TrackItem из Playlist.Tracks
+func (a *AddDeleteTracksToPlaylistRequestBody) Delete(pl *Playlist, track *TrackItem) error {
+	if track == nil {
+		return ErrNilTrack
+	}
+	if err := a.fillBase(pl); err != nil {
+		return err
+	}
+	var trackObj = ""
+	var from = 0
+	var to = 0
+
+	for _, t := range pl.Tracks {
+		if t.Track == nil {
+			return ErrNilTrack
+		}
+		if len(t.Track.Albums) == 0 {
+			return fmt.Errorf(errPrefix+"track (id %d) without albums", t.ID)
+		}
+		if track.ID != t.ID {
+			continue
+		}
+		from = track.OriginalIndex
+		to = from + 1
+		trackObj = a.getTrackObj(t.Track.ID, t.Track.Albums[0].ID)
+	}
+
+	// {"diff":{"op":"delete","from":0,"to":1,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
+	a.Diff = fmt.Sprintf(`{"diff":{"op":"delete","from":%d,"to":%d,"tracks":[%s]}}`, from, to, trackObj)
+	return nil
+}
+
+func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
+	if pl == nil {
+		return ErrNilPlaylist
+	}
+	a.Revision = strconv.Itoa(pl.Revision)
+	return nil
+}
+
+// {"id":"1234","albumId":"1234"}
+func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id int64, albumId int64) string {
+	var idStr = strconv.FormatInt(id, 10)
+	var obj = `{"id":`        // {"id":
+	obj += `"` + idStr + `",` // {"id":"1234",
+	var albumIdStr = strconv.FormatInt(albumId, 10)
+	obj += `"albumId":"` + albumIdStr + `"}` // {"id":"1234","albumId":"1234"}
+	return obj
 }
 
 // POST /users/{userId}/playlists/{kind}/visibility

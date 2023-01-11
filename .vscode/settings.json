@@ -7,4 +7,5 @@
         "template": ""
     },
     "go.testFlags": ["-v", "-count=1"], // -count=1 disables test cache
+	"go.testTimeout":"600s" // 10 minutes
 }

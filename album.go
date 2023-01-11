@@ -1,7 +1,7 @@
 package goym
 
 import (
-	"errors"
+	"context"
 
 	"github.com/oklookat/goym/schema"
 )
@@ -11,9 +11,10 @@ import (
 // withTracks - получить альбом с треками?
 //
 // Если да, то треки будут в Volumes и Duplicates.
-//
-// GET /albums/{albumId} | /albums/{albumId}/with-tracks
-func (c Client) GetAlbumById(id int64, withTracks bool) (*schema.Album, error) {
+func (c Client) GetAlbumById(ctx context.Context, id int64, withTracks bool) (*schema.Album, error) {
+	// GET /albums/{albumId}
+	// ||
+	// GET /albums/{albumId}/with-tracks
 	var endP = []string{"albums", i2s(id)}
 	if withTracks {
 		endP = append(endP, "with-tracks")
@@ -21,7 +22,7 @@ func (c Client) GetAlbumById(id int64, withTracks bool) (*schema.Album, error) {
 	var endpoint = genApiPath(endP)
 
 	var data = &schema.TypicalResponse[*schema.Album]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).Get(endpoint)
+	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
@@ -30,11 +31,10 @@ func (c Client) GetAlbumById(id int64, withTracks bool) (*schema.Album, error) {
 }
 
 // Получить альбомы по id.
-//
-// POST /albums
-func (c Client) GetAlbumsByIds(albumIds []int64) ([]*schema.Album, error) {
+func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []int64) ([]*schema.Album, error) {
+	// POST /albums
 	if albumIds == nil {
-		return nil, errors.New("nil albumIds")
+		return nil, ErrNilAlbumIds
 	}
 
 	var body = schema.GetAlbumsByIdsRequestBody{
@@ -48,7 +48,7 @@ func (c Client) GetAlbumsByIds(albumIds []int64) ([]*schema.Album, error) {
 	var endpoint = genApiPath([]string{"albums"})
 	var data = &schema.TypicalResponse[[]*schema.Album]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
-		SetFormUrlValues(vals).Post(endpoint)
+		SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
@@ -57,9 +57,8 @@ func (c Client) GetAlbumsByIds(albumIds []int64) ([]*schema.Album, error) {
 }
 
 // Лайкнуть альбом.
-//
-// POST /users/{userId}/likes/albums/add
-func (c Client) LikeAlbum(al *schema.Album) error {
+func (c Client) LikeAlbum(ctx context.Context, al *schema.Album) error {
+	// POST /users/{userId}/likes/albums/add
 	if al == nil {
 		return ErrNilAlbum
 	}
@@ -76,7 +75,7 @@ func (c Client) LikeAlbum(al *schema.Album) error {
 	var data = &schema.TypicalResponse[any]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).
-		Post(endpoint)
+		Post(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
@@ -85,16 +84,15 @@ func (c Client) LikeAlbum(al *schema.Album) error {
 }
 
 // Убрать лайк с альбома.
-//
-// POST /users/{userId}/likes/albums/{albumId}/remove
-func (c Client) UnlikeAlbum(al *schema.Album) error {
+func (c Client) UnlikeAlbum(ctx context.Context, al *schema.Album) error {
+	// POST /users/{userId}/likes/albums/{albumId}/remove
 	if al == nil {
 		return ErrNilAlbum
 	}
 
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", i2s(al.ID), "remove"})
 	var data = &schema.TypicalResponse[any]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).Post(endpoint)
+	resp, err := c.self.R().SetError(data).SetResult(data).Post(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}

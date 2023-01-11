@@ -61,13 +61,13 @@ type Tokens struct {
 }
 
 // Приложение начинает периодически запрашивать OAuth-токен, передавая device_code.
-func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) error {
+func (t Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) error {
 	if ctx.Err() != nil {
 		return ErrCancelled
 	}
 
 	if codes == nil {
-		return errors.New("nil codes")
+		return ErrNilCodes
 	}
 
 	var form = map[string]string{
@@ -102,14 +102,14 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 	for {
 		select {
 		case <-tokensExpired.C:
-			return errors.New("tokens expired")
+			return ErrTokensExpired
 		case <-requestSleep.C:
 
 			if ctx.Err() != nil {
 				return ErrCancelled
 			}
 
-			resp, err := request.Post(token_endpoint)
+			resp, err := request.Post(ctx, token_endpoint)
 			if err != nil {
 				return err
 			}
@@ -120,18 +120,18 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 			}
 
 			if len(tokensErr.Error) < 1 {
-				return errors.New("statusCode != 200, but tokensErr is empty")
+				return ErrBrokenTokensErr
 			}
 
 			switch tokensErr.Error {
 			default:
-				return errors.New(tokensErr.Error)
+				return errors.New(errPrefix + tokensErr.Error)
 			case errAuthorizationPending:
 				continue
 			case errInvalidClient:
-				return errors.New("broken client_id or client_secret")
+				return ErrBrokenClient
 			case errInvalidGrant:
-				return errors.New("incorrect or expired confirmation code")
+				return ErrInvalidGrant
 			}
 		}
 	}
@@ -142,9 +142,9 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 // Если обновление не требуется, возвращает nil.
 //
 // https://yandex.ru/dev/id/doc/dg/oauth/reference/refresh-client.html
-func (t *Tokens) Refresh() (*Tokens, error) {
+func (t Tokens) Refresh(ctx context.Context) (*Tokens, error) {
 	if t.RefreshAfter < 1 {
-		return nil, errors.New("empty RefreshAfter (broken token?)")
+		return nil, ErrTokensRefreshAfter
 	}
 
 	if !t.isNeedToRefresh() {
@@ -168,13 +168,13 @@ func (t *Tokens) Refresh() (*Tokens, error) {
 		SetFormUrlMap(form).
 		SetResult(refreshed).SetError(tokenErr)
 
-	resp, err := request.Post(token_endpoint)
+	resp, err := request.Post(ctx, token_endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.IsError() {
-		return nil, errors.New(tokenErr.Error)
+		return nil, errors.New(errPrefix + tokenErr.Error)
 	}
 
 	refreshed.setRefreshAfter()
@@ -194,7 +194,7 @@ func (t *Tokens) setRefreshAfter() {
 }
 
 // Сравнивает текущую дату и RefreshAfter.
-func (t *Tokens) isNeedToRefresh() bool {
+func (t Tokens) isNeedToRefresh() bool {
 	var now = time.Now().Unix()
 	return now > t.RefreshAfter
 }

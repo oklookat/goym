@@ -1,6 +1,7 @@
 package vantuz
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,7 @@ func TestRequestRateLimit(t *testing.T) {
 
 	var cl = C().EnableDevMode()
 	for i := 0; i < expected; i++ {
-		_, err := cl.R().Get(srv.URL)
+		_, err := cl.R().Get(context.Background(), srv.URL)
 		if err != nil {
 			t.Fatal(err)
 		}

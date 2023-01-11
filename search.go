@@ -1,25 +1,31 @@
 package goym
 
-import "github.com/oklookat/goym/schema"
+import (
+	"context"
 
-// Найти.
+	"github.com/oklookat/goym/schema"
+)
+
+// Поиск.
 //
-// text - текст запроса
+// text - текст запроса.
 //
-// page - страница. Первая страница начинается с нуля.
+// page - страница (первая страница начинается с нуля).
 //
-// sType - тип поиска.
+// what - тип поиска.
 //
-// Если eType будет не SearchType_All, то в результатах поиска будет отсутствовать поле Best.
+// Если тип поиска не SearchTypeAll - поле Bests будет nil.
+//
+// Например: если тип поиска будет "artist", то
+// поля best, playlists, и подобные, будут nil (кроме поля Artists).
 //
 // noCorrect - исправить опечатки?
-//
-// GET /search
-func (c Client) Search(text string, page uint16, sType schema.SearchType, noCorrect bool) (*schema.Search, error) {
+func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (*schema.Search, error) {
+	// GET /search
 	var query = schema.SearchQueryParams{
 		Text:      text,
 		Page:      page,
-		Type:      sType,
+		Type:      what,
 		NoCorrect: noCorrect,
 	}
 	vals, err := schema.ParamsToValues(query)
@@ -29,7 +35,7 @@ func (c Client) Search(text string, page uint16, sType schema.SearchType, noCorr
 
 	var endpoint = genApiPath([]string{"search"})
 	var data = &schema.TypicalResponse[*schema.Search]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(endpoint)
+	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}
@@ -38,8 +44,9 @@ func (c Client) Search(text string, page uint16, sType schema.SearchType, noCorr
 
 // Подсказать что-нибудь по поисковому запросу.
 //
-// GET /search/suggest
-func (c Client) SearchSuggest(part string) (*schema.Suggestions[any], error) {
+// например: SearchSuggest("emine")
+func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggestions[any], error) {
+	// GET /search/suggest
 	var query = schema.SearchSuggestQueryParams{
 		Part: part,
 	}
@@ -50,7 +57,7 @@ func (c Client) SearchSuggest(part string) (*schema.Suggestions[any], error) {
 
 	var endpoint = genApiPath([]string{"search", "suggest"})
 	var data = &schema.TypicalResponse[*schema.Suggestions[any]]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(endpoint)
+	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}

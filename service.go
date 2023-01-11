@@ -1,28 +1,21 @@
 package goym
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/goym/vantuz"
 )
 
 // int в строку (десятичная система).
-func i2s[T int | int64 | int32 | uint32](val T) string {
-	return fmt.Sprintf("%d", val)
+func i2s[T int | int64 | int32](val T) string {
+	return strconv.FormatInt(int64(val), 10)
 }
 
 // строку в int64 (десятичная система).
 func s2i64(val string) (int64, error) {
 	return strconv.ParseInt(val, 10, 64)
-}
-
-// bool в строку.
-func b2s(val bool) string {
-	return strconv.FormatBool(val)
 }
 
 // Пример:
@@ -43,39 +36,21 @@ func genApiPath(paths []string) string {
 	return base
 }
 
-// Например:
-//
-// val = []int64{7019818,29238706,83063895}
-//
-// результат: "7019818,29238706,83063895"
-func i64Join(data []int64) string {
-	if data == nil {
-		return ""
-	}
-
-	var converted = make([]string, len(data))
-	for i := range data {
-		converted[i] = i2s(data[i])
-	}
-
-	return strings.Join(converted, ",")
-}
-
-// Проверить goymschema.schema.TypicalResponse на наличие ошибки (поле Error).
+// Проверить TypicalResponse на наличие ошибки (поле Error).
 //
 // Если ошибка есть, возвращает error с сообщением.
 func checkTypicalResponse[T any](resp *vantuz.Response, data *schema.TypicalResponse[T]) error {
 	if resp == nil {
-		return errors.New("nil response")
+		return ErrNilResponse
 	}
 	if data == nil {
-		return errors.New("nil data")
+		return ErrNilTypicalResponse
 	}
 	if resp.IsSuccess() {
 		return nil
 	}
 	if data.Error == nil {
-		return errors.New("nil data.Error")
+		return ErrNilTypicalResponseError
 	}
-	return fmt.Errorf("%v: %v", data.Error.Name, data.Error.Message)
+	return fmt.Errorf(errPrefix+"%v: %v", data.Error.Name, data.Error.Message)
 }

@@ -8,7 +8,7 @@ type Status struct {
 // Настройки пользователя.
 type AccountSettings struct {
 	// ID.
-	Uid int64 `json:"uid" url:"-"`
+	UID int64 `json:"uid" url:"-"`
 
 	// Включен ли скробблинг last.fm?
 	LastFmScrobblingEnabled   bool `json:"lastFmScrobblingEnabled" url:"lastFmScrobblingEnabled,omitempty"`
@@ -91,7 +91,7 @@ type Subscription struct {
 // Владелец. Владелец плейлиста, например.
 type Owner struct {
 	// id.
-	Uid int64 `json:"uid"`
+	UID int64 `json:"uid"`
 
 	// Логин.
 	Login string `json:"login"`

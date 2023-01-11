@@ -1,6 +1,8 @@
 package goym
 
 import (
+	"context"
+
 	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -17,9 +19,11 @@ func (s *PlaylistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s PlaylistTestSuite) TestGetUserPlaylists() {
-	_, err := s.cl.GetUserPlaylists(s.cl.UserId)
+func (s PlaylistTestSuite) TestGetMyPlaylists() {
+	pls, err := s.cl.GetMyPlaylists(context.Background())
 	s.require.Nil(err)
+	s.require.NotEmpty(pls)
+	s.require.Positive(pls[0].Kind)
 }
 
 // CreatePlaylist()
@@ -28,56 +32,66 @@ func (s PlaylistTestSuite) TestGetUserPlaylists() {
 // DeletePlaylist()
 // ChangePlaylistVisibility()
 // AddTracksToPlaylist()
+// DeleteTrackFromPlaylist()
 // GetPlaylistRecommendations()
 func (s PlaylistTestSuite) TestPlaylistCRUD() {
-	pl, err := s.cl.CreatePlaylist("goymtesting", schema.VisibilityPublic)
+	var ctx = context.Background()
+
+	pl, err := s.cl.CreatePlaylist(ctx, "goymtesting", schema.VisibilityPublic)
 	s.require.Nil(err)
 	s.require.NotNil(pl.Kind)
 
-	pl2, err := s.cl.GetUserPlaylistById(s.cl.UserId, pl.Kind)
+	pl2, err := s.cl.GetMyPlaylistByKind(ctx, pl.Kind)
 	s.require.Nil(err)
 	s.require.Equal(pl.Kind, pl2.Kind)
 
-	pl3, err := s.cl.RenamePlaylist(pl2, "goymtesting (renamed)")
+	pl3, err := s.cl.RenamePlaylist(ctx, pl2, "goymtesting (renamed)")
 	s.require.Nil(err)
 	s.require.Equal(pl2.Kind, pl3.Kind)
 
-	pl4, err := s.cl.ChangePlaylistVisibility(pl3, schema.VisibilityPrivate)
+	pl4, err := s.cl.ChangePlaylistVisibility(ctx, pl3, schema.VisibilityPrivate)
 	s.require.Nil(err)
 	s.require.Equal(pl3.Kind, pl4.Kind)
 
-	// AddPlaylistTracks (add)
-	// tracksResp, err := s.cl.Search("dubstep", 0, SearchTypeTrack, false)
-	// s.require.Nil(err)
-	// s.require.NotNil(tracksResp.Result.Tracks)
-	// s.require.NotEmpty(tracksResp.Result.Tracks.Results)
-	// var tracks = tracksResp.Result.Tracks.Results
-	// var tracksLittle = []*Track{}
-	// for i := range tracks {
-	// 	tracksLittle = append(tracksLittle, tracks[i])
-	// 	if len(tracksLittle) == 10 {
-	// 		break
-	// 	}
-	// }
-	// resp, err = s.cl.AddPlaylistTracks(pl, tracksLittle)
-	// s.require.Nil(err)
-	// var changed2 = resp.Result
-	// s.require.Equal(changed.Kind, changed2.Kind)
+	// AddTracksToPlaylist
+	tracksResp, err := s.cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
+	s.require.Nil(err)
+	s.require.NotEmpty(tracksResp.Tracks)
+	var tracks = tracksResp.Tracks.Results
+	// 10 tracks
+	var tracksLittle = []*schema.Track{}
+	for i := range tracks {
+		tracksLittle = append(tracksLittle, tracks[i])
+		if len(tracksLittle) == 10 {
+			break
+		}
+	}
+	pl5, err := s.cl.AddTracksToPlaylist(ctx, pl, tracksLittle)
+	s.require.Nil(err)
+	s.require.Equal(pl4.Kind, pl5.Kind)
+	s.require.Greater(pl5.Revision, pl4.Revision)
+	// get with tracks
+	pl5, err = s.cl.GetMyPlaylistByKind(ctx, pl5.Kind)
+	s.require.Nil(err)
 
 	// GetPlaylistRecommendations
-	// recsResp, err := s.cl.GetPlaylistRecommendations(changed2.Kind)
-	// s.require.Nil(err)
-	// s.require.NotEmpty(recsResp.Result.Tracks)
-	// tracks = recsResp.Result.Tracks
-	// s.require.NotEmpty(tracks[0].Title)
+	recs, err := s.cl.GetPlaylistRecommendations(ctx, pl5)
+	s.require.Nil(err)
+	s.require.NotEmpty(recs.Tracks)
+	s.require.Positive(recs.Tracks[0].ID)
 
-	// // RemovePlaylistTracks (remove)
-	// resp, err = s.cl.RemovePlaylistTracks(changed2, 1, 8)
-	// s.require.Nil(err)
-	// var changed3 = resp.Result
-	// s.require.Equal(changed2.Kind, changed3.Kind)
+	// DeleteTrackFromPlaylist (remove)
+	var trackToDelete = pl5.Tracks[0]
+	pl6, err := s.cl.DeleteTrackFromPlaylist(ctx, pl5, trackToDelete)
+	s.require.Nil(err)
+	s.require.Equal(pl5.Kind, pl6.Kind)
+	s.require.Greater(pl6.Revision, pl5.Revision)
+	// is track actually removed?
+	for _, ti := range pl6.Tracks {
+		s.require.NotEqual(ti.Track.ID, trackToDelete.ID)
+	}
 
 	// DeletePlaylist
-	err = s.cl.DeletePlaylist(pl4)
+	err = s.cl.DeletePlaylist(ctx, pl6)
 	s.require.Nil(err)
 }

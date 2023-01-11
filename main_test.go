@@ -10,6 +10,20 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func TestAll(t *testing.T) {
+	TestAccount(t)
+	TestAlbum(t)
+	TestArtist(t)
+	TestPlaylist(t)
+	TestSearch(t)
+	TestTrack(t)
+	TestService(t)
+}
+
+func TestAccount(t *testing.T) {
+	suite.Run(t, &AccountTestSuite{})
+}
+
 func TestAlbum(t *testing.T) {
 	suite.Run(t, &AlbumTestSuite{})
 }
@@ -28,6 +42,10 @@ func TestSearch(t *testing.T) {
 
 func TestTrack(t *testing.T) {
 	suite.Run(t, &TrackTestSuite{})
+}
+
+func TestService(t *testing.T) {
+	suite.Run(t, &ServiceTestSuite{})
 }
 
 // Получить клиент для запросов к API.

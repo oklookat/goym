@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/oklookat/goym/vantuz"
@@ -71,27 +70,29 @@ func (c *confirmationCodes) New(login string) (err error) {
 }
 
 // Отправить запрос.
-func (c *confirmationCodes) Send(ctx context.Context) (*confirmationCodesResponse, error) {
+func (c confirmationCodes) Send(ctx context.Context) (*confirmationCodesResponse, error) {
 	if !c.isNewCalled {
-		return nil, errors.New("you must call New() first")
+		return nil, ErrCallNew
 	}
 
 	var codes = &confirmationCodesResponse{}
+	var tokensErr = &tokensError{}
 	var request = vantuz.C().R().
 		SetFormUrlMap(c.form).
-		SetResult(codes)
+		SetResult(codes).
+		SetError(tokensErr)
 
 	if ctx.Err() != nil {
 		return nil, ErrCancelled
 	}
 
-	resp, err := request.Post(code_endpoint)
+	resp, err := request.Post(ctx, code_endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	if !resp.IsSuccess() {
-		err = fmt.Errorf("%+v", resp.Error())
+		err = fmt.Errorf(errPrefix+"confirmCodes (%s)", tokensErr.Error)
 	}
 
 	return codes, err

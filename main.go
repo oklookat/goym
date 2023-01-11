@@ -1,27 +1,41 @@
 package goym
 
 import (
+	"context"
 	"errors"
 
 	"github.com/oklookat/goym/auth"
 	"github.com/oklookat/goym/vantuz"
 )
 
+const (
+	errPrefix      = "goym: "
+	errNotProvided = " not provided"
+)
+
 var (
-	ErrNilAlbum    = errors.New("nil album")
-	ErrNilArtist   = errors.New("nil artist")
-	ErrNilPlaylist = errors.New("nil playlist")
-	ErrNilTracks   = errors.New("nil tracks")
-	ErrNilTrack    = errors.New("nil track")
-	ErrNilTrackIds = errors.New("nil trackIds")
+	ErrNilTokens   = errors.New(errPrefix + "tokens" + errNotProvided)
+	ErrNilAlbum    = errors.New(errPrefix + "album" + errNotProvided)
+	ErrNilArtist   = errors.New(errPrefix + "artist" + errNotProvided)
+	ErrNilPlaylist = errors.New(errPrefix + "playlist" + errNotProvided)
+	ErrNilTracks   = errors.New(errPrefix + "tracks" + errNotProvided)
+	ErrNilTrack    = errors.New(errPrefix + "track" + errNotProvided)
+	ErrNilTrackIds = errors.New(errPrefix + "track ids" + errNotProvided)
+	ErrNilAlbumIds = errors.New(errPrefix + "album ids" + errNotProvided)
+	//
+	ErrNilResponse             = errors.New(errPrefix + "nil http.response (dev error?)")
+	ErrNilTypicalResponse      = errors.New(errPrefix + "nil TypicalResponse (dev error?)")
+	ErrNilTypicalResponseError = errors.New(errPrefix + "nil TypicalResponse.Error (API changed?)")
+	ErrNilStatus               = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
+	ErrNilAccount              = errors.New(errPrefix + "nil Status.Account (API changed?)")
 )
 
 // Получить Client для запросов к API.
 //
-// Получить tokens можно войдя в аккаунт, используя пакет goymauth.
+// Получить tokens можно войдя в аккаунт, используя пакет auth.
 func New(tokens *auth.Tokens) (*Client, error) {
 	if tokens == nil {
-		return nil, errors.New("nil tokens")
+		return nil, ErrNilTokens
 	}
 
 	var vCl = vantuz.C().
@@ -34,30 +48,34 @@ func New(tokens *auth.Tokens) (*Client, error) {
 	}
 
 	// get uid
-	resp, err := cl.GetAccountStatus()
+	status, err := cl.GetAccountStatus(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	if resp == nil {
-		return nil, errors.New("nil response")
+	if status == nil {
+		return nil, ErrNilStatus
 	}
 
-	if resp.Account == nil {
-		return nil, errors.New("nil account")
+	if status.Account == nil {
+		return nil, ErrNilAccount
 	}
 
-	cl.UserId = resp.Account.UID
+	cl.UserId = status.Account.UID
 	cl.userId = i2s(cl.UserId)
 	return cl, err
 }
 
 // Клиент для запросов к API.
 type Client struct {
+	// ID текущего пользователя.
 	UserId int64
 
 	// Для создания эндпоинтов.
+	// Чтоб не конвертировать по 100 раз UserId.
 	userId string
-	self   *vantuz.Client
+
+	// Отправляет запросы.
+	self *vantuz.Client
 }
 
 // Включить вывод HTTP запросов в консоль.
