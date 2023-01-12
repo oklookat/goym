@@ -86,3 +86,10 @@ func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
 	err = s.cl.UnlikeAlbum(ctx, al)
 	s.require.Nil(err)
 }
+
+func (s AlbumTestSuite) TestGetLikedAlbums() {
+	albums, err := s.cl.GetLikedAlbums(context.Background())
+	s.require.Nil(err)
+	s.require.NotEmpty(albums)
+	s.require.Positive(albums[0].ID)
+}

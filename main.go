@@ -22,6 +22,7 @@ var (
 	ErrNilTrack    = errors.New(errPrefix + "track" + errNotProvided)
 	ErrNilTrackIds = errors.New(errPrefix + "track ids" + errNotProvided)
 	ErrNilAlbumIds = errors.New(errPrefix + "album ids" + errNotProvided)
+	ErrNilUidKind  = errors.New(errPrefix + "uid-kind map" + errNotProvided)
 	//
 	ErrNilResponse             = errors.New(errPrefix + "nil http.response (dev error?)")
 	ErrNilTypicalResponse      = errors.New(errPrefix + "nil TypicalResponse (dev error?)")

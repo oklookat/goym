@@ -2,7 +2,7 @@ package schema
 
 import (
 	"encoding/json"
-	"strconv"
+	"time"
 )
 
 // Трек.
@@ -20,75 +20,82 @@ type Track struct {
 	// Название.
 	Title string `json:"title"`
 
-	// OWN.
-	TrackSource string `json:"trackSource"`
-
 	// Лейбл.
-	Major                    *Label `json:"major"`
-	Available                bool   `json:"available"`
-	AvailableForPremiumUsers bool   `json:"availableForPremiumUsers"`
+	Major *Label `json:"major"`
+
+	Available bool `json:"available"`
+
+	AvailableForPremiumUsers bool `json:"availableForPremiumUsers"`
 
 	// (?) Трек могут послушать даже те, кто без подписки, или не вошел в аккаунт?
 	AvailableFullWithoutPermission bool `json:"availableFullWithoutPermission"`
 
+	// Например: ["bookmate"].
+	AvailableForOptions []string `json:"availableForOptions"`
+
+	StorageDir string `json:"storageDir"`
+
 	// Длительность в миллисекундах.
 	DurationMs int64 `json:"durationMs"`
 
-	StorageDir        string    `json:"storageDir"`
 	FileSize          int64     `json:"fileSize"`
 	R128              *R128     `json:"r128"`
 	PreviewDurationMs int64     `json:"previewDurationMs"`
 	Artists           []*Artist `json:"artists"`
 	Albums            []*Album  `json:"albums"`
-	CoverUri          string    `json:"coverUri"`
-	OgImage           string    `json:"ogImage"`
+
+	// URI обложки.
+	CoverUri string `json:"coverUri"`
+
+	// Ссылка на превью Open Graph.
+	OgImage string `json:"ogImage"`
 
 	// Доступен ли текст трека.
 	LyricsAvailable bool `json:"lyricsAvailable"`
 
 	Type             string `json:"type"`
 	RememberPosition bool   `json:"rememberPosition"`
+	TrackSharingFlag string `json:"trackSharingFlag"`
+	LyricsInfo       struct {
+		HasAvailableSyncLyrics bool `json:"hasAvailableSyncLyrics"`
+		HasAvailableTextLyrics bool `json:"hasAvailableTextLyrics"`
+	} `json:"lyricsInfo"`
+	// OWN.
+	TrackSource    string `json:"trackSource"`
+	AvailableAsRbt bool   `json:"availableAsRbt"`
+	// Трек 18+?
+	Explicit bool     `json:"explicit"`
+	Regions  []string `json:"regions"`
+	Version  string   `json:"version,omitempty"`
 }
 
-// Разбираемся с ID трека.
-func (t *Track) UnmarshalJSON(data []byte) error {
-	// чтобы избежать stack overflow, делаем alias на Track.
-	// по сути TrackFake, это тот же Track, только без методов
+func (t *Track) UnmarshalID(id int64, data []byte) error {
 	type TrackFake Track
-	var unmarshal = func(id int64) error {
-		// демаршал в TrackFake
+	// демаршал в TrackFake
+	var faked TrackFake
+	if err := json.Unmarshal(data, &faked); err != nil {
+		return err
+	}
+	// копирование полей из TrackFake в Track,
+	// только ID ставим сами
+	*t = Track(faked)
+	t.ID = id
+	return nil
+}
+
+// Разбираемся с ID.
+func (t *Track) UnmarshalJSON(data []byte) error {
+	var dem = func(id int64, data []byte) error {
+		type TrackFake Track
 		var faked TrackFake
 		if err := json.Unmarshal(data, &faked); err != nil {
 			return err
 		}
-		// копирование полей из TrackFake в Track,
-		// только ID ставим сами
 		*t = Track(faked)
 		t.ID = id
 		return nil
 	}
-
-	// если ID int: окей
-	var idInt = &struct {
-		ID int64 `json:"id"`
-	}{}
-	if err := json.Unmarshal(data, idInt); err == nil {
-		return unmarshal(idInt.ID)
-	}
-
-	// если ID строка: конвертируем в int
-	var idString = &struct {
-		ID string `json:"id"`
-	}{}
-	if err := json.Unmarshal(data, idString); err != nil {
-		return err
-	}
-	var err error
-	var converted int64
-	if converted, err = strconv.ParseInt(idString.ID, 10, 64); err != nil {
-		return err
-	}
-	return unmarshal(converted)
+	return unmarshalID(dem, data)
 }
 
 // Нормализация.
@@ -102,11 +109,11 @@ type R128 struct {
 }
 
 type TrackItem struct {
-	ID            int64  `json:"id"`
-	Track         *Track `json:"track"`
-	Timestamp     string `json:"timestamp"`
-	OriginalIndex int    `json:"originalIndex"`
-	Recent        bool   `json:"recent"`
+	ID            int64     `json:"id"`
+	Track         *Track    `json:"track"`
+	Timestamp     time.Time `json:"timestamp"`
+	OriginalIndex int       `json:"originalIndex"`
+	Recent        bool      `json:"recent"`
 }
 
 // Дополнительная информация о треке.
@@ -176,7 +183,7 @@ type TrackShort struct {
 	AlbumId string `json:"albumId"`
 
 	// Дата.
-	Timestamp string `json:"timestamp"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // Информация о вариантах загрузки трека.

@@ -19,6 +19,13 @@ func (s *ArtistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
+func (s ArtistTestSuite) TestGetLikedArtists() {
+	artists, err := s.cl.GetLikedArtists(context.Background())
+	s.require.Nil(err)
+	s.require.NotEmpty(artists)
+	s.require.Positive(artists[0].ID)
+}
+
 func (s ArtistTestSuite) TestArtistLikeUnlike() {
 	var ctx = context.Background()
 

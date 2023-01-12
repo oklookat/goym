@@ -8,13 +8,13 @@ import (
 
 type Playlist struct {
 	// Владелец плейлиста.
-	Owner *Owner `json:"owner"`
+	Owner Owner `json:"owner"`
 
-	// ?
-	PlaylistUuid string `json:"playlistUuid"`
-
-	// ?
+	// UID владельца плейлиста.
 	UID int64 `json:"uid"`
+
+	// UUID.
+	PlaylistUuid string `json:"playlistUuid"`
 
 	// Обычно используется для операций над плейлистом.
 	Kind int64 `json:"kind"`
@@ -47,9 +47,7 @@ type Playlist struct {
 	LikesCount int `json:"likesCount"`
 
 	// Видимость.
-	//
-	// public | private
-	Visibility string `json:"visibility"`
+	Visibility Visibility `json:"visibility"`
 
 	// Треки.
 	//
@@ -194,9 +192,7 @@ type ChangePlaylistVisibilityRequestBody struct {
 }
 
 // POST /playlists/list
-//
-// Доступен метод Add()
-type GetPlaylistsByIdsRequestBody struct {
+type PlaylistsIdsRequestBody struct {
 	// uid владельца плейлиста и kind плейлиста через двоеточие и запятую
 	PlaylistIds []string `url:",playlistIds"`
 }
@@ -206,9 +202,38 @@ type GetPlaylistsByIdsRequestBody struct {
 // owner - владелец плейлиста
 //
 // kind - kind плейлиста
-func (g *GetPlaylistsByIdsRequestBody) Add(owner int64, kind int64) {
+func (g *PlaylistsIdsRequestBody) Add(owner int64, kind int64) {
 	if g.PlaylistIds == nil {
 		g.PlaylistIds = make([]string, 0)
 	}
 	g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%d:%d", owner, kind))
+}
+
+// Добавить в PlaylistIds.
+//
+// map[kind плейлиста]uid_владельца
+func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[int64]int64) {
+	if len(kindUid) == 0 {
+		return
+	}
+	if g.PlaylistIds == nil {
+		g.PlaylistIds = make([]string, 0)
+	}
+	for k, v := range kindUid {
+		g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%d:%d", v, k))
+	}
+}
+
+// POST /users/{userId}/likes/playlists/add
+type LikePlaylistRequestBody struct {
+	// Kind плейлиста.
+	Kind int64 `url:"kind"`
+
+	// UID владельца плейлиста.
+	OwnerUid int64 `url:"owner-uid"`
+}
+
+// POST /users/{userId}/likes/playlists/add
+type GetPlaylistByUidKindQueryParams struct {
+	LikePlaylistRequestBody
 }

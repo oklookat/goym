@@ -2,6 +2,7 @@ package vantuz
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -22,28 +23,22 @@ func (l *Logger) request(req *http.Request) {
 	if !l.enabled || req == nil {
 		return
 	}
-	go func() {
-		l.log("==== Request: %v ====", req.URL.String())
-		for k, v := range req.Header {
-			l.log("%s: %s", k, strings.Join(v, ","))
+	l.log("==== %s: %v ====", req.Method, req.URL.String())
+	for k, v := range req.Header {
+		l.log("[header] %s: %s", k, strings.Join(v, ","))
+	}
+	if req.Body != nil {
+		buf := new(strings.Builder)
+		_, err := io.Copy(buf, req.Body)
+		if err == nil {
+			l.log("[body] %s", buf.String())
 		}
-	}()
+	}
 }
 
 func (l *Logger) response(resp *http.Response) {
 	if !l.enabled || resp == nil {
 		return
 	}
-	l.log("==== Response (%v): %v ====", resp.StatusCode, resp.Request.URL.String())
-}
-
-func (l *Logger) body(body []byte) {
-	if !l.enabled {
-		return
-	}
-	if body == nil {
-		l.log("Body: nil")
-		return
-	}
-	l.log("Body: %v", string(body))
+	l.log("==== RESPONSE (%v): %v ====", resp.StatusCode, resp.Request.URL.String())
 }

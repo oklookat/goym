@@ -26,6 +26,46 @@ func (s PlaylistTestSuite) TestGetMyPlaylists() {
 	s.require.Positive(pls[0].Kind)
 }
 
+func (s PlaylistTestSuite) TestLikeUnlikePlaylist() {
+	var ctx = context.Background()
+	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
+	s.require.Nil(err)
+	s.require.NotNil(found.Playlists)
+	s.require.NotEmpty(found.Playlists.Results)
+	var pl = found.Playlists.Results[0]
+	err = s.cl.LikePlaylist(ctx, pl)
+	s.require.Nil(err)
+
+	err = s.cl.UnlikePlaylist(ctx, pl)
+	s.require.Nil(err)
+}
+
+func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
+	var ctx = context.Background()
+	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
+	s.require.Nil(err)
+	s.require.NotNil(found.Playlists)
+	s.require.NotEmpty(found.Playlists.Results)
+	if len(found.Playlists.Results) < 5 {
+		s.require.Fail("too few playlists")
+	}
+	var playlists = found.Playlists.Results
+	var kindUid = map[int64]int64{}
+	for i, p := range playlists {
+		kindUid[p.Kind] = p.UID
+		if i >= 6 {
+			break
+		}
+	}
+
+	foundByKind, err := s.cl.GetPlaylistsByKindUid(ctx, kindUid)
+	s.require.Nil(err)
+	s.require.NotEmpty(foundByKind)
+	if len(foundByKind) <= 5 {
+		s.require.Fail("too few UidKind playlists")
+	}
+}
+
 // CreatePlaylist()
 // GetUserPlaylistById()
 // RenamePlaylist()

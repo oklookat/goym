@@ -2,24 +2,6 @@ package schema
 
 // Результаты поиска.
 type Search struct {
-	// Был ли исправлен запрос.
-	MisspellCorrected bool `json:"misspellCorrected"`
-
-	// Было ли отключено исправление результата.
-	Nocorrect bool `json:"nocorrect"`
-
-	// Поисковой запрос (оригинальный или исправленный).
-	Text string `json:"text"`
-
-	// Исправленный поисковой запрос.
-	MisspellResult string `json:"misspellResult"`
-
-	// Оригинальный поисковой запрос.
-	MisspellOriginal string `json:"misspellOriginal"`
-
-	// ID запроса.
-	SearchResultId *string `json:"searchResultId"`
-
 	Type SearchType `json:"type"`
 
 	// Текущая страница. Доступно при использовании параметра type.
@@ -27,6 +9,23 @@ type Search struct {
 
 	// Результатов на странице. Доступно при использовании параметра type.
 	PerPage *int64 `json:"perPage"`
+
+	// Поисковой запрос (оригинальный или исправленный).
+	Text string `json:"text"`
+
+	SearchRequestID string `json:"searchRequestId"`
+
+	// Был ли исправлен запрос. Доступен при Type "all".
+	MisspellCorrected *bool `json:"misspellCorrected"`
+
+	// Исправленный поисковой запрос. Не nil, если запрос был исправлен.
+	MisspellResult *string `json:"misspellResult"`
+
+	// Оригинальный поисковой запрос. Не nil, если запрос был исправлен.
+	MisspellOriginal *string `json:"misspellOriginal"`
+
+	// ID запроса.
+	SearchResultID *string `json:"searchResultId"`
 
 	// Лучший результат.
 	//
@@ -36,8 +35,14 @@ type Search struct {
 	// поля best, playlists, и подобные, будут nil (кроме поля Artists).
 	Best *Best[any] `json:"best"`
 
+	// Найденные треки.
+	Tracks SearchResult[*Track] `json:"tracks"`
+
 	// Найденные альбомы.
 	Albums SearchResult[*Album] `json:"albums"`
+
+	// Найденные эписозды подкастов.
+	PodcastEpisodes SearchResult[any] `json:"podcast_episodes"`
 
 	// Найденные артисты.
 	Artists SearchResult[*Artist] `json:"artists"`
@@ -45,23 +50,14 @@ type Search struct {
 	// Найденные плейлисты.
 	Playlists SearchResult[*Playlist] `json:"playlists"`
 
-	// Найденные треки.
-	Tracks SearchResult[*Track] `json:"tracks"`
-
 	// Найденные видео.
 	Videos SearchResult[*Video] `json:"videos"`
 
 	// Найденные подкасты.
-	Podcasts SearchResult[*any] `json:"podcasts"`
-
-	// Найденные эписозды подкастов.
-	PodcastEpisodes SearchResult[*any] `json:"podcast_episodes"`
+	Podcasts SearchResult[any] `json:"podcasts"`
 }
 
 type SearchResult[T any] struct {
-	// Тип результата
-	Type SearchType `json:"type"`
-
 	// Количество результатов
 	Total int64 `json:"total"`
 

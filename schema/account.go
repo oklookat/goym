@@ -34,14 +34,10 @@ type AccountSettings struct {
 	// example: 2019-04-14T14:55:50+00:00
 	Modified string `json:"modified" url:"-"`
 
-	RbtDisabled string `json:"rbtDisabled" url:"-"`
+	RbtDisabled bool `json:"rbtDisabled" url:"-"`
 
 	// Тема оформления.
-	//
-	// black | default
-	//
-	// Example: black.
-	Theme string `json:"theme" url:"theme,omitempty"`
+	Theme Theme `json:"theme" url:"theme,omitempty"`
 
 	AutoPlayRadio    bool `json:"autoPlayRadio" url:"autoPlayRadio,omitempty"`
 	SyncQueueEnabled bool `json:"syncQueueEnabled" url:"syncQueueEnabled,omitempty"`
@@ -83,6 +79,20 @@ type Account struct {
 	} `json:"passport-phones"`
 }
 
+type PromocodeStatus struct {
+	// Статус активации промо-кода.
+	//
+	// Например: "code-not-exists".
+	Status string `json:"status"`
+
+	// Описание статуса.
+	//
+	// Например: "Gift code does not exist".
+	StatusDesc string `json:"statusDesc"`
+
+	AccountStatus *Status `json:"accountStatus"`
+}
+
 // Информация о подписках пользователя
 type Subscription struct {
 	HadAnySubscription bool `json:"hadAnySubscription"`
@@ -117,19 +127,14 @@ type AccountConsumePromocodeRequestBody struct {
 
 // POST /account/settings
 //
-// Используйте методы Change() и Get().
+// Используйте метод Change().
 type ChangeAccountSettingsRequestBody struct {
-	acc AccountSettings
+	AccountSettings
 }
 
 // Изменить настройки.
 //
 // Настройку нельзя изменить, если в поле структуры есть url:"-".
 func (c *ChangeAccountSettingsRequestBody) Change(a AccountSettings) {
-	c.acc = a
-}
-
-// Получить измененные настройки.
-func (c ChangeAccountSettingsRequestBody) Get() AccountSettings {
-	return c.acc
+	c.AccountSettings = a
 }

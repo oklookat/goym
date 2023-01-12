@@ -20,12 +20,12 @@ func (c Client) getLikedDislikedTracks(ctx context.Context, liked bool) (*schema
 	// GET /users/{userId}/likes/tracks
 	// ||
 	// GET /users/{userId}/dislikes/tracks
-	var endP = "likes"
+	var ld = "likes"
 	if !liked {
-		endP = "dislikes"
+		ld = "dislikes"
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, endP, "tracks"})
+	var endpoint = genApiPath([]string{"users", c.userId, ld, "tracks"})
 	var data = &schema.TypicalResponse[*schema.TracksLibrary]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -58,11 +58,13 @@ func (c Client) LikeTrack(ctx context.Context, track *schema.Track) error {
 }
 
 // Лайкнуть треки.
+//
+// Используйте LikeTrack() для лайка одного трека.
 func (c Client) LikeTracks(ctx context.Context, tracks []*schema.Track) error {
 	return c.likeUnlikeTracks(ctx, tracks, true)
 }
 
-// Убрать лайки с треков.
+// Убрать лайки с трека(ов).
 func (c Client) UnlikeTracks(ctx context.Context, tracks []*schema.Track) error {
 	return c.likeUnlikeTracks(ctx, tracks, false)
 }

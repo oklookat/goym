@@ -99,3 +99,15 @@ func (c Client) UnlikeAlbum(ctx context.Context, al *schema.Album) error {
 
 	return err
 }
+
+// Получить лайкнутые альбомы.
+func (c Client) GetLikedAlbums(ctx context.Context) ([]*schema.AlbumShort, error) {
+	// GET /users/{userId}/likes/albums
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums"})
+	var data = &schema.TypicalResponse[[]*schema.AlbumShort]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
+	return data.Result, err
+}

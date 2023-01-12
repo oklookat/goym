@@ -20,7 +20,9 @@ func (c Client) GetMyPlaylists(ctx context.Context) ([]*schema.Playlist, error) 
 	return data.Result, err
 }
 
-// Получить плейлист текущего пользователя по kind.
+// Получить плейлист по kind.
+//
+// Доступно только для плейлистов в библиотеке пользователя.
 //
 // Доступно поле Tracks.
 func (c Client) GetMyPlaylistByKind(ctx context.Context, playlistKind int64) (*schema.Playlist, error) {
@@ -173,7 +175,7 @@ func (c Client) AddTracksToPlaylist(ctx context.Context, pl *schema.Playlist, tr
 //
 // Возвращает плейлист без поля Tracks.
 //
-// track - TrackItem из плейлиста.
+// track - TrackItem из плейлиста (pl).
 func (c Client) DeleteTrackFromPlaylist(ctx context.Context, pl *schema.Playlist, track *schema.TrackItem) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	//
@@ -198,6 +200,73 @@ func (c Client) DeleteTrackFromPlaylist(ctx context.Context, pl *schema.Playlist
 	var data = &schema.TypicalResponse[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).Post(ctx, endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
+	return data.Result, err
+}
+
+// Поставить лайк плейлисту.
+func (c Client) LikePlaylist(ctx context.Context, pl *schema.Playlist) error {
+	// POST /users/{userId}/likes/playlists/add
+	if pl == nil {
+		return ErrNilPlaylist
+	}
+	var body = schema.LikePlaylistRequestBody{
+		Kind:     pl.Kind,
+		OwnerUid: pl.UID,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "playlists", "add"})
+	var data = &schema.TypicalResponse[any]{}
+	resp, err := c.self.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
+	return err
+}
+
+// Убрать лайк с плейлиста.
+func (c Client) UnlikePlaylist(ctx context.Context, pl *schema.Playlist) error {
+	// POST /users/{userId}/likes/playlists/{kind}/remove
+	if pl == nil {
+		return ErrNilPlaylist
+	}
+
+	var uidAndKind = i2s(pl.UID) + "-" + i2s(pl.Kind)
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "playlists", uidAndKind, "remove"})
+	var data = &schema.TypicalResponse[any]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).Post(ctx, endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
+
+	return err
+}
+
+// Получить плейлисты.
+//
+// kindUid - map[kind плейлиста]uid_владельца
+func (c Client) GetPlaylistsByKindUid(ctx context.Context, kindUid map[int64]int64) ([]*schema.Playlist, error) {
+	if len(kindUid) == 0 {
+		return nil, ErrNilUidKind
+	}
+
+	// GET /playlists/list
+	var body = schema.PlaylistsIdsRequestBody{}
+	body.AddMany(kindUid)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
+
+	var endpoint = genApiPath([]string{"playlists", "list"})
+	var data = &schema.TypicalResponse[[]*schema.Playlist]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkTypicalResponse(resp, data)
 	}

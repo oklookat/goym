@@ -207,8 +207,6 @@ func (r *Request) unmarshalResponse(resp *http.Response) error {
 	}
 	defer resp.Body.Close()
 
-	r.cl.logger.body(body)
-
 	if r.err != nil && isHttpError(resp.StatusCode) {
 		return json.Unmarshal(body, r.err)
 	}

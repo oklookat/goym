@@ -6,6 +6,18 @@ import (
 	"github.com/oklookat/goym/schema"
 )
 
+// Получить лайкнутых артистов.
+func (c Client) GetLikedArtists(ctx context.Context) ([]*schema.Artist, error) {
+	// GET /users/{userId}/likes/artists
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists"})
+	var data = &schema.TypicalResponse[[]*schema.Artist]{}
+	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
+	if err == nil {
+		err = checkTypicalResponse(resp, data)
+	}
+	return data.Result, err
+}
+
 // Лайкнуть артиста.
 func (c Client) LikeArtist(ctx context.Context, a *schema.Artist) error {
 	// POST /users/{userId}/likes/artists/add
