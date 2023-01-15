@@ -43,6 +43,7 @@
 
 ## Недокументированные методы
 - [ ] Методы, не указанные в [документации](https://www.cherkashin.dev/yandex-music-open-api/).
+- Новые методы можно искать [тут](https://github.com/MarshalX/yandex-music-api). Или с помощью анализатора трафика смотреть приложение ЯМ для Windows.
 
 ## Account
 - [x] GET /account/status
@@ -60,10 +61,10 @@
 
 ## Artist
 - [x] GET /users/{userId}/likes/artists
-- [ ] GET /artists/{artistId}/track-ids-by-rating 
-- [ ] GET /artists/{artistId}/brief-info
-- [ ] GET /artists/{artistId}/tracks
-- [ ] GET /artists/{artistId}/direct-albums
+- [x] GET /artists/{artistId}/track-ids-by-rating 
+- [x] GET /artists/{artistId}/brief-info
+- [x] GET /artists/{artistId}/tracks
+- [x] GET /artists/{artistId}/direct-albums
 - [x] POST /users/{userId}/likes/artists/add
 - [x] POST /users/{userId}/likes/artists/{artistId}/remove
 
@@ -109,12 +110,12 @@
 - [ ] GET /landing3/chart/{chartType}
 
 ## Rotor
-- [ ] GET /rotor/station/{station}/tracks
-- [ ] GET /rotor/account/status
-- [ ] GET /rotor/stations/list
-- [ ] GET /rotor/stations/dashboard
-- [ ] GET /rotor/station/{station}/info
-- [ ] POST /rotor/station/{station}/feedback
+- [x] GET /rotor/station/{type:tag}/tracks
+- [x] GET /rotor/account/status
+- [x] GET /rotor/stations/list
+- [x] GET /rotor/stations/dashboard
+- [x] GET /rotor/station/{type:tag}/info
+- [x] POST /rotor/station/{type:tag}/feedback
 
 
 ## Default

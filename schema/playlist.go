@@ -8,46 +8,51 @@ import (
 
 type Playlist struct {
 	// Владелец плейлиста.
-	Owner Owner `json:"owner"`
+	Owner *Owner `json:"owner"`
 
 	// UID владельца плейлиста.
-	UID int64 `json:"uid"`
+	UID UniqueID `json:"uid"`
 
 	// UUID.
-	PlaylistUuid string `json:"playlistUuid"`
+	PlaylistUuid *string `json:"playlistUuid"`
 
 	// Обычно используется для операций над плейлистом.
-	Kind int64 `json:"kind"`
+	Kind KindID `json:"kind"`
+
+	// Название.
+	Title string `json:"title"`
+
+	// Описание.
+	Description          string `json:"description"`
+	DescriptionFormatted string `json:"descriptionFormatted,omitempty"`
 
 	// Что-то типа версии плейлиста.
 	// Если плейлист изменился: добавили, удалили треки,
 	// то Revision прибавляется на 1.
-	Revision int `json:"revision"`
+	//
+	// Может быть nil, если плейлист не ваш(?).
+	Revision *RevisionID `json:"revision"`
 
-	// Описание.
-	Description string `json:"description"`
-	Available   bool   `json:"available"`
+	Available *bool `json:"available"`
 
-	// Название.
-	Title      string `json:"title"`
-	Collective bool   `json:"collective"`
+	Collective bool `json:"collective"`
 
 	// Обложка.
 	Cover *Cover `json:"cover"`
 
-	Created    string `json:"created"`
-	Modified   string `json:"modified"`
-	DurationMs int64  `json:"durationMs"`
-	OgImage    string `json:"ogImage"`
+	Created    *string `json:"created"`
+	Modified   *string `json:"modified"`
+	DurationMs *uint64 `json:"durationMs"`
+	OgImage    *string `json:"ogImage"`
 
 	// Количество треков.
-	TrackCount int `json:"trackCount"`
+	TrackCount uint32 `json:"trackCount"`
 
 	// Количество лайков.
-	LikesCount int `json:"likesCount"`
+	LikesCount *uint32 `json:"likesCount"`
 
 	// Видимость.
-	Visibility Visibility `json:"visibility"`
+	Visibility *Visibility `json:"visibility"`
 
 	// Треки.
 	//
@@ -65,10 +70,10 @@ type PlaylistRecommendations struct {
 
 type PlaylistId struct {
 	// Уникальный идентификатор пользователя владеющим плейлистом.
-	UID int64 `json:"uid"`
+	UID UniqueID `json:"uid"`
 
 	// Уникальный идентификатор плейлиста.
-	Kind int64 `json:"kind"`
+	Kind KindID `json:"kind"`
 }
 
 // GET /users/{userId}/playlists
@@ -126,8 +131,8 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []*Track
 		trackObjs = append(trackObjs, a.getTrackObj(t.ID, t.Albums[0].ID))
 	}
 
-	var at = strconv.Itoa(pl.TrackCount)      // добавить треки в конец плейлиста
-	tracksObj := strings.Join(trackObjs, ",") // trackobj,trackobj,trackobj
+	var at = strconv.FormatUint(uint64(pl.TrackCount), 10) // добавить треки в конец плейлиста
+	tracksObj := strings.Join(trackObjs, ",")              // trackobj,trackobj,trackobj
 
 	// {"diff":{"op":"insert","at":144,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
 	a.Diff = fmt.Sprintf(`{"diff":{"op":"insert","at":%s,"tracks":[%s]}}`, at, tracksObj)
@@ -145,8 +150,8 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Delete(pl *Playlist, track *Track
 		return err
 	}
 	var trackObj = ""
-	var from = 0
-	var to = 0
+	var from uint16 = 0
+	var to uint16 = 0
 
 	for _, t := range pl.Tracks {
 		if t.Track == nil {
@@ -172,16 +177,19 @@ func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
 	if pl == nil {
 		return ErrNilPlaylist
 	}
-	a.Revision = strconv.Itoa(pl.Revision)
+	if pl.Revision == nil {
+		return ErrNilPlaylist
+	}
+	a.Revision = pl.Revision.String()
 	return nil
 }
 
 // {"id":"1234","albumId":"1234"}
-func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id int64, albumId int64) string {
-	var idStr = strconv.FormatInt(id, 10)
+func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id UniqueID, albumId UniqueID) string {
+	var idStr = id.String()
 	var obj = `{"id":`        // {"id":
 	obj += `"` + idStr + `",` // {"id":"1234",
-	var albumIdStr = strconv.FormatInt(albumId, 10)
+	var albumIdStr = albumId.String()
 	obj += `"albumId":"` + albumIdStr + `"}` // {"id":"1234","albumId":"1234"}
 	return obj
 }
@@ -202,17 +210,18 @@ type PlaylistsIdsRequestBody struct {
 // owner - владелец плейлиста
 //
 // kind - kind плейлиста
-func (g *PlaylistsIdsRequestBody) Add(owner int64, kind int64) {
+func (g *PlaylistsIdsRequestBody) Add(kind KindID, owner UniqueID) {
 	if g.PlaylistIds == nil {
 		g.PlaylistIds = make([]string, 0)
 	}
-	g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%d:%d", owner, kind))
+	var dat = owner.String() + ":" + kind.String()
+	g.PlaylistIds = append(g.PlaylistIds, dat)
 }
 
 // Добавить в PlaylistIds.
 //
 // map[kind плейлиста]uid_владельца
-func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[int64]int64) {
+func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[KindID]UniqueID) {
 	if len(kindUid) == 0 {
 		return
 	}
@@ -227,10 +236,10 @@ func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[int64]int64) {
 // POST /users/{userId}/likes/playlists/add
 type LikePlaylistRequestBody struct {
 	// Kind плейлиста.
-	Kind int64 `url:"kind"`
+	Kind KindID `url:"kind"`
 
 	// UID владельца плейлиста.
-	OwnerUid int64 `url:"owner-uid"`
+	OwnerUid UniqueID `url:"owner-uid"`
 }
 
 // POST /users/{userId}/likes/playlists/add

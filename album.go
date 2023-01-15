@@ -11,27 +11,27 @@ import (
 // withTracks - получить альбом с треками?
 //
 // Если да, то треки будут в Volumes и Duplicates.
-func (c Client) GetAlbumById(ctx context.Context, id int64, withTracks bool) (*schema.Album, error) {
+func (c Client) GetAlbumById(ctx context.Context, id schema.UniqueID, withTracks bool) (*schema.Album, error) {
 	// GET /albums/{albumId}
 	// ||
 	// GET /albums/{albumId}/with-tracks
-	var endP = []string{"albums", i2s(id)}
+	var endP = []string{"albums", id.String()}
 	if withTracks {
 		endP = append(endP, "with-tracks")
 	}
 	var endpoint = genApiPath(endP)
 
-	var data = &schema.TypicalResponse[*schema.Album]{}
+	var data = &schema.Response[*schema.Album]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err
 }
 
 // Получить альбомы по id.
-func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []int64) ([]*schema.Album, error) {
+func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []schema.UniqueID) ([]*schema.Album, error) {
 	// POST /albums
 	if albumIds == nil {
 		return nil, ErrNilAlbumIds
@@ -46,11 +46,11 @@ func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []int64) ([]*schema
 	}
 
 	var endpoint = genApiPath([]string{"albums"})
-	var data = &schema.TypicalResponse[[]*schema.Album]{}
+	var data = &schema.Response[[]*schema.Album]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err
@@ -72,12 +72,12 @@ func (c Client) LikeAlbum(ctx context.Context, al *schema.Album) error {
 	}
 
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", "add"})
-	var data = &schema.TypicalResponse[any]{}
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).
 		Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return err
@@ -90,11 +90,11 @@ func (c Client) UnlikeAlbum(ctx context.Context, al *schema.Album) error {
 		return ErrNilAlbum
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", i2s(al.ID), "remove"})
-	var data = &schema.TypicalResponse[any]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", al.ID.String(), "remove"})
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return err
@@ -104,10 +104,10 @@ func (c Client) UnlikeAlbum(ctx context.Context, al *schema.Album) error {
 func (c Client) GetLikedAlbums(ctx context.Context) ([]*schema.AlbumShort, error) {
 	// GET /users/{userId}/likes/albums
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums"})
-	var data = &schema.TypicalResponse[[]*schema.AlbumShort]{}
+	var data = &schema.Response[[]*schema.AlbumShort]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }

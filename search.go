@@ -34,10 +34,10 @@ func (c Client) Search(ctx context.Context, text string, page uint16, what schem
 	}
 
 	var endpoint = genApiPath([]string{"search"})
-	var data = &schema.TypicalResponse[*schema.Search]{}
+	var data = &schema.Response[*schema.Search]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -56,10 +56,10 @@ func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggest
 	}
 
 	var endpoint = genApiPath([]string{"search", "suggest"})
-	var data = &schema.TypicalResponse[*schema.Suggestions[any]]{}
+	var data = &schema.Response[*schema.Suggestions[any]]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }

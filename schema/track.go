@@ -7,12 +7,7 @@ import (
 
 // Трек.
 type Track struct {
-	// В зависимости от запроса.
-	//
-	// Например, при получении альбома с треками, ID будет string.
-	//
-	// int64 | string
-	ID int64 `json:"-"`
+	ID UniqueID `json:"-"`
 
 	// Обычно равен ID.
 	RealID string `json:"realId"`
@@ -36,11 +31,11 @@ type Track struct {
 	StorageDir string `json:"storageDir"`
 
 	// Длительность в миллисекундах.
-	DurationMs int64 `json:"durationMs"`
+	DurationMs uint64 `json:"durationMs"`
 
-	FileSize          int64     `json:"fileSize"`
+	FileSize          uint64    `json:"fileSize"`
 	R128              *R128     `json:"r128"`
-	PreviewDurationMs int64     `json:"previewDurationMs"`
+	PreviewDurationMs uint16    `json:"previewDurationMs"`
 	Artists           []*Artist `json:"artists"`
 	Albums            []*Album  `json:"albums"`
 
@@ -69,7 +64,10 @@ type Track struct {
 	Version  string   `json:"version,omitempty"`
 }
 
-func (t *Track) UnmarshalID(id int64, data []byte) error {
+// В некоторых запросах ID может быть как строкой, так и числом.
+//
+// Надо привести ID к числу.
+func (t *Track) UnmarshalID(id UniqueID, data []byte) error {
 	type TrackFake Track
 	// демаршал в TrackFake
 	var faked TrackFake
@@ -83,9 +81,8 @@ func (t *Track) UnmarshalID(id int64, data []byte) error {
 	return nil
 }
 
-// Разбираемся с ID.
 func (t *Track) UnmarshalJSON(data []byte) error {
-	var dem = func(id int64, data []byte) error {
+	var dem = func(id UniqueID, data []byte) error {
 		type TrackFake Track
 		var faked TrackFake
 		if err := json.Unmarshal(data, &faked); err != nil {
@@ -102,17 +99,17 @@ func (t *Track) UnmarshalJSON(data []byte) error {
 //
 // https://en.wikipedia.org/wiki/EBU_R_128
 type R128 struct {
-	I float64 `json:"i"`
+	I float32 `json:"i"`
 
 	// True Peak.
-	Tp float64 `json:"tp"`
+	Tp float32 `json:"tp"`
 }
 
 type TrackItem struct {
-	ID            int64     `json:"id"`
+	ID            UniqueID  `json:"id"`
 	Track         *Track    `json:"track"`
 	Timestamp     time.Time `json:"timestamp"`
-	OriginalIndex int       `json:"originalIndex"`
+	OriginalIndex uint16    `json:"originalIndex"`
 	Recent        bool      `json:"recent"`
 }
 
@@ -133,7 +130,7 @@ type Supplement struct {
 // Текст трека.
 type Lyrics struct {
 	// Уникальный идентификатор текста трека.
-	ID int64 `json:"id"`
+	ID UniqueID `json:"id"`
 
 	// Первые строки текст песни.
 	Lyrics string `json:"lyrics"`
@@ -158,9 +155,9 @@ type Lyrics struct {
 type TracksLibrary struct {
 	Library struct {
 		// Уникальный идентификатор пользователя.
-		Uid int64 `json:"uid"`
+		Uid UniqueID `json:"uid"`
 
-		Revision int64 `json:"revision"`
+		Revision RevisionID `json:"revision"`
 
 		// Список треков в укороченной версии.
 		Tracks []*TrackShort `json:"tracks"`
@@ -177,13 +174,40 @@ type SimilarTracks struct {
 // Укороченная версия трека с неполными данными.
 type TrackShort struct {
 	// Уникальный идентификатор трека.
-	ID string `json:"id"`
+	ID UniqueID `json:"id"`
 
 	// Уникальный идентификатор альбома.
-	AlbumId string `json:"albumId"`
+	AlbumId UniqueID `json:"albumId"`
 
 	// Дата.
 	Timestamp time.Time `json:"timestamp"`
+}
+
+func (t *TrackShort) UnmarshalJSON(data []byte) error {
+	type real struct {
+		ID        string    `json:"id"`
+		AlbumId   string    `json:"albumId"`
+		Timestamp time.Time `json:"timestamp"`
+	}
+	var realVal = &real{}
+	if err := json.Unmarshal(data, realVal); err != nil {
+		return err
+	}
+
+	var idUid UniqueID = 0
+	if err := idUid.FromString(realVal.ID); err != nil {
+		return err
+	}
+	t.ID = idUid
+
+	var albumId UniqueID = 0
+	if err := albumId.FromString(realVal.AlbumId); err != nil {
+		return err
+	}
+	t.AlbumId = albumId
+
+	t.Timestamp = realVal.Timestamp
+	return nil
 }
 
 // Информация о вариантах загрузки трека.
@@ -210,7 +234,7 @@ type TrackDownloadInfo struct {
 	Direct bool `json:"direct"`
 
 	// Битрейт аудиофайла в кбит/с.
-	BitrateInKbps int `json:"bitrateInKbps"`
+	BitrateInKbps uint16 `json:"bitrateInKbps"`
 }
 
 // POST /users/{userId}/likes/tracks/add-multiple
@@ -220,7 +244,7 @@ type TrackDownloadInfo struct {
 // Доступен метод GetIds().
 type LikeUnlikeTracksRequestBody struct {
 	// ID треков.
-	TrackIds []int64 `url:",track-ids"`
+	TrackIds []UniqueID `url:",track-ids"`
 }
 
 // Устанавливает ID в TrackIds. Если слайс треков == nil, ничего не делает.
@@ -229,7 +253,7 @@ func (l *LikeUnlikeTracksRequestBody) SetIds(tracks []*Track) {
 		return
 	}
 	if l.TrackIds == nil {
-		l.TrackIds = make([]int64, 0)
+		l.TrackIds = make([]UniqueID, 0)
 	}
 	for i := range tracks {
 		l.TrackIds = append(l.TrackIds, tracks[i].ID)
@@ -239,13 +263,13 @@ func (l *LikeUnlikeTracksRequestBody) SetIds(tracks []*Track) {
 // POST /users/{userId}/likes/tracks/add
 type LikeTrackRequestBody struct {
 	// ID трека.
-	TrackId int64 `url:"track-id"`
+	TrackId UniqueID `url:"track-id"`
 }
 
 // POST ​/tracks​
 type GetTracksByIdsRequestBody struct {
 	// ID треков.
-	TrackIds []int64 `url:",track-ids"`
+	TrackIds []UniqueID `url:",track-ids"`
 
 	// С позициями?
 	WithPositions bool `url:"with-positions"`
@@ -256,7 +280,7 @@ type GetTracksByIdsRequestBody struct {
 // (!) Я не проверял эти параметры.
 type PlayAudioRequestBody struct {
 	// Уникальный идентификатор трека.
-	TrackId int64 `url:"track-id,omitempty"`
+	TrackId UniqueID `url:"track-id,omitempty"`
 
 	// Проигрывается ли трек с кеша.
 	FromCache bool `url:"from-cache,omitempty"`
@@ -268,25 +292,25 @@ type PlayAudioRequestBody struct {
 	PlayId string `url:"play-id,omitempty"`
 
 	// Уникальный идентификатор пользователя.
-	Uid int64 `url:"uid,omitempty"`
+	Uid UniqueID `url:"uid,omitempty"`
 
 	// Текущая дата и время в ISO.
-	Timestamp string `url:"timestamp,omitempty"`
+	Timestamp time.Time `url:"timestamp,omitempty"`
 
 	// Продолжительность трека в секундах.
-	TrackLengthSeconds int `url:"track-length-seconds,omitempty"`
+	TrackLengthSeconds uint16 `url:"track-length-seconds,omitempty"`
 
 	// Продолжительность трека в секундах.
-	TotalPlayedSeconds int `url:"total-played-seconds,omitempty"`
+	TotalPlayedSeconds uint16 `url:"total-played-seconds,omitempty"`
 
 	// Продолжительность трека в секундах.
-	EndPositionSeconds int `url:"end-position-seconds,omitempty"`
+	EndPositionSeconds uint16 `url:"end-position-seconds,omitempty"`
 
 	// Уникальный идентификатор альбома.
-	AlbumId int64 `url:"album-id,omitempty"`
+	AlbumId UniqueID `url:"album-id,omitempty"`
 
 	// Уникальный идентификатор проигрывания.
-	PlaylistId int64 `url:"playlist-id,omitempty"`
+	PlaylistId UniqueID `url:"playlist-id,omitempty"`
 
 	// Текущая дата и время клиента в ISO.
 	ClientNow string `url:"client-now,omitempty"`

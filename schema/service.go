@@ -3,7 +3,6 @@ package schema
 import (
 	"encoding/json"
 	"net/url"
-	"strconv"
 
 	"github.com/google/go-querystring/query"
 )
@@ -32,14 +31,14 @@ func ParamsToValues(s any) (url.Values, error) {
 // результат копировать в текущую структуру, выставить поле ID.
 //
 // (1)type alias нужен, чтобы не было stack overflow, из-за бесконечного вызова UnmarshalJSON().
-func unmarshalID(ider func(id int64, data []byte) error, data []byte) error {
+func unmarshalID(ider func(id UniqueID, data []byte) error, data []byte) error {
 	if len(data) == 0 || ider == nil {
 		return nil
 	}
 
 	// если ID int: окей
 	var idInt = &struct {
-		ID int64 `json:"id"`
+		ID UniqueID `json:"id"`
 	}{}
 	if err := json.Unmarshal(data, idInt); err == nil {
 		return ider(idInt.ID, data)
@@ -53,7 +52,8 @@ func unmarshalID(ider func(id int64, data []byte) error, data []byte) error {
 		// ID не int, и не строка.
 		return err
 	}
-	converted, err := strconv.ParseInt(idString.ID, 10, 64)
+	var converted UniqueID = 0
+	err := converted.FromString(idString.ID)
 	if err != nil {
 		return err
 	}

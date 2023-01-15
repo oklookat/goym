@@ -5,10 +5,10 @@ type Search struct {
 	Type SearchType `json:"type"`
 
 	// Текущая страница. Доступно при использовании параметра type.
-	Page *int64 `json:"page"`
+	Page *uint16 `json:"page"`
 
 	// Результатов на странице. Доступно при использовании параметра type.
-	PerPage *int64 `json:"perPage"`
+	PerPage *uint16 `json:"perPage"`
 
 	// Поисковой запрос (оригинальный или исправленный).
 	Text string `json:"text"`
@@ -59,13 +59,13 @@ type Search struct {
 
 type SearchResult[T any] struct {
 	// Количество результатов
-	Total int64 `json:"total"`
+	Total uint32 `json:"total"`
 
 	// Максимальное количество результатов на странице.
-	PerPage int64 `json:"perPage"`
+	PerPage uint16 `json:"perPage"`
 
 	// Позиция блока
-	Order int64 `json:"order"`
+	Order uint16 `json:"order"`
 
 	Results []T `json:"results"`
 }

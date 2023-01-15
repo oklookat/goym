@@ -48,7 +48,7 @@ type Video struct {
 	ThumbnailUrl string `json:"thumbnailUrl"`
 
 	// Длительность видео в секундах.
-	Duration int64 `json:"duration"`
+	Duration uint16 `json:"duration"`
 
 	// Текст.
 	Text string `json:"text"`

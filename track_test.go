@@ -53,6 +53,7 @@ func (s *TrackTestSuite) TestGetLikedTracks() {
 	tracks, err := s.cl.GetLikedTracks(context.Background())
 	s.require.Nil(err)
 	s.require.Positive(tracks.Library.Uid)
+	s.require.NotEmpty(tracks.Library.Tracks)
 }
 
 func (s TrackTestSuite) TestGetDislikedTracks() {
@@ -96,7 +97,7 @@ func (s TrackTestSuite) TestGetTrackById() {
 }
 
 func (s TrackTestSuite) TestGetTracksById() {
-	var ids = []int64{}
+	var ids = []schema.UniqueID{}
 	var searched = s.getTracks()
 	for _, t := range searched {
 		ids = append(ids, t.ID)

@@ -4,7 +4,7 @@ import "time"
 
 type Album struct {
 	// Идентификатор альбома.
-	ID int64 `json:"id"`
+	ID UniqueID `json:"id"`
 
 	// Название альбома.
 	Title string `json:"title"`
@@ -13,7 +13,7 @@ type Album struct {
 	MetaType string `json:"metaType"`
 
 	// Год релиза.
-	Year int `json:"year"`
+	Year uint16 `json:"year"`
 
 	// Дата релиза в формате ISO 8601.
 	ReleaseDate time.Time `json:"releaseDate"`
@@ -28,10 +28,10 @@ type Album struct {
 	Genre string `json:"genre"`
 
 	// Количество треков.
-	TrackCount int `json:"trackCount"`
+	TrackCount uint16 `json:"trackCount"`
 
 	// Количество лайков.
-	LikesCount int `json:"likesCount"`
+	LikesCount uint32 `json:"likesCount"`
 
 	// Является ли альбом новым.
 	Recent bool `json:"recent"`
@@ -41,6 +41,13 @@ type Album struct {
 
 	// Артисты.
 	Artists []*Artist `json:"artists"`
+
+	// Лейблы.
+	//
+	// Может быть как слайсом строк с названиями, так и слайсом структур Label.
+	//
+	// (?) Слайсы строк используются при поиске, а слайсы структур в остальных случаях.
+	Labels []any `json:"labels"`
 
 	// Доступен ли альбом.
 	Available bool `json:"available"`
@@ -57,51 +64,44 @@ type Album struct {
 	AvailablePartially bool `json:"availablePartially"`
 
 	// ID лучших треков альбома.
-	Bests []int64 `json:"bests"`
+	Bests []UniqueID `json:"bests"`
 
-	// Лейблы.
-	//
-	// Может быть как слайсом строк с названиями, так и слайсом структур Label.
-	//
-	// (?) Слайсы строк используются при поиске, а слайсы структур в остальных случаях.
-	Labels []any `json:"labels"`
+	// например: "single".
+	Type *string `json:"type"`
+
+	// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
+	Duplicates []*Album `json:"duplicates"`
 
 	StorageDir string `json:"storageDir"`
 
 	TrackPosition struct {
-		Volume int `json:"volume"`
-		Index  int `json:"index"`
+		Volume uint8  `json:"volume"`
+		Index  uint16 `json:"index"`
 	} `json:"trackPosition"`
 
 	Regions          []string      `json:"regions"`
 	AvailableRegions []interface{} `json:"availableRegions"`
 
-	// например: "single".
-	Type *string `json:"type"`
-
 	// например: "Remix".
 	Version *string `json:"version"`
-
-	// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
-	Duplicates []*Album `json:"duplicates"`
 
 	// Треки альбома, разделенные по дискам.
 	Volumes [][]*Track `json:"volumes"`
 }
 
 type AlbumShort struct {
-	ID        int64     `json:"id"`
+	ID        UniqueID  `json:"id"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
 // POST /albums
 type GetAlbumsByIdsRequestBody struct {
 	// ID альбомов.
-	AlbumIds []int64 `url:",album-ids"`
+	AlbumIds []UniqueID `url:",album-ids"`
 }
 
 // POST /users/{userId}/likes/albums/add
 type LikeAlbumRequestBody struct {
 	// ID альбома.
-	AlbumId int64 `url:"album-id"`
+	AlbumId UniqueID `url:"album-id"`
 }

@@ -12,10 +12,10 @@ import (
 func (c Client) GetMyPlaylists(ctx context.Context) ([]*schema.Playlist, error) {
 	// GET /users/{userId}/playlists/list
 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", "list"})
-	var data = &schema.TypicalResponse[[]*schema.Playlist]{}
+	var data = &schema.Response[[]*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -25,13 +25,13 @@ func (c Client) GetMyPlaylists(ctx context.Context) ([]*schema.Playlist, error) 
 // Доступно только для плейлистов в библиотеке пользователя.
 //
 // Доступно поле Tracks.
-func (c Client) GetMyPlaylistByKind(ctx context.Context, playlistKind int64) (*schema.Playlist, error) {
+func (c Client) GetMyPlaylistByKind(ctx context.Context, playlistKind schema.KindID) (*schema.Playlist, error) {
 	// GET /users/{userId}/playlists/{kind}
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(playlistKind)})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", playlistKind.String()})
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -49,10 +49,10 @@ func (c Client) CreatePlaylist(ctx context.Context, name string, vis schema.Visi
 	}
 
 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", "create"})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -71,11 +71,11 @@ func (c Client) RenamePlaylist(ctx context.Context, pl *schema.Playlist, newName
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "name"})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "name"})
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -86,11 +86,11 @@ func (c Client) DeletePlaylist(ctx context.Context, pl *schema.Playlist) error {
 	if pl == nil {
 		return ErrNilPlaylist
 	}
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "delete"})
-	var data = &schema.TypicalResponse[any]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "delete"})
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetError(data).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return err
 }
@@ -105,11 +105,11 @@ func (c Client) GetPlaylistRecommendations(ctx context.Context, pl *schema.Playl
 	if pl == nil {
 		return nil, ErrNilPlaylist
 	}
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "recommendations"})
-	var data = &schema.TypicalResponse[*schema.PlaylistRecommendations]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "recommendations"})
+	var data = &schema.Response[*schema.PlaylistRecommendations]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -128,12 +128,12 @@ func (c Client) ChangePlaylistVisibility(ctx context.Context, pl *schema.Playlis
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "visibility"})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "visibility"})
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -161,12 +161,12 @@ func (c Client) AddTracksToPlaylist(ctx context.Context, pl *schema.Playlist, tr
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "change"})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "change"})
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -196,12 +196,12 @@ func (c Client) DeleteTrackFromPlaylist(ctx context.Context, pl *schema.Playlist
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"users", c.userId, "playlists", i2s(pl.Kind), "change"})
-	var data = &schema.TypicalResponse[*schema.Playlist]{}
+	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "change"})
+	var data = &schema.Response[*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).
 		SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }
@@ -222,10 +222,10 @@ func (c Client) LikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 	}
 
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "playlists", "add"})
-	var data = &schema.TypicalResponse[any]{}
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return err
 }
@@ -237,12 +237,12 @@ func (c Client) UnlikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 		return ErrNilPlaylist
 	}
 
-	var uidAndKind = i2s(pl.UID) + "-" + i2s(pl.Kind)
+	var uidAndKind = pl.UID.String() + "-" + pl.Kind.String()
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "playlists", uidAndKind, "remove"})
-	var data = &schema.TypicalResponse[any]{}
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return err
@@ -251,7 +251,7 @@ func (c Client) UnlikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 // Получить плейлисты.
 //
 // kindUid - map[kind плейлиста]uid_владельца
-func (c Client) GetPlaylistsByKindUid(ctx context.Context, kindUid map[int64]int64) ([]*schema.Playlist, error) {
+func (c Client) GetPlaylistsByKindUid(ctx context.Context, kindUid map[schema.KindID]schema.UniqueID) ([]*schema.Playlist, error) {
 	if len(kindUid) == 0 {
 		return nil, ErrNilUidKind
 	}
@@ -265,10 +265,10 @@ func (c Client) GetPlaylistsByKindUid(ctx context.Context, kindUid map[int64]int
 	}
 
 	var endpoint = genApiPath([]string{"playlists", "list"})
-	var data = &schema.TypicalResponse[[]*schema.Playlist]{}
+	var data = &schema.Response[[]*schema.Playlist]{}
 	resp, err := c.self.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 	return data.Result, err
 }

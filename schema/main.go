@@ -2,11 +2,8 @@ package schema
 
 import (
 	"errors"
+	"strconv"
 )
-
-type Visibility string
-type SearchType string
-type Theme string
 
 const (
 	errPrefix = "goym/schema: "
@@ -24,6 +21,8 @@ const (
 	SearchTypePodcast  SearchType = "podcast"
 	SearchTypePlaylist SearchType = "playlist"
 	SearchTypeAll      SearchType = "all"
+	SortByYear         SortBy     = "year"
+	SortByRating       SortBy     = "rating"
 )
 
 var (
@@ -32,8 +31,37 @@ var (
 	ErrNilPlaylist = errors.New(errPrefix + "nil playlist")
 )
 
+type Visibility string
+type SearchType string
+type Theme string
+type SortBy string
+type UniqueID uint64
+type KindID uint32
+type RevisionID uint32
+
+func (u UniqueID) String() string {
+	return strconv.FormatUint(uint64(u), 10)
+}
+
+func (u *UniqueID) FromString(val string) error {
+	res, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return err
+	}
+	*u = UniqueID(res)
+	return nil
+}
+
+func (c KindID) String() string {
+	return strconv.FormatUint(uint64(c), 10)
+}
+
+func (r RevisionID) String() string {
+	return strconv.FormatUint(uint64(r), 10)
+}
+
 // Обычно ответ выглядит так.
-type TypicalResponse[T any] struct {
+type Response[T any] struct {
 	InvocationInfo InvocationInfo `json:"invocationInfo"`
 
 	// Если не nil, то поле result будет nil.
@@ -63,4 +91,26 @@ type Error struct {
 
 	// example: Parameters requirements are not met.
 	Message string `json:"message"`
+}
+
+// Информация о страницах.
+type Pager struct {
+	// Текущая страница.
+	Page uint16 `json:"page"`
+
+	// Сколько элементов на странице.
+	//
+	// Обратите внимание:
+	//
+	// Допустим, вы отправили запрос, где указали perPage = 20.
+	//
+	// Вам пришел ответ с этой структурой (Pager). И вот это поле (PerPage)
+	// может не быть равным 20. Такое может быть, когда всего элементов не намного больше, чем perPage.
+	//
+	// Например вы указали perPage = 20, и пришел ответ, где Total равен 22.
+	// В таком случае это поле (PerPage) будет равно 22.
+	PerPage uint16 `json:"perPage"`
+
+	// Всего элементов.
+	Total uint16 `json:"total"`
 }

@@ -42,3 +42,14 @@ func (l *Logger) response(resp *http.Response) {
 	}
 	l.log("==== RESPONSE (%v): %v ====", resp.StatusCode, resp.Request.URL.String())
 }
+
+func (l *Logger) responseBody(body []byte) {
+	if !l.enabled {
+		return
+	}
+	var bodyStr = "nil"
+	if len(body) != 0 {
+		bodyStr = string(body)
+	}
+	l.log("[body]", bodyStr)
+}

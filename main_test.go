@@ -11,13 +11,18 @@ import (
 )
 
 func TestAll(t *testing.T) {
+	TestService(t)
 	TestAccount(t)
 	TestAlbum(t)
 	TestArtist(t)
 	TestPlaylist(t)
 	TestSearch(t)
 	TestTrack(t)
-	TestService(t)
+	TestRotor(t)
+}
+
+func TestService(t *testing.T) {
+	suite.Run(t, &ServiceTestSuite{})
 }
 
 func TestAccount(t *testing.T) {
@@ -44,8 +49,8 @@ func TestTrack(t *testing.T) {
 	suite.Run(t, &TrackTestSuite{})
 }
 
-func TestService(t *testing.T) {
-	suite.Run(t, &ServiceTestSuite{})
+func TestRotor(t *testing.T) {
+	suite.Run(t, &RotorTestSuite{})
 }
 
 // Получить клиент для запросов к API.

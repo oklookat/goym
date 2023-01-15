@@ -50,7 +50,7 @@ func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
 		s.require.Fail("too few playlists")
 	}
 	var playlists = found.Playlists.Results
-	var kindUid = map[int64]int64{}
+	var kindUid = map[schema.KindID]schema.UniqueID{}
 	for i, p := range playlists {
 		kindUid[p.Kind] = p.UID
 		if i >= 6 {
@@ -109,7 +109,7 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	pl5, err := s.cl.AddTracksToPlaylist(ctx, pl, tracksLittle)
 	s.require.Nil(err)
 	s.require.Equal(pl4.Kind, pl5.Kind)
-	s.require.Greater(pl5.Revision, pl4.Revision)
+	s.require.Greater(*pl5.Revision, *pl4.Revision)
 	// get with tracks
 	pl5, err = s.cl.GetMyPlaylistByKind(ctx, pl5.Kind)
 	s.require.Nil(err)
@@ -125,7 +125,7 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	pl6, err := s.cl.DeleteTrackFromPlaylist(ctx, pl5, trackToDelete)
 	s.require.Nil(err)
 	s.require.Equal(pl5.Kind, pl6.Kind)
-	s.require.Greater(pl6.Revision, pl5.Revision)
+	s.require.Greater(*pl6.Revision, *pl5.Revision)
 	// is track actually removed?
 	for _, ti := range pl6.Tracks {
 		s.require.NotEqual(ti.Track.ID, trackToDelete.ID)

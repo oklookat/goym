@@ -11,10 +11,10 @@ func (c Client) GetAccountStatus(ctx context.Context) (*schema.Status, error) {
 	// GET /account/status
 	var endpoint = genApiPath([]string{"account", "status"})
 
-	var data = &schema.TypicalResponse[*schema.Status]{}
+	var data = &schema.Response[*schema.Status]{}
 	resp, err := c.self.R().SetResult(data).SetError(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err
@@ -36,10 +36,10 @@ func (c Client) AccountConsumePromocode(ctx context.Context, code string, langua
 		return nil, err
 	}
 
-	var data = &schema.TypicalResponse[*schema.PromocodeStatus]{}
+	var data = &schema.Response[*schema.PromocodeStatus]{}
 	resp, err := c.self.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err
@@ -50,10 +50,10 @@ func (c Client) GetAccountSettings(ctx context.Context) (*schema.AccountSettings
 	// GET /account/settings
 	var endpoint = genApiPath([]string{"account", "settings"})
 
-	var data = &schema.TypicalResponse[*schema.AccountSettings]{}
+	var data = &schema.Response[*schema.AccountSettings]{}
 	resp, err := c.self.R().SetResult(data).SetError(data).Get(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err
@@ -75,10 +75,10 @@ func (c Client) ChangeAccountSettings(ctx context.Context, set schema.AccountSet
 		return nil, err
 	}
 
-	var data = &schema.TypicalResponse[any]{}
+	var data = &schema.Response[any]{}
 	resp, err := c.self.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
-		err = checkTypicalResponse(resp, data)
+		err = checkResponse(resp, data)
 	}
 
 	return data.Result, err

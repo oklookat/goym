@@ -119,6 +119,14 @@ func (r *Request) SetFormUrlMap(data map[string]string) *Request {
 	return r
 }
 
+// application/json
+func (r *Request) SetJsonString(data string) *Request {
+	r.body = strings.NewReader(data)
+	r.setContentType("application/json")
+	r.setContentLength(len(data))
+	return r
+}
+
 // Set query params.
 func (r *Request) SetQueryParams(params url.Values) *Request {
 	r.params = params
@@ -206,6 +214,7 @@ func (r *Request) unmarshalResponse(resp *http.Response) error {
 		return err
 	}
 	defer resp.Body.Close()
+	r.cl.logger.responseBody(body)
 
 	if r.err != nil && isHttpError(resp.StatusCode) {
 		return json.Unmarshal(body, r.err)

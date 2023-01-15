@@ -36,21 +36,21 @@ func genApiPath(paths []string) string {
 	return base
 }
 
-// Проверить TypicalResponse на наличие ошибки (поле Error).
+// Проверить Response на наличие ошибки (поле Error).
 //
 // Если ошибка есть, возвращает error с сообщением.
-func checkTypicalResponse[T any](resp *vantuz.Response, data *schema.TypicalResponse[T]) error {
+func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error {
 	if resp == nil {
-		return ErrNilResponse
+		return ErrNilHttpResponse
 	}
 	if data == nil {
-		return ErrNilTypicalResponse
+		return ErrNilResponse
 	}
 	if resp.IsSuccess() {
 		return nil
 	}
 	if data.Error == nil {
-		return ErrNilTypicalResponseError
+		return ErrNilResponseError
 	}
 	return fmt.Errorf(errPrefix+"%v: %v", data.Error.Name, data.Error.Message)
 }

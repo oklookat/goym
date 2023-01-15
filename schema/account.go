@@ -1,5 +1,7 @@
 package schema
 
+import "time"
+
 type Status struct {
 	Account      *Account      `json:"account"`
 	Subscription *Subscription `json:"subscription"`
@@ -8,7 +10,7 @@ type Status struct {
 // Настройки пользователя.
 type AccountSettings struct {
 	// ID.
-	UID int64 `json:"uid" url:"-"`
+	UID UniqueID `json:"uid" url:"-"`
 
 	// Включен ли скробблинг last.fm?
 	LastFmScrobblingEnabled   bool `json:"lastFmScrobblingEnabled" url:"lastFmScrobblingEnabled,omitempty"`
@@ -43,6 +45,9 @@ type AccountSettings struct {
 	SyncQueueEnabled bool `json:"syncQueueEnabled" url:"syncQueueEnabled,omitempty"`
 }
 
+// Аккаунт пользователя.
+//
+// Некоторые поля могут (не) быть доступны. Зависит от запроса.
 type Account struct {
 	// Текущая дата и время
 	//
@@ -50,7 +55,7 @@ type Account struct {
 	Now string `json:"now"`
 
 	// Уникальный идентификатор.
-	UID int64 `json:"uid"`
+	UID UniqueID `json:"uid"`
 
 	// Виртуальное имя (обычно e-mail).
 	Login string `json:"login"`
@@ -77,6 +82,15 @@ type Account struct {
 	PassportPhones []struct {
 		Phone string `json:"phone"`
 	} `json:"passport-phones"`
+
+	Child                bool `json:"child"`
+	NonOwnerFamilyMember bool `json:"nonOwnerFamilyMember"`
+}
+
+type AccountPermissions struct {
+	Until   time.Time `json:"until"`
+	Values  []string  `json:"values"`
+	Default []any     `json:"default"`
 }
 
 type PromocodeStatus struct {
@@ -98,10 +112,17 @@ type Subscription struct {
 	HadAnySubscription bool `json:"hadAnySubscription"`
 }
 
+// Информация о подписке Плюс.
+type Plus struct {
+	HasPlus             bool `json:"hasPlus"`
+	IsTutorialCompleted bool `json:"isTutorialCompleted"`
+	Migrated            bool `json:"migrated"`
+}
+
 // Владелец. Владелец плейлиста, например.
 type Owner struct {
 	// id.
-	UID int64 `json:"uid"`
+	UID UniqueID `json:"uid"`
 
 	// Логин.
 	Login string `json:"login"`

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/oklookat/goym/auth"
+	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/goym/vantuz"
 )
 
@@ -23,12 +24,13 @@ var (
 	ErrNilTrackIds = errors.New(errPrefix + "track ids" + errNotProvided)
 	ErrNilAlbumIds = errors.New(errPrefix + "album ids" + errNotProvided)
 	ErrNilUidKind  = errors.New(errPrefix + "uid-kind map" + errNotProvided)
+	ErrNilStation  = errors.New(errPrefix + "station" + errNotProvided)
 	//
-	ErrNilResponse             = errors.New(errPrefix + "nil http.response (dev error?)")
-	ErrNilTypicalResponse      = errors.New(errPrefix + "nil TypicalResponse (dev error?)")
-	ErrNilTypicalResponseError = errors.New(errPrefix + "nil TypicalResponse.Error (API changed?)")
-	ErrNilStatus               = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
-	ErrNilAccount              = errors.New(errPrefix + "nil Status.Account (API changed?)")
+	ErrNilHttpResponse  = errors.New(errPrefix + "nil http.response (dev error?)")
+	ErrNilResponse      = errors.New(errPrefix + "nil Response (dev error?)")
+	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
+	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
+	ErrNilAccount       = errors.New(errPrefix + "nil Status.Account (API changed?)")
 )
 
 // Получить Client для запросов к API.
@@ -62,14 +64,14 @@ func New(tokens *auth.Tokens) (*Client, error) {
 	}
 
 	cl.UserId = status.Account.UID
-	cl.userId = i2s(cl.UserId)
+	cl.userId = cl.UserId.String()
 	return cl, err
 }
 
 // Клиент для запросов к API.
 type Client struct {
 	// ID текущего пользователя.
-	UserId int64
+	UserId schema.UniqueID
 
 	// Для создания эндпоинтов.
 	// Чтоб не конвертировать по 100 раз UserId.

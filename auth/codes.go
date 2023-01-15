@@ -52,11 +52,11 @@ type confirmationCodesResponse struct {
 
 	// Минимальный интервал, с которым приложение должно запрашивать OAuth-токен.
 	// Если запросы будут приходить чаще, Яндекс.OAuth может ответить ошибкой.
-	Interval int `json:"interval"`
+	Interval uint8 `json:"interval"`
 
 	// Срок действия пары кодов.
 	// По истечению этого срока получить токен для них будет невозможно — нужно будет начать процедуру сначала.
-	ExpiresIn int64 `json:"expires_in"`
+	ExpiresIn uint32 `json:"expires_in"`
 }
 
 func (c *confirmationCodes) New(login string) (err error) {
