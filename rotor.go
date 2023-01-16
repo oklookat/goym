@@ -98,7 +98,7 @@ func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation
 // Вариант ответа: "ok" или сообщение об ошибке типа "unknown: omitted".
 func (c Client) RotorStationFeedback(ctx context.Context, st *schema.RotorStation, fType schema.RotorStationFeedbackType, tracks *schema.RotorStationTracks, currentTrack *schema.Track, totalPlayedSeconds float32) (string, error) {
 	// POST /rotor/station/{type:tag}/feedback
-	if st == nil {
+	if st == nil || tracks == nil || currentTrack == nil {
 		return "", ErrNilStation
 	}
 	var body = schema.RotorStationFeedbackRequestBodyQueryString{}

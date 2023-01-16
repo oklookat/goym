@@ -1,11 +1,14 @@
 {
-    "go.addTags": {
-        "tags": "json",
-        "options": "",
-        "promptForTags": false,
-        "transform": "camelcase",
-        "template": ""
-    },
-    "go.testFlags": ["-v", "-count=1"], // -count=1 disables test cache
-	"go.testTimeout":"600s" // 10 minutes
+	"go.addTags": {
+		"tags": "json",
+		"options": "",
+		"promptForTags": false,
+		"transform": "camelcase",
+		"template": ""
+	},
+	"go.testFlags": [
+		"-v", // enable console output, even if all test passed
+		"-count=1" // disable test cache (because we working with API)
+	],
+	"go.testTimeout": "600s" // 10 minutes (because requests with rate limit)
 }
