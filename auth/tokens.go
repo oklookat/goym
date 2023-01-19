@@ -67,7 +67,7 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 	}
 
 	if codes == nil {
-		return ErrNilCodes
+		return nil
 	}
 
 	var form = map[string]string{
@@ -104,8 +104,11 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 		case <-tokensExpired.C:
 			return ErrTokensExpired
 		case <-requestSleep.C:
-			if ctx.Err() != nil {
-				return ErrCancelled
+			if err := ctx.Err(); err != nil {
+				if errors.Is(err, context.Canceled) {
+					return ErrCancelled
+				}
+				return err
 			}
 
 			resp, err := request.Post(ctx, token_endpoint)
@@ -187,7 +190,7 @@ func (t *Tokens) setRefreshAfter() {
 
 	// Основной токен может не обновиться, если оставшийся срок его жизни достаточно длительный
 	// и выдавать новый токен нет необходимости. Рекомендуем обновлять долгоживущие токены раз в три месяца.
-	var after = now.AddDate(0, 3, 5)
+	var after = now.AddDate(0, 3, 5) // +3 месяца и 5 дней
 
 	t.RefreshAfter = after.Unix()
 }

@@ -1,17 +1,16 @@
 // Just HTTP Client.
 package vantuz
 
-import "errors"
+import (
+	"context"
+	"fmt"
+)
 
 const (
 	errPrefix = "goym/vantuz: "
 )
 
-var (
-	ErrRequestCancelled = errors.New(errPrefix + "request cancelled")
-	ErrNilRequestBefore = errors.New(errPrefix + "nil Request.before()")
-	ErrResponse         = errors.New(errPrefix + "nil http.Response")
-)
+var ErrRequestCancelled = fmt.Errorf(errPrefix+"%w", context.Canceled)
 
 // Client.
 func C() *Client {

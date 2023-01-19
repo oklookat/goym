@@ -61,7 +61,7 @@ func (c Client) CreatePlaylist(ctx context.Context, name string, vis schema.Visi
 func (c Client) RenamePlaylist(ctx context.Context, pl *schema.Playlist, newName string) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/name
 	if pl == nil {
-		return nil, ErrNilPlaylist
+		return nil, nil
 	}
 	var body = schema.RenamePlaylistRequestBody{
 		Value: newName,
@@ -84,7 +84,7 @@ func (c Client) RenamePlaylist(ctx context.Context, pl *schema.Playlist, newName
 func (c Client) DeletePlaylist(ctx context.Context, pl *schema.Playlist) error {
 	// POST /users/{userId}/playlists/{kind}/delete
 	if pl == nil {
-		return ErrNilPlaylist
+		return nil
 	}
 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "delete"})
 	var data = &schema.Response[any]{}
@@ -103,7 +103,7 @@ func (c Client) DeletePlaylist(ctx context.Context, pl *schema.Playlist) error {
 func (c Client) GetPlaylistRecommendations(ctx context.Context, pl *schema.Playlist) (*schema.PlaylistRecommendations, error) {
 	// GET /users/{userId}/playlists/{kind}/recommendations
 	if pl == nil {
-		return nil, ErrNilPlaylist
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"users", c.userId, "playlists", pl.Kind.String(), "recommendations"})
 	var data = &schema.Response[*schema.PlaylistRecommendations]{}
@@ -118,7 +118,7 @@ func (c Client) GetPlaylistRecommendations(ctx context.Context, pl *schema.Playl
 func (c Client) ChangePlaylistVisibility(ctx context.Context, pl *schema.Playlist, vis schema.Visibility) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/visibility
 	if pl == nil {
-		return nil, ErrNilPlaylist
+		return nil, nil
 	}
 	var body = schema.ChangePlaylistVisibilityRequestBody{
 		Value: vis,
@@ -145,11 +145,8 @@ func (c Client) AddTracksToPlaylist(ctx context.Context, pl *schema.Playlist, tr
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	// ||
 	// POST /users/{userId}/playlists/{kind}/change
-	if pl == nil {
-		return nil, ErrNilPlaylist
-	}
-	if len(tracks) == 0 {
-		return nil, ErrNilTracks
+	if pl == nil || len(tracks) == 0 {
+		return nil, nil
 	}
 
 	var body = schema.AddDeleteTracksToPlaylistRequestBody{}
@@ -181,10 +178,10 @@ func (c Client) DeleteTrackFromPlaylist(ctx context.Context, pl *schema.Playlist
 	//
 	// POST /users/{userId}/playlists/{kind}/change
 	if pl == nil {
-		return nil, ErrNilPlaylist
+		return nil, nil
 	}
 	if track == nil {
-		return nil, ErrNilTrack
+		return nil, nil
 	}
 
 	var body = schema.AddDeleteTracksToPlaylistRequestBody{}
@@ -210,7 +207,7 @@ func (c Client) DeleteTrackFromPlaylist(ctx context.Context, pl *schema.Playlist
 func (c Client) LikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 	// POST /users/{userId}/likes/playlists/add
 	if pl == nil {
-		return ErrNilPlaylist
+		return nil
 	}
 	var body = schema.LikePlaylistRequestBody{
 		Kind:     pl.Kind,
@@ -234,7 +231,7 @@ func (c Client) LikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 func (c Client) UnlikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 	// POST /users/{userId}/likes/playlists/{kind}/remove
 	if pl == nil {
-		return ErrNilPlaylist
+		return nil
 	}
 
 	var uidAndKind = pl.UID.String() + "-" + pl.Kind.String()
@@ -253,7 +250,7 @@ func (c Client) UnlikePlaylist(ctx context.Context, pl *schema.Playlist) error {
 // kindUid - map[kind плейлиста]uid_владельца
 func (c Client) GetPlaylistsByKindUid(ctx context.Context, kindUid map[schema.KindID]schema.UniqueID) ([]*schema.Playlist, error) {
 	if len(kindUid) == 0 {
-		return nil, ErrNilUidKind
+		return nil, nil
 	}
 
 	// GET /playlists/list

@@ -38,7 +38,7 @@ func (c Client) getLikedDislikedTracks(ctx context.Context, liked bool) (*schema
 func (c Client) LikeTrack(ctx context.Context, track *schema.Track) error {
 	// POST /users/{userId}/likes/tracks/add
 	if track == nil {
-		return ErrNilTrack
+		return nil
 	}
 	var body = schema.LikeTrackRequestBody{
 		TrackId: track.ID,
@@ -74,7 +74,7 @@ func (c Client) likeUnlikeTracks(ctx context.Context, tracks []*schema.Track, li
 	// ||
 	// POST /users/{userId}/likes/tracks/remove
 	if tracks == nil {
-		return ErrNilTracks
+		return nil
 	}
 	var body = schema.LikeUnlikeTracksRequestBody{}
 	body.SetIds(tracks)
@@ -112,7 +112,7 @@ func (c Client) GetTrackById(ctx context.Context, trackId schema.UniqueID) ([]*s
 func (c Client) GetTracksByIds(ctx context.Context, trackIds []schema.UniqueID) ([]*schema.Track, error) {
 	// POST /tracks
 	if trackIds == nil {
-		return nil, ErrNilTrackIds
+		return nil, nil
 	}
 	var body = schema.GetTracksByIdsRequestBody{
 		TrackIds: trackIds,
@@ -135,7 +135,7 @@ func (c Client) GetTracksByIds(ctx context.Context, trackIds []schema.UniqueID) 
 func (c Client) GetTrackDownloadInfo(ctx context.Context, tr *schema.Track) ([]*schema.TrackDownloadInfo, error) {
 	// GET /tracks/{trackId}/download-info
 	if tr == nil {
-		return nil, ErrNilTrack
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"tracks", tr.ID.String(), "download-info"})
 	var data = &schema.Response[[]*schema.TrackDownloadInfo]{}
@@ -150,7 +150,7 @@ func (c Client) GetTrackDownloadInfo(ctx context.Context, tr *schema.Track) ([]*
 func (c Client) GetTrackSupplement(ctx context.Context, tr *schema.Track) (*schema.Supplement, error) {
 	// GET /tracks/{trackId}/supplement
 	if tr == nil {
-		return nil, ErrNilTrack
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"tracks", tr.ID.String(), "supplement"})
 	var data = &schema.Response[*schema.Supplement]{}
@@ -165,7 +165,7 @@ func (c Client) GetTrackSupplement(ctx context.Context, tr *schema.Track) (*sche
 func (c Client) GetSimilarTracks(ctx context.Context, tr *schema.Track) (*schema.SimilarTracks, error) {
 	// GET /tracks/{trackId}/similar
 	if tr == nil {
-		return nil, ErrNilTrack
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"tracks", tr.ID.String(), "similar"})
 	var data = &schema.Response[*schema.SimilarTracks]{}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -144,10 +143,6 @@ func (r *Request) setContentLength(val int) {
 
 // Before request.
 func (r *Request) before(req *http.Request) error {
-	if req == nil {
-		return ErrNilRequestBefore
-	}
-
 	for k, v := range r.headers {
 		req.Header.Set(k, v)
 	}
@@ -173,6 +168,9 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 
 	req, err := http.NewRequestWithContext(ctx, method, urld, r.body)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			err = ErrRequestCancelled
+		}
 		return nil, err
 	}
 
@@ -188,7 +186,7 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 	hResp, err := client.Do(req)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			err = fmt.Errorf("%w (%w)", ErrRequestCancelled, err)
+			err = ErrRequestCancelled
 		}
 		return
 	}
@@ -202,9 +200,6 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 
 // Unmarshal response body to result/err.
 func (r *Request) unmarshalResponse(resp *http.Response) error {
-	if resp == nil {
-		return ErrResponse
-	}
 	if resp.Body == nil {
 		return nil
 	}

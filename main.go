@@ -10,24 +10,12 @@ import (
 )
 
 const (
-	errPrefix      = "goym: "
-	errNotProvided = " not provided"
+	errPrefix = "goym: "
 )
 
 var (
-	ErrNilTokens   = errors.New(errPrefix + "tokens" + errNotProvided)
-	ErrNilAlbum    = errors.New(errPrefix + "album" + errNotProvided)
-	ErrNilArtist   = errors.New(errPrefix + "artist" + errNotProvided)
-	ErrNilPlaylist = errors.New(errPrefix + "playlist" + errNotProvided)
-	ErrNilTracks   = errors.New(errPrefix + "tracks" + errNotProvided)
-	ErrNilTrack    = errors.New(errPrefix + "track" + errNotProvided)
-	ErrNilTrackIds = errors.New(errPrefix + "track ids" + errNotProvided)
-	ErrNilAlbumIds = errors.New(errPrefix + "album ids" + errNotProvided)
-	ErrNilUidKind  = errors.New(errPrefix + "uid-kind map" + errNotProvided)
-	ErrNilStation  = errors.New(errPrefix + "station" + errNotProvided)
+	ErrNilResponse = errors.New(errPrefix + "nil http or schema response (dev error?)")
 	//
-	ErrNilHttpResponse  = errors.New(errPrefix + "nil http.response (dev error?)")
-	ErrNilResponse      = errors.New(errPrefix + "nil Response (dev error?)")
 	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
 	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
 	ErrNilAccount       = errors.New(errPrefix + "nil Status.Account (API changed?)")
@@ -38,7 +26,7 @@ var (
 // Получить tokens можно войдя в аккаунт, используя пакет auth.
 func New(tokens *auth.Tokens) (*Client, error) {
 	if tokens == nil {
-		return nil, ErrNilTokens
+		return nil, nil
 	}
 
 	var vCl = vantuz.C().

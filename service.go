@@ -40,10 +40,7 @@ func genApiPath(paths []string) string {
 //
 // Если ошибка есть, возвращает error с сообщением.
 func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error {
-	if resp == nil {
-		return ErrNilHttpResponse
-	}
-	if data == nil {
+	if resp == nil || data == nil {
 		return ErrNilResponse
 	}
 	if resp.IsSuccess() {

@@ -72,7 +72,7 @@ func (c *confirmationCodes) New(login string) (err error) {
 // Отправить запрос.
 func (c confirmationCodes) Send(ctx context.Context) (*confirmationCodesResponse, error) {
 	if !c.isNewCalled {
-		return nil, ErrCallNew
+		return nil, nil
 	}
 
 	var codes = &confirmationCodesResponse{}

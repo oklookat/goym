@@ -22,7 +22,7 @@ func (c Client) GetLikedArtists(ctx context.Context) ([]*schema.Artist, error) {
 func (c Client) LikeArtist(ctx context.Context, a *schema.Artist) error {
 	// POST /users/{userId}/likes/artists/add
 	if a == nil {
-		return ErrNilArtist
+		return nil
 	}
 
 	var body = schema.LikeArtistRequestBody{
@@ -47,7 +47,7 @@ func (c Client) LikeArtist(ctx context.Context, a *schema.Artist) error {
 func (c Client) UnlikeArtist(ctx context.Context, ar *schema.Artist) error {
 	// POST /users/{userId}/likes/artists/{artistId}/remove
 	if ar == nil {
-		return ErrNilArtist
+		return nil
 	}
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "artists", ar.ID.String(), "remove"})
 	var data = &schema.Response[any]{}
@@ -106,7 +106,7 @@ func (c Client) GetArtistAlbums(ctx context.Context, artistId schema.UniqueID, p
 func (c Client) GetArtistTopTracks(ctx context.Context, ar *schema.Artist) (*schema.ArtistTopTracks, error) {
 	// GET /artists/{artistId}/track-ids-by-rating
 	if ar == nil {
-		return nil, ErrNilArtist
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"artists", ar.ID.String(), "track-ids-by-rating"})
 	var data = &schema.Response[*schema.ArtistTopTracks]{}
@@ -121,7 +121,7 @@ func (c Client) GetArtistTopTracks(ctx context.Context, ar *schema.Artist) (*sch
 func (c Client) GetArtistInfo(ctx context.Context, ar *schema.Artist) (*schema.ArtistBriefInfo, error) {
 	// GET /artists/{artistId}/brief-info
 	if ar == nil {
-		return nil, ErrNilArtist
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"artists", ar.ID.String(), "brief-info"})
 	var data = &schema.Response[*schema.ArtistBriefInfo]{}

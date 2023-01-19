@@ -24,7 +24,7 @@ func (c Client) GetRotorDashboard(ctx context.Context) (*schema.RotorDashboard, 
 func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStation, lastTrack *schema.Track) (*schema.RotorStationTracks, error) {
 	// GET /rotor/station/{type:tag}/tracks
 	if st == nil {
-		return nil, ErrNilStation
+		return nil, nil
 	}
 	var body = schema.GetRotorStationTracksQueryParams{
 		Settings2: true,
@@ -82,7 +82,7 @@ func (c Client) GetRotorStationsList(ctx context.Context, language *string) ([]*
 func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation) ([]*schema.RotorStationInfo, error) {
 	// GET /rotor/station/{type:tag}/info
 	if st == nil {
-		return nil, ErrNilStation
+		return nil, nil
 	}
 	var endpoint = genApiPath([]string{"rotor", "station", st.ID.String(), "info"})
 	var data = &schema.Response[[]*schema.RotorStationInfo]{}
@@ -99,7 +99,7 @@ func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation
 func (c Client) RotorStationFeedback(ctx context.Context, st *schema.RotorStation, fType schema.RotorStationFeedbackType, tracks *schema.RotorStationTracks, currentTrack *schema.Track, totalPlayedSeconds float32) (string, error) {
 	// POST /rotor/station/{type:tag}/feedback
 	if st == nil || tracks == nil || currentTrack == nil {
-		return "", ErrNilStation
+		return "", nil
 	}
 	var body = schema.RotorStationFeedbackRequestBodyQueryString{}
 	body.Fill(fType, tracks, currentTrack, totalPlayedSeconds)

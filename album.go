@@ -34,7 +34,7 @@ func (c Client) GetAlbumById(ctx context.Context, id schema.UniqueID, withTracks
 func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []schema.UniqueID) ([]*schema.Album, error) {
 	// POST /albums
 	if albumIds == nil {
-		return nil, ErrNilAlbumIds
+		return nil, nil
 	}
 
 	var body = schema.GetAlbumsByIdsRequestBody{
@@ -60,7 +60,7 @@ func (c Client) GetAlbumsByIds(ctx context.Context, albumIds []schema.UniqueID) 
 func (c Client) LikeAlbum(ctx context.Context, al *schema.Album) error {
 	// POST /users/{userId}/likes/albums/add
 	if al == nil {
-		return ErrNilAlbum
+		return nil
 	}
 
 	var body = schema.LikeAlbumRequestBody{
@@ -87,7 +87,7 @@ func (c Client) LikeAlbum(ctx context.Context, al *schema.Album) error {
 func (c Client) UnlikeAlbum(ctx context.Context, al *schema.Album) error {
 	// POST /users/{userId}/likes/albums/{albumId}/remove
 	if al == nil {
-		return ErrNilAlbum
+		return nil
 	}
 
 	var endpoint = genApiPath([]string{"users", c.userId, "likes", "albums", al.ID.String(), "remove"})

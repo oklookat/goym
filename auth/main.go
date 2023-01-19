@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 /**
@@ -11,19 +12,14 @@ https://yandex.ru/dev/id/doc/dg
 **/
 
 const (
-	errPrefix      = "goym/auth: "
-	errNotProvided = " not provided"
+	errPrefix = "goym/auth: "
 )
 
 var (
-	ErrCallNew            = errors.New(errPrefix + "you must call New() first")
-	ErrNilCtx             = errors.New(errPrefix + "context" + errNotProvided)
-	ErrNilCodeHook        = errors.New(errPrefix + "code function" + errNotProvided)
-	ErrNilCodes           = errors.New(errPrefix + "codes" + errNotProvided)
 	ErrTokensExpired      = errors.New(errPrefix + "tokens expired. You should have been completed authorization within 5-10 minutes")
-	ErrCancelled          = errors.New(errPrefix + "cancelled")
 	ErrInvalidGrant       = errors.New(errPrefix + "incorrect or expired confirmation code")
 	ErrTokensRefreshAfter = errors.New(errPrefix + "empty Tokens.RefreshAfter (broken token?)")
+	ErrCancelled          = fmt.Errorf(errPrefix+"%w", context.Canceled)
 	// bad
 	ErrBrokenTokensErr = errors.New(errPrefix + "statusCode != 200, but tokensError is empty (API changed?)")
 	ErrBrokenClient    = errors.New(errPrefix + "broken client_id or client_secret (OAuth App changed?)")
@@ -64,10 +60,10 @@ func New(ctx context.Context,
 	login string,
 	code func(url string, code string)) (*Tokens, error) {
 	if ctx == nil {
-		return nil, ErrNilCtx
+		return nil, nil
 	}
 	if code == nil {
-		return nil, ErrNilCodeHook
+		return nil, nil
 	}
 
 	// запрашиваем коды.
