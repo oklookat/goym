@@ -5,6 +5,8 @@ import (
 )
 
 // Артист.
+//
+// Много полей могут быть nil. Например, когда Artist находится в составе Track.
 type Artist struct {
 	ID UniqueID `json:"-"`
 
@@ -17,17 +19,21 @@ type Artist struct {
 	Cover *Cover `json:"cover"`
 
 	// По сути дублирует Cover.URI.
-	OgImage string `json:"ogImage"`
+	OgImage *string `json:"ogImage"`
 
 	// Жанры.
 	Genres []string `json:"genres"`
 
 	// Количество разных вещей.
-	Counts struct {
-		Tracks       uint32 `json:"tracks"`
+	Counts *struct {
+		// Треки.
+		Tracks uint32 `json:"tracks"`
+		// Альбомы.
 		DirectAlbums uint32 `json:"directAlbums"`
-		AlsoAlbums   uint32 `json:"alsoAlbums"`
-		AlsoTracks   uint32 `json:"alsoTracks"`
+		// Тоже альбомы (вероятно ремиксы, etc).
+		AlsoAlbums uint32 `json:"alsoAlbums"`
+		// Тоже треки (вероятно ремиксы, etc).
+		AlsoTracks uint32 `json:"alsoTracks"`
 	} `json:"counts"`
 
 	Available bool `json:"available"`
@@ -54,45 +60,12 @@ type Artist struct {
 		Href string `json:"href"`
 		// social | official
 		Type string `json:"type"`
-		// twitter | youtube | vk | telegram. Nil, вероятно когда Type == official.
+		// twitter | youtube | vk | telegram. Может быть nil, когда Type == official.
 		SocialNetwork *string `json:"socialNetwork"`
 	} `json:"links"`
 
 	// Доступны билеты на концерт?
-	TicketsAvailable bool `json:"ticketsAvailable"`
-
-	// ---- Поля ниже доступны, при получении Brief Info. ---- //
-
-	// Сколько людей лайкнули артиста?
-	LikesCount *uint32 `json:"likesCount"`
-
-	// Описание.
-	Description *struct {
-		// Об артисте.
-		Text string `json:"text"`
-
-		// Ссылка на источник. Например, на Википедию.
-		URI string `json:"uri"`
-	} `json:"description"`
-
-	// Откуда артист? Пример: ["Франция"].
-	Countries []string `json:"countries"`
-
-	// Год начала карьеры.
-	InitDate *string `json:"initDate"`
-
-	// Год конца карьеры.
-	EndDate *string `json:"endDate"`
-
-	// Ссылка на страницу артиста в английской Википедии.
-	EnWikipediaLink string `json:"enWikipediaLink"`
-
-	// Стили написания имени артиста.
-	//
-	// Пример: ["Daft punk", "Дафт Панк", "duft pank", "ダフトパンク"]
-	DbAliases []string `json:"dbAliases"`
-
-	// ---- Поля выше доступны, при получении Brief Info. ---- //
+	TicketsAvailable *bool `json:"ticketsAvailable"`
 }
 
 func (a *Artist) UnmarshalJSON(data []byte) error {
@@ -110,7 +83,38 @@ func (a *Artist) UnmarshalJSON(data []byte) error {
 }
 
 type ArtistBriefInfo struct {
-	Artist         Artist    `json:"artist"`
+	Artist *struct {
+		Artist
+
+		// Сколько людей лайкнули артиста?
+		LikesCount uint32 `json:"likesCount"`
+
+		// Описание.
+		Description struct {
+			// Об артисте.
+			Text string `json:"text"`
+
+			// Ссылка на источник. Например, на Википедию.
+			URI string `json:"uri"`
+		} `json:"description"`
+
+		// Откуда артист? Пример: ["Франция"].
+		Countries []string `json:"countries"`
+
+		// Год начала карьеры.
+		InitDate string `json:"initDate"`
+
+		// Год конца карьеры.
+		EndDate string `json:"endDate"`
+
+		// Ссылка на страницу артиста в английской Википедии.
+		EnWikipediaLink string `json:"enWikipediaLink"`
+
+		// Стили написания имени артиста.
+		//
+		// Пример: ["Daft punk", "Дафт Панк", "duft pank", "ダフトパンク"]
+		DbAliases []string `json:"dbAliases"`
+	} `json:"artist"`
 	Albums         []*Album  `json:"albums"`
 	AlsoAlbums     []*Album  `json:"alsoAlbums"`
 	PopularTracks  []*Track  `json:"popularTracks"`
