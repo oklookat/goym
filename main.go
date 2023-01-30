@@ -3,6 +3,7 @@ package goym
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/oklookat/goym/auth"
 	"github.com/oklookat/goym/schema"
@@ -10,7 +11,8 @@ import (
 )
 
 const (
-	errPrefix = "goym: "
+	errPrefix  = "goym: "
+	_userAgent = "goym/v0.2.7 (github.com/oklookat/goym)"
 )
 
 var (
@@ -31,7 +33,7 @@ func New(tokens *auth.Tokens) (*Client, error) {
 
 	var vCl = vantuz.C().
 		SetGlobalHeaders(map[string]string{
-			"User-Agent":    "oklookat/goym",
+			"User-Agent":    _userAgent,
 			"Authorization": "OAuth " + tokens.AccessToken,
 		})
 	var cl = &Client{
@@ -77,4 +79,13 @@ func (c Client) EnableDevMode() {
 // Отключить вывод HTTP запросов в консоль.
 func (c Client) DisableDevMode() {
 	c.self.DisableDevMode()
+}
+
+// Установить максимальное количество запросов.
+//
+// Например: 1 запрос в секунду. Если будет два запроса в секунду, придется ждать 2 секунды.
+//
+// Стандартное значение: requests = 0 (отключает ограничение).
+func (c Client) SetRateLimit(requests int, per time.Duration) {
+	c.self.SetRateLimit(requests, per)
 }

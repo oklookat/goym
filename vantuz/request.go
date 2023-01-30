@@ -49,17 +49,17 @@ type Request struct {
 }
 
 // GET request.
-func (r *Request) Get(ctx context.Context, url string) (*Response, error) {
+func (r Request) Get(ctx context.Context, url string) (*Response, error) {
 	return r.exec(ctx, http.MethodGet, url)
 }
 
 // POST request.
-func (r *Request) Post(ctx context.Context, url string) (*Response, error) {
+func (r Request) Post(ctx context.Context, url string) (*Response, error) {
 	return r.exec(ctx, http.MethodPost, url)
 }
 
 // DELETE request.
-func (r *Request) Delete(ctx context.Context, url string) (*Response, error) {
+func (r Request) Delete(ctx context.Context, url string) (*Response, error) {
 	return r.exec(ctx, http.MethodDelete, url)
 }
 
@@ -142,22 +142,27 @@ func (r *Request) setContentLength(val int) {
 }
 
 // Before request.
-func (r *Request) before(req *http.Request) error {
+func (r Request) before(req *http.Request, ctx context.Context) error {
 	for k, v := range r.headers {
 		req.Header.Set(k, v)
 	}
 
 	req.URL.RawQuery = r.params.Encode()
-	ctx := context.Background()
-	err := r.limiter.Wait(ctx)
 
-	return err
+	if r.limiter != nil {
+		return r.limiter.Wait(ctx)
+	}
+
+	return nil
 }
 
 // Execute request.
 func (r *Request) exec(ctx context.Context, method string, urld string) (resp *Response, err error) {
 	defer func() {
 		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				err = ErrRequestCancelled
+			}
 			r.cl.logger.log(err.Error())
 		}
 	}()
@@ -166,16 +171,14 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, urld, r.body)
+	var req *http.Request
+	req, err = http.NewRequestWithContext(ctx, method, urld, r.body)
 	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			err = ErrRequestCancelled
-		}
 		return nil, err
 	}
 
-	if err = r.before(req); err != nil {
-		return nil, err
+	if err = r.before(req, ctx); err != nil {
+		return
 	}
 
 	r.cl.logger.request(req)
@@ -183,13 +186,13 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 	client := &http.Client{
 		Timeout: 20 * time.Second,
 	}
-	hResp, err := client.Do(req)
+
+	var hResp *http.Response
+	hResp, err = client.Do(req)
 	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			err = ErrRequestCancelled
-		}
 		return
 	}
+
 	r.cl.logger.response(hResp)
 	if err = r.unmarshalResponse(hResp); err != nil {
 		return
@@ -199,7 +202,7 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 }
 
 // Unmarshal response body to result/err.
-func (r *Request) unmarshalResponse(resp *http.Response) error {
+func (r Request) unmarshalResponse(resp *http.Response) error {
 	if resp.Body == nil {
 		return nil
 	}

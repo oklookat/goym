@@ -3,6 +3,7 @@ package goym
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/oklookat/goym/auth"
@@ -74,6 +75,7 @@ func getClient(t *testing.T) *Client {
 
 	cl, err := New(tok)
 	require.Nil(err)
+	cl.SetRateLimit(1, time.Duration(1)*time.Second)
 
 	//cl.EnableDevMode()
 	return cl

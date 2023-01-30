@@ -45,14 +45,12 @@ func (c *Client) SetGlobalHeaders(h map[string]string) *Client {
 
 // Set max requests per second.
 //
-// Example: SetRateLimit(1, 1) - 1 request per second
-//
-// If there are more requests, the goroutine will block.
-//
-// Default: 1 request per second.
-func (c *Client) SetRateLimit(requests int, perSecond int) *Client {
-	var dur = time.Duration(perSecond) * time.Second
-	c.limiter = rate.NewLimiter(rate.Every(dur), requests)
+// requests == 0 - disables limiting.
+func (c *Client) SetRateLimit(requests int, per time.Duration) *Client {
+	if requests == 0 {
+		return c
+	}
+	c.limiter = rate.NewLimiter(rate.Every(per), requests)
 	return c
 }
 

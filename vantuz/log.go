@@ -11,7 +11,7 @@ type Logger struct {
 	enabled bool
 }
 
-func (l *Logger) log(format string, a ...any) {
+func (l Logger) log(format string, a ...any) {
 	if !l.enabled {
 		return
 	}
@@ -19,7 +19,7 @@ func (l *Logger) log(format string, a ...any) {
 	fmt.Println(msg)
 }
 
-func (l *Logger) request(req *http.Request) {
+func (l Logger) request(req *http.Request) {
 	if !l.enabled || req == nil {
 		return
 	}
@@ -36,14 +36,14 @@ func (l *Logger) request(req *http.Request) {
 	}
 }
 
-func (l *Logger) response(resp *http.Response) {
+func (l Logger) response(resp *http.Response) {
 	if !l.enabled || resp == nil {
 		return
 	}
 	l.log("==== RESPONSE (%v): %v ====", resp.StatusCode, resp.Request.URL.String())
 }
 
-func (l *Logger) responseBody(body []byte) {
+func (l Logger) responseBody(body []byte) {
 	if !l.enabled {
 		return
 	}

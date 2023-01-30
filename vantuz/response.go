@@ -16,16 +16,16 @@ type Response struct {
 }
 
 // status code >= 400.
-func (r *Response) IsError() bool {
+func (r Response) IsError() bool {
 	return isHttpError(r.self.StatusCode)
 }
 
 // status code >= 200 and <= 299.
-func (r *Response) IsSuccess() bool {
+func (r Response) IsSuccess() bool {
 	return isHttpSuccess(r.self.StatusCode)
 }
 
 // Object from Request.SetError().
-func (r *Response) Error() any {
+func (r Response) Error() any {
 	return r.req.err
 }
