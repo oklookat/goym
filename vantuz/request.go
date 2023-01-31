@@ -14,11 +14,12 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func newRequest(cl *Client, limit *rate.Limiter) *Request {
+func newRequest(cl *Client, limit *rate.Limiter, timeout time.Duration) *Request {
 	var r = &Request{
 		cl:      cl,
 		limiter: limit,
 		headers: make(map[string]string),
+		timeout: timeout,
 	}
 	if cl.headers != nil {
 		for k, v := range cl.headers {
@@ -36,7 +37,7 @@ type Request struct {
 	// query params.
 	params url.Values
 
-	body io.Reader
+	bodyStr string
 
 	// request headers.
 	headers map[string]string
@@ -46,6 +47,8 @@ type Request struct {
 
 	// unmarshal body (HTTP success)
 	result any
+
+	timeout time.Duration
 }
 
 // GET request.
@@ -85,44 +88,39 @@ func (r *Request) SetResult(res any) *Request {
 	return r
 }
 
+func (r *Request) setStringBody(val string, contentType string) {
+	r.bodyStr = val
+	r.setContentType(contentType)
+	r.setContentLength(len(val))
+}
+
 // application/x-www-form-urlencoded
 func (r *Request) SetFormUrlValues(data url.Values) *Request {
 	if data == nil {
 		return r
 	}
-
 	var encoded = data.Encode()
-	r.body = strings.NewReader(encoded)
-	r.setContentType("application/x-www-form-urlencoded")
-	r.setContentLength(len(encoded))
-
+	r.setStringBody(encoded, "application/x-www-form-urlencoded")
 	return r
 }
 
 // application/x-www-form-urlencoded
 func (r *Request) SetFormUrlMap(data map[string]string) *Request {
-	if data == nil {
+	if len(data) == 0 {
 		return r
 	}
-
 	var vals = url.Values{}
 	for k, v := range data {
 		vals.Set(k, v)
 	}
-
 	var encoded = vals.Encode()
-	r.body = strings.NewReader(encoded)
-	r.setContentType("application/x-www-form-urlencoded")
-	r.setContentLength(len(encoded))
-
+	r.setStringBody(encoded, "application/x-www-form-urlencoded")
 	return r
 }
 
 // application/json
 func (r *Request) SetJsonString(data string) *Request {
-	r.body = strings.NewReader(data)
-	r.setContentType("application/json")
-	r.setContentLength(len(data))
+	r.setStringBody(data, "application/json")
 	return r
 }
 
@@ -141,21 +139,6 @@ func (r *Request) setContentLength(val int) {
 	r.headers["Content-Length"] = strconv.Itoa(val)
 }
 
-// Before request.
-func (r Request) before(req *http.Request, ctx context.Context) error {
-	for k, v := range r.headers {
-		req.Header.Set(k, v)
-	}
-
-	req.URL.RawQuery = r.params.Encode()
-
-	if r.limiter != nil {
-		return r.limiter.Wait(ctx)
-	}
-
-	return nil
-}
-
 // Execute request.
 func (r *Request) exec(ctx context.Context, method string, urld string) (resp *Response, err error) {
 	defer func() {
@@ -167,32 +150,45 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 		}
 	}()
 
+	var body = strings.NewReader(r.bodyStr)
+
+	// validate url.
 	if _, err := url.Parse(urld); err != nil {
 		return nil, err
 	}
 
+	// create request.
 	var req *http.Request
-	req, err = http.NewRequestWithContext(ctx, method, urld, r.body)
+	req, err = http.NewRequestWithContext(ctx, method, urld, body)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = r.before(req, ctx); err != nil {
-		return
+	// set headers.
+	for k, v := range r.headers {
+		req.Header.Set(k, v)
+	}
+	req.URL.RawQuery = r.params.Encode()
+	if r.limiter != nil {
+		if err = r.limiter.Wait(ctx); err != nil {
+			return
+		}
 	}
 
 	r.cl.logger.request(req)
 
 	client := &http.Client{
-		Timeout: 20 * time.Second,
+		Timeout: r.timeout,
 	}
 
+	// send request.
 	var hResp *http.Response
 	hResp, err = client.Do(req)
 	if err != nil {
 		return
 	}
 
+	// make response.
 	r.cl.logger.response(hResp)
 	if err = r.unmarshalResponse(hResp); err != nil {
 		return

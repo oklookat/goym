@@ -2,32 +2,65 @@ package vantuz
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestRequestRateLimit(t *testing.T) {
-	var expected = 5
+func TestAll(t *testing.T) {
+	suite.Run(t, &VantuzTestSuite{})
+}
 
-	var reqCount = 0
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqCount++
-		if _, err := w.Write([]byte("hello")); err != nil {
-			t.Fatal(err)
-		}
+type VantuzTestSuite struct {
+	suite.Suite
+	require *require.Assertions
+}
+
+func (s *VantuzTestSuite) SetupSuite() {
+	s.require = s.Require()
+}
+
+func (s VantuzTestSuite) TestRequestRateLimit() {
+	var requestCount = 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		w.Write([]byte("Hello."))
 	}))
-	defer srv.Close()
+	defer server.Close()
 
-	var cl = C().EnableDevMode()
+	var expected = 5
+	req := C().EnableDevMode().R()
 	for i := 0; i < expected; i++ {
-		_, err := cl.R().Get(context.Background(), srv.URL)
-		if err != nil {
-			t.Fatal(err)
-		}
+		_, err := req.Get(context.Background(), server.URL)
+		s.require.Nil(err)
 	}
 
-	if reqCount != expected {
-		t.Fatalf("expected %v requests, got: %v", expected, reqCount)
+	s.require.EqualValues(expected, requestCount)
+}
+
+func (s VantuzTestSuite) TestOneRequestManySend() {
+	const key = "grant_type"
+	const val = "device_code"
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotVal := r.Form.Get(key)
+		s.require.Equal(val, gotVal)
+	}))
+	defer server.Close()
+
+	var form = map[string]string{
+		key: val,
+	}
+	req := C().R().
+		SetFormUrlMap(form)
+	for i := 0; i < 10; i++ {
+		fmt.Printf("Request: %d\n", i)
+		_, err := req.Post(context.Background(), server.URL)
+		s.require.Nil(err)
 	}
 }

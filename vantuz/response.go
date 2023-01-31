@@ -1,6 +1,8 @@
 package vantuz
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func newResponse(req *Request, resp *http.Response) *Response {
 	var newResp = &Response{

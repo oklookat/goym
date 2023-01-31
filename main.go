@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	errPrefix  = "goym: "
-	_userAgent = "goym/v0.2.7 (github.com/oklookat/goym)"
+	errPrefix = "goym: "
 )
 
 var (
@@ -33,7 +32,6 @@ func New(tokens *auth.Tokens) (*Client, error) {
 
 	var vCl = vantuz.C().
 		SetGlobalHeaders(map[string]string{
-			"User-Agent":    _userAgent,
 			"Authorization": "OAuth " + tokens.AccessToken,
 		})
 	var cl = &Client{
@@ -85,7 +83,16 @@ func (c Client) DisableDevMode() {
 //
 // Например: 1 запрос в секунду. Если будет два запроса в секунду, придется ждать 2 секунды.
 //
-// Стандартное значение: requests = 0 (отключает ограничение).
+// По умолчанию: 0 (выкл).
 func (c Client) SetRateLimit(requests int, per time.Duration) {
 	c.self.SetRateLimit(requests, per)
+}
+
+// Установить максимальное время ожидания ответа.
+//
+// По умолчанию: 20 секунд.
+//
+// 0 и ниже: установить по умолчанию.
+func (c Client) SetTimeout(val time.Duration) {
+	c.self.SetTimeout(val)
 }
