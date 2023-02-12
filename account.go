@@ -9,10 +9,10 @@ import (
 // Получить информацию об аккаунте.
 func (c Client) GetAccountStatus(ctx context.Context) (*schema.Status, error) {
 	// GET /account/status
-	var endpoint = genApiPath([]string{"account", "status"})
+	endpoint := genApiPath([]string{"account", "status"})
 
-	var data = &schema.Response[*schema.Status]{}
-	resp, err := c.self.R().SetResult(data).SetError(data).Get(ctx, endpoint)
+	data := &schema.Response[*schema.Status]{}
+	resp, err := c.Http.R().SetResult(data).SetError(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -25,9 +25,9 @@ func (c Client) GetAccountStatus(ctx context.Context) (*schema.Status, error) {
 // Метод не тестировался.
 func (c Client) AccountConsumePromocode(ctx context.Context, code string, language string) (*schema.PromocodeStatus, error) {
 	// POST /account/consume-promo-code
-	var endpoint = genApiPath([]string{"account", "consume-promo-code"})
+	endpoint := genApiPath([]string{"account", "consume-promo-code"})
 
-	var body = schema.AccountConsumePromocodeRequestBody{
+	body := schema.AccountConsumePromocodeRequestBody{
 		Code:     code,
 		Language: language,
 	}
@@ -36,8 +36,8 @@ func (c Client) AccountConsumePromocode(ctx context.Context, code string, langua
 		return nil, err
 	}
 
-	var data = &schema.Response[*schema.PromocodeStatus]{}
-	resp, err := c.self.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	data := &schema.Response[*schema.PromocodeStatus]{}
+	resp, err := c.Http.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -48,10 +48,10 @@ func (c Client) AccountConsumePromocode(ctx context.Context, code string, langua
 // Получить настройки аккаунта.
 func (c Client) GetAccountSettings(ctx context.Context) (*schema.AccountSettings, error) {
 	// GET /account/settings
-	var endpoint = genApiPath([]string{"account", "settings"})
+	endpoint := genApiPath([]string{"account", "settings"})
 
-	var data = &schema.Response[*schema.AccountSettings]{}
-	resp, err := c.self.R().SetResult(data).SetError(data).Get(ctx, endpoint)
+	data := &schema.Response[*schema.AccountSettings]{}
+	resp, err := c.Http.R().SetResult(data).SetError(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -66,17 +66,17 @@ func (c Client) GetAccountSettings(ctx context.Context) (*schema.AccountSettings
 // Может вернуть как AccountSettings, так и ничего.
 func (c Client) ChangeAccountSettings(ctx context.Context, set schema.AccountSettings) (any, error) {
 	// POST /account/settings
-	var endpoint = genApiPath([]string{"account", "settings"})
+	endpoint := genApiPath([]string{"account", "settings"})
 
-	var body = schema.ChangeAccountSettingsRequestBody{}
+	body := schema.ChangeAccountSettingsRequestBody{}
 	body.Change(set)
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return nil, err
 	}
 
-	var data = &schema.Response[any]{}
-	resp, err := c.self.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	data := &schema.Response[any]{}
+	resp, err := c.Http.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}

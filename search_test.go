@@ -33,6 +33,6 @@ func (s SearchTestSuite) TestSearchSuggest() {
 	s.require.NotEmpty(sugg.Suggestions)
 	s.require.NotNil(sugg.Best.Result)
 
-	var suggestion = sugg.Suggestions[0]
+	suggestion := sugg.Suggestions[0]
 	s.require.Equal("eminem", suggestion)
 }

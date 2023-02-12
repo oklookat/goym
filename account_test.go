@@ -28,25 +28,31 @@ func (s AccountTestSuite) TestGetAccountStatus() {
 }
 
 func (s AccountTestSuite) TestGetChangeAccountSettings() {
-	var getSettings = func() *schema.AccountSettings {
+	getSettings := func() *schema.AccountSettings {
 		sett, err := s.cl.GetAccountSettings(context.Background())
 		s.require.Nil(err)
 		s.require.NotNil(sett)
 		s.require.Positive(sett.UID)
 		return sett
 	}
-	var newSet = schema.AccountSettings{}
-	newSet.VolumePercents = 10
+
+	// set new settings
+	newSet := schema.AccountSettings{
+		VolumePercents: 10,
+	}
 	_, err := s.cl.ChangeAccountSettings(context.Background(), newSet)
 	s.require.Nil(err)
 
+	// get current and compare
 	sett := getSettings()
 	s.require.Equal(newSet.VolumePercents, sett.VolumePercents)
 
+	// set new
 	newSet.VolumePercents = 33
 	_, err = s.cl.ChangeAccountSettings(context.Background(), newSet)
 	s.require.Nil(err)
 
+	// get current and compare
 	sett = getSettings()
 	s.require.Equal(newSet.VolumePercents, sett.VolumePercents)
 }

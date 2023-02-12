@@ -5,11 +5,10 @@ import (
 )
 
 func newResponse(req *Request, resp *http.Response) *Response {
-	var newResp = &Response{
+	return &Response{
 		req:  req,
 		self: resp,
 	}
-	return newResp
 }
 
 type Response struct {

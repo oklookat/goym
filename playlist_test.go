@@ -27,12 +27,12 @@ func (s PlaylistTestSuite) TestGetMyPlaylists() {
 }
 
 func (s PlaylistTestSuite) TestLikeUnlikePlaylist() {
-	var ctx = context.Background()
+	ctx := context.Background()
 	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
 	s.require.Nil(err)
 	s.require.NotNil(found.Playlists)
 	s.require.NotEmpty(found.Playlists.Results)
-	var pl = found.Playlists.Results[0]
+	pl := found.Playlists.Results[0]
 	err = s.cl.LikePlaylist(ctx, pl)
 	s.require.Nil(err)
 
@@ -41,7 +41,7 @@ func (s PlaylistTestSuite) TestLikeUnlikePlaylist() {
 }
 
 func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
-	var ctx = context.Background()
+	ctx := context.Background()
 	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
 	s.require.Nil(err)
 	s.require.NotNil(found.Playlists)
@@ -49,8 +49,8 @@ func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
 	if len(found.Playlists.Results) < 5 {
 		s.require.Fail("too few playlists")
 	}
-	var playlists = found.Playlists.Results
-	var kindUid = map[schema.KindID]schema.UniqueID{}
+	playlists := found.Playlists.Results
+	kindUid := map[schema.KindID]schema.UniqueID{}
 	for i, p := range playlists {
 		kindUid[p.Kind] = p.UID
 		if i >= 6 {
@@ -75,7 +75,7 @@ func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
 // DeleteTrackFromPlaylist()
 // GetPlaylistRecommendations()
 func (s PlaylistTestSuite) TestPlaylistCRUD() {
-	var ctx = context.Background()
+	ctx := context.Background()
 
 	pl, err := s.cl.CreatePlaylist(ctx, "goymtesting", schema.VisibilityPublic)
 	s.require.Nil(err)
@@ -97,12 +97,12 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	tracksResp, err := s.cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
 	s.require.NotEmpty(tracksResp.Tracks)
-	var tracks = tracksResp.Tracks.Results
+	tracks := tracksResp.Tracks.Results
 	// 10 tracks
-	var tracksLittle = []*schema.Track{}
+	tracksLittle := []*schema.Track{}
 	for i := range tracks {
 		tracksLittle = append(tracksLittle, tracks[i])
-		if len(tracksLittle) == 10 {
+		if len(tracksLittle) >= 10 {
 			break
 		}
 	}
@@ -121,7 +121,7 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	s.require.Positive(recs.Tracks[0].ID)
 
 	// DeleteTrackFromPlaylist (remove)
-	var trackToDelete = pl5.Tracks[0]
+	trackToDelete := pl5.Tracks[0]
 	pl6, err := s.cl.DeleteTrackFromPlaylist(ctx, pl5, trackToDelete)
 	s.require.Nil(err)
 	s.require.Equal(pl5.Kind, pl6.Kind)

@@ -1,6 +1,7 @@
 package vantuz
 
 import (
+	"net/http"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -8,24 +9,20 @@ import (
 
 // HTTP Client.
 type Client struct {
+	self *http.Client
+
 	// limit requests.
 	limiter *rate.Limiter
 
 	// global headers.
 	headers map[string]string
 
-	// logger.
-	logger Logger
-
-	timeout time.Duration
+	log Logger
 }
 
 // Create request.
 func (c *Client) R() *Request {
-	if c.timeout <= 0 {
-		c.SetTimeout(0)
-	}
-	return newRequest(c, c.limiter, c.timeout)
+	return newRequest(c)
 }
 
 // Set header for all requests from this client.
@@ -59,27 +56,10 @@ func (c *Client) SetRateLimit(requests int, per time.Duration) *Client {
 	return c
 }
 
-// Set request timeout.
-//
-// Default: 20 seconds.
-//
-// 0 and lower: set to default.
-func (c *Client) SetTimeout(val time.Duration) {
-	if val <= 0 {
-		c.timeout = 20 * time.Second
-		return
-	}
-	c.timeout = val
+func (c *Client) SetLogger(log Logger) {
+	c.log = log
 }
 
-// Print request/response.
-func (c *Client) EnableDevMode() *Client {
-	c.logger.enabled = true
-	return c
-}
-
-// Disable request/response print.
-func (c *Client) DisableDevMode() *Client {
-	c.logger.enabled = false
-	return c
+func (c *Client) SetClient(cl *http.Client) {
+	c.self = cl
 }

@@ -58,13 +58,13 @@ func (s RotorTestSuite) TestGetRotorAccountStatus() {
 }
 
 func (s RotorTestSuite) TestGetRotorStationsList() {
-	var getWithLang = func(lang *string) {
+	getWithLang := func(lang *string) {
 		res, err := s.cl.GetRotorStationsList(context.Background(), lang)
 		s.require.Nil(err)
 		s.require.NotEmpty(res)
 		s.require.NotEmpty(res[0].Station.ID.Tag)
 	}
-	var lang = "en"
+	lang := "en"
 	getWithLang(&lang)
 	lang = "ru"
 	getWithLang(&lang)
@@ -72,10 +72,10 @@ func (s RotorTestSuite) TestGetRotorStationsList() {
 }
 
 func (s RotorTestSuite) TestGetRotorStationsFeedback() {
-	var ctx = context.Background()
-	var stat = s.getStation()
+	ctx := context.Background()
+	stat := s.getStation()
 	tracks := s.getTracks(stat)
-	var track = tracks.Sequence[0].Track
+	track := tracks.Sequence[0].Track
 
 	res, err := s.cl.RotorStationFeedback(ctx, stat, schema.RotorStationFeedbackTypeTrackStarted, tracks, track, 12.5)
 	s.require.Nil(err)

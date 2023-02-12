@@ -25,15 +25,15 @@ func (s *VantuzTestSuite) SetupSuite() {
 }
 
 func (s VantuzTestSuite) TestRequestRateLimit() {
-	var requestCount = 0
+	requestCount := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestCount++
 		w.Write([]byte("Hello."))
 	}))
 	defer server.Close()
 
-	var expected = 5
-	req := C().EnableDevMode().R()
+	const expected = 5
+	req := C().R()
 	for i := 0; i < expected; i++ {
 		_, err := req.Get(context.Background(), server.URL)
 		s.require.Nil(err)
@@ -53,7 +53,7 @@ func (s VantuzTestSuite) TestOneRequestManySend() {
 	}))
 	defer server.Close()
 
-	var form = map[string]string{
+	form := map[string]string{
 		key: val,
 	}
 	req := C().R().

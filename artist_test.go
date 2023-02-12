@@ -25,7 +25,7 @@ func (s ArtistTestSuite) getArtist() *schema.Artist {
 	s.require.Nil(err)
 	s.require.NotNil(found.Artists)
 	s.require.NotEmpty(found.Artists.Results)
-	var ar = found.Artists.Results[0]
+	ar := found.Artists.Results[0]
 	s.require.Positive(ar.ID)
 	return ar
 }
@@ -36,7 +36,7 @@ func (s ArtistTestSuite) getNonameArtist() *schema.Artist {
 	s.require.Nil(err)
 	s.require.NotNil(found.Artists)
 	s.require.NotEmpty(found.Artists.Results)
-	var ar = found.Artists.Results[0]
+	ar := found.Artists.Results[0]
 	s.require.Positive(ar.ID)
 	return ar
 }
@@ -49,8 +49,8 @@ func (s ArtistTestSuite) TestGetLikedArtists() {
 }
 
 func (s ArtistTestSuite) TestArtistLikeUnlike() {
-	var ctx = context.Background()
-	var ar = s.getArtist()
+	ctx := context.Background()
+	ar := s.getArtist()
 
 	// like
 	err := s.cl.LikeArtist(ctx, ar)
@@ -62,8 +62,8 @@ func (s ArtistTestSuite) TestArtistLikeUnlike() {
 }
 
 func (s ArtistTestSuite) TestGetArtistTracks() {
-	var ctx = context.Background()
-	var ar = s.getArtist()
+	ctx := context.Background()
+	ar := s.getArtist()
 	resp, err := s.cl.GetArtistTracks(ctx, ar.ID, 0, 20)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Tracks)
@@ -71,8 +71,8 @@ func (s ArtistTestSuite) TestGetArtistTracks() {
 }
 
 func (s ArtistTestSuite) TestGetArtistAlbums() {
-	var ctx = context.Background()
-	var ar = s.getArtist()
+	ctx := context.Background()
+	ar := s.getArtist()
 	resp, err := s.cl.GetArtistAlbums(ctx, ar.ID, 0, 20, schema.SortByYear)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Albums)
@@ -80,8 +80,8 @@ func (s ArtistTestSuite) TestGetArtistAlbums() {
 }
 
 func (s ArtistTestSuite) TestGetArtistTopTracks() {
-	var ctx = context.Background()
-	var ar = s.getArtist()
+	ctx := context.Background()
+	ar := s.getArtist()
 	resp, err := s.cl.GetArtistTopTracks(ctx, ar)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Tracks)
@@ -89,15 +89,15 @@ func (s ArtistTestSuite) TestGetArtistTopTracks() {
 }
 
 func (s ArtistTestSuite) TestGetArtistInfo() {
-	var verify = func(ar *schema.Artist, br *schema.ArtistBriefInfo) {
+	verify := func(ar *schema.Artist, br *schema.ArtistBriefInfo) {
 		s.require.Equal(ar.ID, br.Artist.ID)
 		s.require.NotEmpty(br.Albums)
 		s.require.NotEmpty(br.AllCovers)
 		s.require.NotEmpty(br.PopularTracks)
 		s.require.NotEmpty(br.SimilarArtists)
 	}
-	var ctx = context.Background()
-	var ar = s.getArtist()
+	ctx := context.Background()
+	ar := s.getArtist()
 	br, err := s.cl.GetArtistInfo(ctx, ar)
 	s.require.Nil(err)
 	verify(ar, br)

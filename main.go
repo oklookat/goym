@@ -3,7 +3,6 @@ package goym
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/oklookat/goym/auth"
 	"github.com/oklookat/goym/schema"
@@ -15,8 +14,11 @@ const (
 )
 
 var (
-	ErrNilResponse = errors.New(errPrefix + "nil http or schema response (dev error?)")
+	// Токены авторизации истекли. Нужно вызывать Tokens.Refresh.
+	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh your current tokens")
+
 	//
+	ErrNilResponse      = errors.New(errPrefix + "nil http or schema response (dev error?)")
 	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
 	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
 	ErrNilAccount       = errors.New(errPrefix + "nil Status.Account (API changed?)")
@@ -30,12 +32,12 @@ func New(tokens *auth.Tokens) (*Client, error) {
 		return nil, nil
 	}
 
-	var vCl = vantuz.C().
+	httpCl := vantuz.C().
 		SetGlobalHeaders(map[string]string{
 			"Authorization": "OAuth " + tokens.AccessToken,
 		})
-	var cl = &Client{
-		self: vCl,
+	cl := &Client{
+		Http: httpCl,
 	}
 
 	// get uid
@@ -66,33 +68,5 @@ type Client struct {
 	userId string
 
 	// Отправляет запросы.
-	self *vantuz.Client
-}
-
-// Включить вывод HTTP запросов в консоль.
-func (c Client) EnableDevMode() {
-	c.self.EnableDevMode()
-}
-
-// Отключить вывод HTTP запросов в консоль.
-func (c Client) DisableDevMode() {
-	c.self.DisableDevMode()
-}
-
-// Установить максимальное количество запросов.
-//
-// Например: 1 запрос в секунду. Если будет два запроса в секунду, придется ждать 2 секунды.
-//
-// По умолчанию: 0 (выкл).
-func (c Client) SetRateLimit(requests int, per time.Duration) {
-	c.self.SetRateLimit(requests, per)
-}
-
-// Установить максимальное время ожидания ответа.
-//
-// По умолчанию: 20 секунд.
-//
-// 0 и ниже: установить по умолчанию.
-func (c Client) SetTimeout(val time.Duration) {
-	c.self.SetTimeout(val)
+	Http *vantuz.Client
 }

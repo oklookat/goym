@@ -3,36 +3,33 @@ package vantuz
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
-
-	"golang.org/x/time/rate"
 )
 
-func newRequest(cl *Client, limit *rate.Limiter, timeout time.Duration) *Request {
-	var r = &Request{
+func newRequest(cl *Client) *Request {
+	r := &Request{
 		cl:      cl,
-		limiter: limit,
 		headers: make(map[string]string),
-		timeout: timeout,
 	}
-	if cl.headers != nil {
-		for k, v := range cl.headers {
-			r.headers[k] = v
-		}
+
+	if len(cl.headers) == 0 {
+		return r
 	}
+
+	for k, v := range cl.headers {
+		r.headers[k] = v
+	}
+
 	return r
 }
 
 // HTTP Request.
 type Request struct {
-	cl      *Client
-	limiter *rate.Limiter
+	cl *Client
 
 	// query params.
 	params url.Values
@@ -47,23 +44,33 @@ type Request struct {
 
 	// unmarshal body (HTTP success)
 	result any
-
-	timeout time.Duration
 }
 
 // GET request.
 func (r Request) Get(ctx context.Context, url string) (*Response, error) {
-	return r.exec(ctx, http.MethodGet, url)
+	resp, err := r.exec(ctx, http.MethodGet, url)
+	if err != nil {
+		r.cl.log.Err("", err)
+	}
+	return resp, err
 }
 
 // POST request.
 func (r Request) Post(ctx context.Context, url string) (*Response, error) {
-	return r.exec(ctx, http.MethodPost, url)
+	resp, err := r.exec(ctx, http.MethodPost, url)
+	if err != nil {
+		r.cl.log.Err("", err)
+	}
+	return resp, err
 }
 
 // DELETE request.
 func (r Request) Delete(ctx context.Context, url string) (*Response, error) {
-	return r.exec(ctx, http.MethodDelete, url)
+	resp, err := r.exec(ctx, http.MethodDelete, url)
+	if err != nil {
+		r.cl.log.Err("", err)
+	}
+	return resp, err
 }
 
 // Unmarshall body in 'err' if status code >= 400.
@@ -96,10 +103,10 @@ func (r *Request) setStringBody(val string, contentType string) {
 
 // application/x-www-form-urlencoded
 func (r *Request) SetFormUrlValues(data url.Values) *Request {
-	if data == nil {
+	if len(data) == 0 {
 		return r
 	}
-	var encoded = data.Encode()
+	encoded := data.Encode()
 	r.setStringBody(encoded, "application/x-www-form-urlencoded")
 	return r
 }
@@ -109,12 +116,15 @@ func (r *Request) SetFormUrlMap(data map[string]string) *Request {
 	if len(data) == 0 {
 		return r
 	}
-	var vals = url.Values{}
+
+	vals := url.Values{}
 	for k, v := range data {
 		vals.Set(k, v)
 	}
-	var encoded = vals.Encode()
+
+	encoded := vals.Encode()
 	r.setStringBody(encoded, "application/x-www-form-urlencoded")
+
 	return r
 }
 
@@ -140,17 +150,10 @@ func (r *Request) setContentLength(val int) {
 }
 
 // Execute request.
-func (r *Request) exec(ctx context.Context, method string, urld string) (resp *Response, err error) {
-	defer func() {
-		if err != nil {
-			if errors.Is(err, context.Canceled) {
-				err = ErrRequestCancelled
-			}
-			r.cl.logger.log(err.Error())
-		}
-	}()
+func (r *Request) exec(ctx context.Context, method string, urld string) (*Response, error) {
+	r.cl.log.Debugf("%s: %s", method, urld)
 
-	var body = strings.NewReader(r.bodyStr)
+	body := strings.NewReader(r.bodyStr)
 
 	// validate url.
 	if _, err := url.Parse(urld); err != nil {
@@ -158,40 +161,41 @@ func (r *Request) exec(ctx context.Context, method string, urld string) (resp *R
 	}
 
 	// create request.
-	var req *http.Request
-	req, err = http.NewRequestWithContext(ctx, method, urld, body)
+	req, err := http.NewRequestWithContext(ctx, method, urld, body)
 	if err != nil {
 		return nil, err
 	}
 
 	// set headers.
-	for k, v := range r.headers {
-		req.Header.Set(k, v)
-	}
-	req.URL.RawQuery = r.params.Encode()
-	if r.limiter != nil {
-		if err = r.limiter.Wait(ctx); err != nil {
-			return
+	if len(r.headers) > 0 {
+		for k, v := range r.headers {
+			r.cl.log.Debugf(`set header: "%s": "%s"`, k, v)
+			req.Header.Set(k, v)
 		}
 	}
 
-	r.cl.logger.request(req)
+	if len(r.params) > 0 {
+		req.URL.RawQuery = r.params.Encode()
+		r.cl.log.Debugf("query: %s", req.URL.RawQuery)
+	}
 
-	client := &http.Client{
-		Timeout: r.timeout,
+	// wait limiter
+	if r.cl.limiter != nil {
+		r.cl.log.Debugf("limiter wait...")
+		if err = r.cl.limiter.Wait(ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	// send request.
-	var hResp *http.Response
-	hResp, err = client.Do(req)
+	hResp, err := r.cl.self.Do(req)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// make response.
-	r.cl.logger.response(hResp)
 	if err = r.unmarshalResponse(hResp); err != nil {
-		return
+		return nil, err
 	}
 
 	return newResponse(r, hResp), err
@@ -208,7 +212,6 @@ func (r Request) unmarshalResponse(resp *http.Response) error {
 		return err
 	}
 	defer resp.Body.Close()
-	r.cl.logger.responseBody(body)
 
 	if r.err != nil && isHttpError(resp.StatusCode) {
 		return json.Unmarshal(body, r.err)

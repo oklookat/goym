@@ -11,9 +11,13 @@ type Artist struct {
 	ID UniqueID `json:"-"`
 
 	// Имя.
-	Name     string `json:"name"`
-	Various  bool   `json:"various"`
-	Composer bool   `json:"composer"`
+	Name string `json:"name"`
+
+	// Исполнитель относится к категории сборник.
+	Various bool `json:"various"`
+
+	// Исполнитель является композитором.
+	Composer bool `json:"composer"`
 
 	// Фото.
 	Cover *Cover `json:"cover"`
@@ -21,38 +25,35 @@ type Artist struct {
 	// По сути дублирует Cover.URI.
 	OgImage *string `json:"ogImage"`
 
-	// Жанры.
+	// Жанры исполнителя.
 	Genres []string `json:"genres"`
 
 	// Количество разных вещей.
 	Counts *struct {
-		// Треки.
+		// Общее количество треков исполнителя, доступных в каталоге ЯМ.
 		Tracks uint32 `json:"tracks"`
-		// Альбомы.
+		// Количество собственных альбомов.
 		DirectAlbums uint32 `json:"directAlbums"`
-		// Тоже альбомы (вероятно ремиксы, etc).
+		// Количество альбомов, где представлен исполнитель.
 		AlsoAlbums uint32 `json:"alsoAlbums"`
-		// Тоже треки (вероятно ремиксы, etc).
+		// Количество треков, где представлен исполнитель.
 		AlsoTracks uint32 `json:"alsoTracks"`
 	} `json:"counts"`
 
+	// Треки исполнителя доступны?
 	Available bool `json:"available"`
 
-	// Это не количество прослушиваний.
-	//
-	// Похоже на какую-то позицию в топе артистов.
-	//
-	// Если артист непопулярен, будет доступно только поле Month.
+	// Рейтинги исполнителя.
 	Ratings *struct {
-		// В месяц.
+		// За месяц.
 		Month uint32 `json:"month"`
-		// В неделю.
+		// За неделю.
 		Week *uint32 `json:"week"`
-		// В день.
+		// За день.
 		Day *uint32 `json:"day"`
 	} `json:"ratings"`
 
-	// Ссылки на ресурсы артиста (сайты, соц.сети).
+	// Список ссылок на сайты исполнителя.
 	Links []struct {
 		// Заголовок ссылки.
 		Title string `json:"title"`
@@ -69,7 +70,7 @@ type Artist struct {
 }
 
 func (a *Artist) UnmarshalJSON(data []byte) error {
-	var dem = func(id UniqueID, data []byte) error {
+	dem := func(id UniqueID, data []byte) error {
 		type Fake Artist
 		var faked Fake
 		if err := json.Unmarshal(data, &faked); err != nil {
@@ -82,98 +83,114 @@ func (a *Artist) UnmarshalJSON(data []byte) error {
 	return unmarshalID(dem, data)
 }
 
-type ArtistBriefInfo struct {
-	Artist *struct {
-		Artist
+type (
+	ArtistBriefInfo struct {
+		Artist *struct {
+			Artist
 
-		// Сколько людей лайкнули артиста?
-		LikesCount uint32 `json:"likesCount"`
+			// Количество слушателей, оценивших исполнителя.
+			LikesCount uint32 `json:"likesCount"`
 
-		// Описание.
-		Description struct {
-			// Об артисте.
-			Text string `json:"text"`
+			// Описание.
+			Description struct {
+				// Об артисте.
+				Text string `json:"text"`
 
-			// Ссылка на источник. Например, на Википедию.
-			URI string `json:"uri"`
-		} `json:"description"`
+				// Ссылка на источник. Например, на Википедию.
+				URI string `json:"uri"`
+			} `json:"description"`
 
-		// Откуда артист? Пример: ["Франция"].
-		Countries []string `json:"countries"`
+			// Откуда артист? Пример: ["Франция"].
+			Countries []string `json:"countries"`
 
-		// Год начала карьеры.
-		InitDate string `json:"initDate"`
+			// Год начала карьеры.
+			InitDate string `json:"initDate"`
 
-		// Год конца карьеры.
-		EndDate string `json:"endDate"`
+			// Год конца карьеры.
+			EndDate string `json:"endDate"`
 
-		// Ссылка на страницу артиста в английской Википедии.
-		EnWikipediaLink string `json:"enWikipediaLink"`
+			// Ссылка на страницу артиста в английской Википедии.
+			EnWikipediaLink string `json:"enWikipediaLink"`
 
-		// Стили написания имени артиста.
-		//
-		// Пример: ["Daft punk", "Дафт Панк", "duft pank", "ダフトパンク"]
-		DbAliases []string `json:"dbAliases"`
-	} `json:"artist"`
-	Albums         []*Album  `json:"albums"`
-	AlsoAlbums     []*Album  `json:"alsoAlbums"`
-	PopularTracks  []*Track  `json:"popularTracks"`
-	SimilarArtists []*Artist `json:"similarArtists"`
-	AllCovers      []*Cover  `json:"allCovers"`
-	Concerts       []any     `json:"concerts"`
-	Videos         []*Video  `json:"videos"`
-	Clips          []any     `json:"clips"`
-	Vinyls         []any     `json:"vinyls"`
-	HasPromotions  bool      `json:"hasPromotions"`
-	LastReleases   []any     `json:"lastReleases"`
-	Stats          struct {
-		LastMonthListeners uint32 `json:"lastMonthListeners"`
-	} `json:"stats"`
-	CustomWave struct {
-		Title        string `json:"title"`
-		AnimationURL string `json:"animationUrl"`
-	} `json:"customWave"`
-	PlaylistIds []struct {
-		UID  UniqueID `json:"uid"`
-		Kind KindID   `json:"kind"`
-	} `json:"playlistIds"`
-	Playlists []*Playlist `json:"playlists"`
-}
+			// Список вариантов ввода имени исполнителя в поисковой строке
+			//
+			// (для облегчения поиска музыки на смартфоне в режиме офлайн).
+			//
+			// Пример: ["Daft punk", "Дафт Панк", "duft pank", "ダフトパンク"]
+			DbAliases []string `json:"dbAliases"`
+		} `json:"artist"`
 
-// GET /artists/{artistId}/tracks
-type GetArtistTracksQueryParams struct {
-	// Страница.
-	Page uint16 `url:"page"`
+		// Собственные альбомы исполнителя (где он указан исполнителем), в базовой информации.
+		Albums []*Album `json:"albums"`
 
-	// Кол-во результатов на странице (20, например).
-	PageSize uint16 `url:"page-size"`
-}
+		// Альбомы, где представлен исполнитель (где он указан исполнителем), в базовой информации.
+		AlsoAlbums []*Album `json:"alsoAlbums"`
 
-// GET /artists/{artistId}/direct-albums
-type GetArtistAlbumsQueryParams struct {
-	// Страница.
-	Page uint16 `url:"page"`
+		// Популярные треки, в базовой информации.
+		PopularTracks []*Track `json:"popularTracks"`
 
-	// Кол-во результатов на странице (20, например).
-	PageSize uint16 `url:"page-size"`
+		// Похожие (по стилю) исполнители, в базовой информации.
+		SimilarArtists []*Artist `json:"similarArtists"`
 
-	SortBy SortBy `url:"sort-by"`
-}
+		// Все изображения исполнителя.
+		AllCovers []*Cover `json:"allCovers"`
 
-// POST /users/{userId}/likes/artists/add
-type LikeArtistRequestBody struct {
-	ArtistId UniqueID `url:"artist-id"`
-}
+		// Список концертов исполнителя.
+		Concerts      []any    `json:"concerts"`
+		Videos        []*Video `json:"videos"`
+		Clips         []any    `json:"clips"`
+		Vinyls        []any    `json:"vinyls"`
+		HasPromotions bool     `json:"hasPromotions"`
+		LastReleases  []any    `json:"lastReleases"`
+		Stats         struct {
+			LastMonthListeners uint32 `json:"lastMonthListeners"`
+		} `json:"stats"`
+		CustomWave struct {
+			Title        string `json:"title"`
+			AnimationURL string `json:"animationUrl"`
+		} `json:"customWave"`
+		PlaylistIds []struct {
+			UID  UniqueID `json:"uid"`
+			Kind KindID   `json:"kind"`
+		} `json:"playlistIds"`
+		Playlists []*Playlist `json:"playlists"`
+	}
 
-type ArtistTracksPaged struct {
-	Pager  Pager    `json:"pager"`
-	Tracks []*Track `json:"tracks"`
-}
+	// GET /artists/{artistId}/tracks
+	GetArtistTracksQueryParams struct {
+		// Страница.
+		Page uint16 `url:"page"`
 
-type ArtistAlbumsPaged struct {
-	Pager  Pager    `json:"pager"`
-	Albums []*Album `json:"albums"`
-}
+		// Кол-во результатов на странице (20, например).
+		PageSize uint16 `url:"page-size"`
+	}
+
+	// GET /artists/{artistId}/direct-albums
+	GetArtistAlbumsQueryParams struct {
+		// Страница.
+		Page uint16 `url:"page"`
+
+		// Кол-во результатов на странице (20, например).
+		PageSize uint16 `url:"page-size"`
+
+		SortBy SortBy `url:"sort-by"`
+	}
+
+	// POST /users/{userId}/likes/artists/add
+	LikeArtistRequestBody struct {
+		ArtistId UniqueID `url:"artist-id"`
+	}
+
+	ArtistTracksPaged struct {
+		Pager  Pager    `json:"pager"`
+		Tracks []*Track `json:"tracks"`
+	}
+
+	ArtistAlbumsPaged struct {
+		Pager  Pager    `json:"pager"`
+		Albums []*Album `json:"albums"`
+	}
+)
 
 type ArtistTopTracks struct {
 	Artist *Artist    `json:"artist"`
@@ -187,7 +204,7 @@ func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
 		Artist *Artist  `json:"artist"`
 		Tracks []string `json:"tracks"`
 	}
-	var realVal = &real{}
+	realVal := &real{}
 	if err := json.Unmarshal(data, realVal); err != nil {
 		return err
 	}

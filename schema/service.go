@@ -37,7 +37,7 @@ func unmarshalID(ider func(id UniqueID, data []byte) error, data []byte) error {
 	}
 
 	// если ID int: окей
-	var idInt = &struct {
+	idInt := &struct {
 		ID UniqueID `json:"id"`
 	}{}
 	if err := json.Unmarshal(data, idInt); err == nil {
@@ -45,7 +45,7 @@ func unmarshalID(ider func(id UniqueID, data []byte) error, data []byte) error {
 	}
 
 	// если ID строка: конвертируем в int
-	var idString = &struct {
+	idString := &struct {
 		ID string `json:"id"`
 	}{}
 	if err := json.Unmarshal(data, idString); err != nil {

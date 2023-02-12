@@ -22,7 +22,7 @@ import (
 // noCorrect - исправить опечатки?
 func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (*schema.Search, error) {
 	// GET /search
-	var query = schema.SearchQueryParams{
+	query := schema.SearchQueryParams{
 		Text:      text,
 		Page:      page,
 		Type:      what,
@@ -33,9 +33,9 @@ func (c Client) Search(ctx context.Context, text string, page uint16, what schem
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"search"})
-	var data = &schema.Response[*schema.Search]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
+	endpoint := genApiPath([]string{"search"})
+	data := &schema.Response[*schema.Search]{}
+	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -47,7 +47,7 @@ func (c Client) Search(ctx context.Context, text string, page uint16, what schem
 // например: SearchSuggest("emine")
 func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggestions[any], error) {
 	// GET /search/suggest
-	var query = schema.SearchSuggestQueryParams{
+	query := schema.SearchSuggestQueryParams{
 		Part: part,
 	}
 	vals, err := schema.ParamsToValues(query)
@@ -55,9 +55,9 @@ func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggest
 		return nil, err
 	}
 
-	var endpoint = genApiPath([]string{"search", "suggest"})
-	var data = &schema.Response[*schema.Suggestions[any]]{}
-	resp, err := c.self.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
+	endpoint := genApiPath([]string{"search", "suggest"})
+	data := &schema.Response[*schema.Suggestions[any]]{}
+	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}

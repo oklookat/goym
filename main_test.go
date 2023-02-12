@@ -1,6 +1,7 @@
 package goym
 
 import (
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -65,7 +66,7 @@ func getClient(t *testing.T) *Client {
 	refreshAfter, err := s2i64(os.Getenv("REFRESH_AFTER"))
 	require.Nil(err)
 
-	var tok = &auth.Tokens{
+	tok := &auth.Tokens{
 		TokenType:    os.Getenv("TOKEN_TYPE"),
 		AccessToken:  os.Getenv("ACCESS_TOKEN"),
 		ExpiresIn:    expiresIn,
@@ -75,8 +76,24 @@ func getClient(t *testing.T) *Client {
 
 	cl, err := New(tok)
 	require.Nil(err)
-	cl.SetRateLimit(1, time.Duration(1)*time.Second)
 
-	//cl.EnableDevMode()
+	cl.Http.SetLogger(loggerDefault{})
+	cl.Http.SetRateLimit(1, time.Duration(1)*time.Second)
+
 	return cl
+}
+
+type loggerDefault struct {
+}
+
+func (l loggerDefault) Debugf(msg string, args ...any) {
+	log.Printf(msg, args...)
+}
+
+func (l loggerDefault) Err(msg string, err error) {
+	if err == nil {
+		log.Printf("%s", msg)
+		return
+	}
+	log.Printf("%s. Err: %s", msg, err.Error())
 }

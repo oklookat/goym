@@ -2,106 +2,108 @@ package schema
 
 import "time"
 
-type Album struct {
-	// Идентификатор альбома.
-	ID UniqueID `json:"id"`
+type (
+	Album struct {
+		// Идентификатор альбома.
+		ID UniqueID `json:"id"`
 
-	// Название альбома.
-	Title string `json:"title"`
+		// Название альбома.
+		Title string `json:"title"`
 
-	// Мета тип (single, podcast, music, remix).
-	MetaType string `json:"metaType"`
+		// Мета тип (single, podcast, music, remix).
+		MetaType string `json:"metaType"`
 
-	// Год релиза.
-	Year uint16 `json:"year"`
+		// Год релиза.
+		Year uint16 `json:"year"`
 
-	// Дата релиза в формате ISO 8601.
-	ReleaseDate time.Time `json:"releaseDate"`
+		// Дата релиза в формате ISO 8601.
+		ReleaseDate time.Time `json:"releaseDate"`
 
-	// Ссылка на обложку.
-	CoverURI string `json:"coverUri"`
+		// Ссылка на обложку.
+		CoverURI string `json:"coverUri"`
 
-	// Ссылка на превью Open Graph.
-	OgImage string `json:"ogImage"`
+		// Ссылка на превью Open Graph.
+		OgImage string `json:"ogImage"`
 
-	// Жанр музыки.
-	Genre string `json:"genre"`
+		// Жанр музыки.
+		Genre string `json:"genre"`
 
-	// Количество треков.
-	TrackCount uint16 `json:"trackCount"`
+		// Количество треков.
+		TrackCount uint16 `json:"trackCount"`
 
-	// Количество лайков.
-	LikesCount uint32 `json:"likesCount"`
+		// Количество лайков.
+		LikesCount uint32 `json:"likesCount"`
 
-	// Является ли альбом новым.
-	Recent bool `json:"recent"`
+		// Является новинкой.
+		Recent bool `json:"recent"`
 
-	// Популярен ли альбом у слушателей.
-	VeryImportant bool `json:"veryImportant"`
+		// Является важным.
+		VeryImportant bool `json:"veryImportant"`
 
-	// Артисты.
-	Artists []*Artist `json:"artists"`
+		// Исполнители альбома, в минимальной информации.
+		Artists []*Artist `json:"artists"`
 
-	// Лейблы.
-	//
-	// Может быть как слайсом строк с названиями, так и слайсом структур Label.
-	//
-	// (?) Слайсы строк используются при поиске, а слайсы структур в остальных случаях.
-	Labels []any `json:"labels"`
+		// Лейблы.
+		//
+		// Может быть как слайсом строк с названиями, так и слайсом структур Label.
+		//
+		// (?) Слайсы строк используются при поиске, а слайсы структур в остальных случаях.
+		Labels []any `json:"labels"`
 
-	// Доступен ли альбом.
-	Available bool `json:"available"`
+		// Доступен ли альбом.
+		Available bool `json:"available"`
 
-	// Доступен ли альбом для пользователей с подпиской.
-	AvailableForPremiumUsers bool `json:"availableForPremiumUsers"`
+		// Доступен ли альбом для пользователей с подпиской.
+		AvailableForPremiumUsers bool `json:"availableForPremiumUsers"`
 
-	AvailableForOptions []string `json:"availableForOptions"`
+		AvailableForOptions []string `json:"availableForOptions"`
 
-	// Доступен ли альбом из приложения для телефона.
-	AvailableForMobile bool `json:"availableForMobile"`
+		// Доступен ли альбом из приложения для телефона.
+		AvailableForMobile bool `json:"availableForMobile"`
 
-	// Доступен ли альбом частично для пользователей без подписки.
-	AvailablePartially bool `json:"availablePartially"`
+		// Доступен ли альбом частично для пользователей без подписки.
+		AvailablePartially bool `json:"availablePartially"`
 
-	// ID лучших треков альбома.
-	Bests []UniqueID `json:"bests"`
+		// ID лучших треков альбома.
+		Bests []UniqueID `json:"bests"`
 
-	// например: "single".
-	Type *string `json:"type"`
+		// например: "single".
+		Type *string `json:"type"`
 
-	// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
-	Duplicates []*Album `json:"duplicates"`
+		// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
+		Duplicates []*Album `json:"duplicates"`
 
-	StorageDir string `json:"storageDir"`
+		StorageDir string `json:"storageDir"`
 
-	TrackPosition struct {
-		Volume uint8  `json:"volume"`
-		Index  uint16 `json:"index"`
-	} `json:"trackPosition"`
+		TrackPosition struct {
+			Volume uint8  `json:"volume"`
+			Index  uint16 `json:"index"`
+		} `json:"trackPosition"`
 
-	Regions          []string      `json:"regions"`
-	AvailableRegions []interface{} `json:"availableRegions"`
+		Regions          []string      `json:"regions"`
+		AvailableRegions []interface{} `json:"availableRegions"`
 
-	// например: "Remix".
-	Version *string `json:"version"`
+		// например: "Remix".
+		Version *string `json:"version"`
 
-	// Треки альбома, разделенные по дискам.
-	Volumes [][]*Track `json:"volumes"`
-}
+		// Треки альбома, разделенные по дискам.
+		Volumes [][]*Track `json:"volumes"`
+	}
 
-type AlbumShort struct {
-	ID        UniqueID  `json:"id"`
-	Timestamp time.Time `json:"timestamp"`
-}
+	AlbumShort struct {
+		ID        UniqueID  `json:"id"`
+		Timestamp time.Time `json:"timestamp"`
+	}
 
-// POST /albums
-type GetAlbumsByIdsRequestBody struct {
-	// ID альбомов.
-	AlbumIds []UniqueID `url:",album-ids"`
-}
+	// POST /albums
+	GetAlbumsByIdsRequestBody struct {
+		// ID альбомов.
+		AlbumIds []UniqueID `url:",album-ids"`
+	}
 
-// POST /users/{userId}/likes/albums/add
-type LikeAlbumRequestBody struct {
-	// ID альбома.
-	AlbumId UniqueID `url:"album-id"`
-}
+	// POST /users/{userId}/likes/albums/add
+	LikeAlbumRequestBody struct {
+		// ID альбома.
+		AlbumId UniqueID `url:"album-id"`
+	}
+)

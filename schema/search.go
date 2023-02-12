@@ -1,119 +1,121 @@
 package schema
 
-// Результаты поиска.
-type Search struct {
-	Type SearchType `json:"type"`
+type (
+	// Результаты поиска.
+	Search struct {
+		Type SearchType `json:"type"`
 
-	// Текущая страница. Доступно при использовании параметра type.
-	Page *uint16 `json:"page"`
+		// Текущая страница. Доступно при использовании параметра type.
+		Page *uint16 `json:"page"`
 
-	// Результатов на странице. Доступно при использовании параметра type.
-	PerPage *uint16 `json:"perPage"`
+		// Результатов на странице. Доступно при использовании параметра type.
+		PerPage *uint16 `json:"perPage"`
 
-	// Поисковой запрос (оригинальный или исправленный).
-	Text string `json:"text"`
+		// Поисковой запрос (оригинальный или исправленный).
+		Text string `json:"text"`
 
-	SearchRequestID string `json:"searchRequestId"`
+		SearchRequestID string `json:"searchRequestId"`
 
-	// Был ли исправлен запрос. Доступен при Type "all".
-	MisspellCorrected *bool `json:"misspellCorrected"`
+		// Был ли исправлен запрос. Доступен при Type "all".
+		MisspellCorrected *bool `json:"misspellCorrected"`
 
-	// Исправленный поисковой запрос. Не nil, если запрос был исправлен.
-	MisspellResult *string `json:"misspellResult"`
+		// Исправленный поисковой запрос. Не nil, если запрос был исправлен.
+		MisspellResult *string `json:"misspellResult"`
 
-	// Оригинальный поисковой запрос. Не nil, если запрос был исправлен.
-	MisspellOriginal *string `json:"misspellOriginal"`
+		// Оригинальный поисковой запрос. Не nil, если запрос был исправлен.
+		MisspellOriginal *string `json:"misspellOriginal"`
 
-	// ID запроса.
-	SearchResultID *string `json:"searchResultId"`
+		// ID запроса.
+		SearchResultID *string `json:"searchResultId"`
 
-	// Лучший результат.
-	//
-	// Если Type не "all" - будет nil.
-	//
-	// Например: если тип поиска будет "artist", то
-	// поля best, playlists, и подобные, будут nil (кроме поля Artists).
-	Best *Best[any] `json:"best"`
+		// Лучший результат.
+		//
+		// Если Type не "all" - будет nil.
+		//
+		// Например: если тип поиска будет "artist", то
+		// поля best, playlists, и подобные, будут nil (кроме поля Artists).
+		Best *Best[any] `json:"best"`
 
-	// Найденные треки.
-	Tracks SearchResult[*Track] `json:"tracks"`
+		// Найденные треки.
+		Tracks SearchResult[*Track] `json:"tracks"`
 
-	// Найденные альбомы.
-	Albums SearchResult[*Album] `json:"albums"`
+		// Найденные альбомы.
+		Albums SearchResult[*Album] `json:"albums"`
 
-	// Найденные эписозды подкастов.
-	PodcastEpisodes SearchResult[any] `json:"podcast_episodes"`
+		// Найденные эписозды подкастов.
+		PodcastEpisodes SearchResult[any] `json:"podcast_episodes"`
 
-	// Найденные артисты.
-	Artists SearchResult[*Artist] `json:"artists"`
+		// Найденные артисты.
+		Artists SearchResult[*Artist] `json:"artists"`
 
-	// Найденные плейлисты.
-	Playlists SearchResult[*Playlist] `json:"playlists"`
+		// Найденные плейлисты.
+		Playlists SearchResult[*Playlist] `json:"playlists"`
 
-	// Найденные видео.
-	Videos SearchResult[*Video] `json:"videos"`
+		// Найденные видео.
+		Videos SearchResult[*Video] `json:"videos"`
 
-	// Найденные подкасты.
-	Podcasts SearchResult[any] `json:"podcasts"`
-}
+		// Найденные подкасты.
+		Podcasts SearchResult[any] `json:"podcasts"`
+	}
 
-type SearchResult[T any] struct {
-	// Количество результатов
-	Total uint32 `json:"total"`
+	SearchResult[T any] struct {
+		// Количество результатов
+		Total uint32 `json:"total"`
 
-	// Максимальное количество результатов на странице.
-	PerPage uint16 `json:"perPage"`
+		// Максимальное количество результатов на странице.
+		PerPage uint16 `json:"perPage"`
 
-	// Позиция блока
-	Order uint16 `json:"order"`
+		// Позиция блока
+		Order uint16 `json:"order"`
 
-	Results []T `json:"results"`
-}
+		Results []T `json:"results"`
+	}
 
-// Лучший результат поиска
-type Best[T Track | Artist | Album | Playlist | Video | any] struct {
-	// Тип лучшего результата
-	//
-	// track | artist | album | playlist | video
-	Type string `json:"type"`
+	// Лучший результат поиска
+	Best[T Track | Artist | Album | Playlist | Video | any] struct {
+		// Тип лучшего результата
+		//
+		// track | artist | album | playlist | video
+		Type string `json:"type"`
 
-	Text string `json:"text"`
+		Text string `json:"text"`
 
-	Result T `json:"result"`
-}
+		Result T `json:"result"`
+	}
 
-// Поисковая подсказка.
-type Suggestions[T Track | Artist | Album | Playlist | Video | any] struct {
-	// Лучший результат.
-	Best Best[T] `json:"best"`
+	// Поисковая подсказка.
+	Suggestions[T Track | Artist | Album | Playlist | Video | any] struct {
+		// Лучший результат.
+		Best Best[T] `json:"best"`
 
-	// Предложения на основе запроса.
-	//
-	// Например, запрос: "emine"
-	//
-	// Suggestions будут примерно такие:
-	//
-	// ["eminem", "mount eminest", "eminen", "eminem - encore"], и так далее.
-	Suggestions []string `json:"suggestions"`
-}
+		// Предложения на основе запроса.
+		//
+		// Например, запрос: "emine"
+		//
+		// Suggestions будут примерно такие:
+		//
+		// ["eminem", "mount eminest", "eminen", "eminem - encore"], и так далее.
+		Suggestions []string `json:"suggestions"`
+	}
 
-// GET /search
-type SearchQueryParams struct {
-	// Текст запроса.
-	Text string `url:"text"`
+	// GET /search
+	SearchQueryParams struct {
+		// Текст запроса.
+		Text string `url:"text"`
 
-	// Номер страницы.
-	Page uint16 `url:"page"`
+		// Номер страницы.
+		Page uint16 `url:"page"`
 
-	// Тип поиска (default = all).
-	Type SearchType `url:"type"`
+		// Тип поиска (default = all).
+		Type SearchType `url:"type"`
 
-	// Исправлять опечатки?
-	NoCorrect bool `url:"nocorrect"`
-}
+		// Исправлять опечатки?
+		NoCorrect bool `url:"nocorrect"`
+	}
 
-// GET /search/suggest
-type SearchSuggestQueryParams struct {
-	// Часть поискового запроса.
-	Part string `url:"part"`
-}
+	// GET /search/suggest
+	SearchSuggestQueryParams struct {
+		// Часть поискового запроса.
+		Part string `url:"part"`
+	}
+)

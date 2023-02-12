@@ -27,7 +27,7 @@ func (s ServiceTestSuite) TestI2s() {
 }
 
 func (s ServiceTestSuite) TestGenApiPath() {
-	var expected = "https://api.music.yandex.net/users/1234/playlists/list"
-	var result = genApiPath([]string{"users", i2s(1234), "playlists", "list"})
+	const expected = "https://api.music.yandex.net/users/1234/playlists/list"
+	result := genApiPath([]string{"users", i2s(1234), "playlists", "list"})
 	s.require.Equal(expected, result)
 }

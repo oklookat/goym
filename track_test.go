@@ -23,10 +23,10 @@ func (s *TrackTestSuite) SetupSuite() {
 func (s TrackTestSuite) getTrack() *schema.Track {
 	found, err := s.cl.Search(context.Background(), "привет с большого бодуна", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
-	var tracks = found.Tracks
+	tracks := found.Tracks
 	s.require.NotNil(tracks)
 	s.require.NotEmpty(tracks.Results)
-	var track = tracks.Results[0]
+	track := tracks.Results[0]
 	s.require.Positive(track.ID)
 	return tracks.Results[0]
 }
@@ -35,11 +35,11 @@ func (s TrackTestSuite) getTrack() *schema.Track {
 func (s TrackTestSuite) getTracks() []*schema.Track {
 	found, err := s.cl.Search(context.Background(), "mick gordon", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
-	var tracks = found.Tracks
+	tracks := found.Tracks
 	s.require.NotNil(tracks)
 	s.require.NotEmpty(tracks.Results)
 
-	var tracksData = []*schema.Track{}
+	tracksData := []*schema.Track{}
 	for i, t := range tracks.Results {
 		tracksData = append(tracksData, t)
 		if i == 5 {
@@ -63,8 +63,8 @@ func (s TrackTestSuite) TestGetDislikedTracks() {
 }
 
 func (s TrackTestSuite) TestLikeUnlikeTrack() {
-	var ctx = context.Background()
-	var track = s.getTrack()
+	ctx := context.Background()
+	track := s.getTrack()
 
 	// like
 	err := s.cl.LikeTrack(ctx, track)
@@ -76,8 +76,8 @@ func (s TrackTestSuite) TestLikeUnlikeTrack() {
 }
 
 func (s TrackTestSuite) TestLikeUnlikeTracks() {
-	var ctx = context.Background()
-	var tracks = s.getTracks()
+	ctx := context.Background()
+	tracks := s.getTracks()
 
 	// like
 	err := s.cl.LikeTracks(ctx, tracks)
@@ -89,7 +89,7 @@ func (s TrackTestSuite) TestLikeUnlikeTracks() {
 }
 
 func (s TrackTestSuite) TestGetTrackById() {
-	var track = s.getTrack()
+	track := s.getTrack()
 	tracks, err := s.cl.GetTrackById(context.Background(), track.ID)
 	s.require.Nil(err)
 	s.require.NotEmpty(tracks)
@@ -97,8 +97,8 @@ func (s TrackTestSuite) TestGetTrackById() {
 }
 
 func (s TrackTestSuite) TestGetTracksById() {
-	var ids = []schema.UniqueID{}
-	var searched = s.getTracks()
+	ids := []schema.UniqueID{}
+	searched := s.getTracks()
 	for _, t := range searched {
 		ids = append(ids, t.ID)
 	}
@@ -109,7 +109,7 @@ func (s TrackTestSuite) TestGetTracksById() {
 }
 
 func (s TrackTestSuite) TestGetTrackDownloadInfo() {
-	var track = s.getTrack()
+	track := s.getTrack()
 
 	// get info
 	respInfo, err := s.cl.GetTrackDownloadInfo(context.Background(), track)
@@ -119,7 +119,7 @@ func (s TrackTestSuite) TestGetTrackDownloadInfo() {
 }
 
 func (s TrackTestSuite) TestGetTrackSupplement() {
-	var track = s.getTrack()
+	track := s.getTrack()
 
 	// get info
 	resp, err := s.cl.GetTrackSupplement(context.Background(), track)
@@ -128,7 +128,7 @@ func (s TrackTestSuite) TestGetTrackSupplement() {
 }
 
 func (s TrackTestSuite) TestGetSimilarTracks() {
-	var track = s.getTrack()
+	track := s.getTrack()
 	resp, err := s.cl.GetSimilarTracks(context.Background(), track)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.SimilarTracks)

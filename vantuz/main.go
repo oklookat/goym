@@ -2,22 +2,23 @@
 package vantuz
 
 import (
-	"context"
-	"fmt"
+	"net/http"
+	"time"
 )
 
 const (
-	errPrefix  = "goym/vantuz: "
-	_userAgent = "goym/v0.2.8 (github.com/oklookat/goym)"
+	_userAgent = "goym/v0.2.9 (github.com/oklookat/goym)"
+	_prefix    = "[goym]"
 )
-
-var ErrRequestCancelled = fmt.Errorf(errPrefix+"%w", context.Canceled)
 
 // Client.
 func C() *Client {
-	var p = &Client{
-		logger: Logger{enabled: false},
-	}
+	p := &Client{}
+	p.SetClient(&http.Client{
+		Timeout: 20 * time.Second,
+	})
+	p.SetLogger(&dummyLogger{})
+
 	p.SetGlobalHeader("Content-Type", "application/json")
 	p.SetGlobalHeader("User-Agent", _userAgent)
 	return p

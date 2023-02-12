@@ -78,44 +78,238 @@ const (
 	RotorStationFeedbackTypeSkip RotorStationFeedbackType = "skip"
 )
 
-// Список радио.
-type RotorDashboard struct {
-	DashboardID string `json:"dashboardId"`
-	// Станции.
-	Stations []struct {
+type (
+	// Список радио.
+	RotorDashboard struct {
+		DashboardID string `json:"dashboardId"`
+		// Станции.
+		Stations []struct {
+			Station *RotorStation `json:"station"`
+
+			Settings RotorSettings `json:"settings"`
+
+			Settings2 RotorSettings2 `json:"settings2"`
+
+			Explanation string `json:"explanation"`
+
+			AdParams *RotorAdParams `json:"adParams"`
+
+			// Пример: "Моя волна".
+			RupTitle string `json:"rupTitle"`
+
+			// Пример: "Волна подстраивается под жанр и вас. Слушайте только то, что нравится!".
+			RupDescription string `json:"rupDescription"`
+		} `json:"stations"`
+		Pumpkin bool `json:"pumpkin"`
+	}
+
+	// Настройки станции.
+	RotorSettings struct {
+		Language  RotorLanguageRestriction  `json:"language"`
+		Mood      uint8                     `json:"mood"`
+		Energy    uint8                     `json:"energy"`
+		Diversity RotorDiversityRestriction `json:"diversity"`
+	}
+
+	// Настройки станции 2 (вторая версия?).
+	RotorSettings2 struct {
+		Language   RotorLanguageRestriction   `json:"language"`
+		MoodEnergy RotorMoodEnergyRestriction `json:"moodEnergy"`
+		Diversity  RotorDiversityRestriction  `json:"diversity"`
+	}
+
+	// Станция радио.
+	RotorStation struct {
+		ID       RotorStationID  `json:"id"`
+		ParentID *RotorStationID `json:"parentId"`
+
+		// Название. Например: "Прогрессив-метал".
+		Name string `json:"name"`
+
+		// Иконка станции.
+		Icon struct {
+			// Цвет фона в HEX формате. Например: #9D65A9.
+			BackgroundColor string `json:"backgroundColor"`
+
+			// Ссылка на иконку в avatars.yandex.net.
+			ImageURL string `json:"imageUrl"`
+		} `json:"icon"`
+
+		// см. Icon.
+		MtsIcon struct {
+			BackgroundColor string `json:"backgroundColor"`
+			ImageURL        string `json:"imageUrl"`
+		} `json:"mtsIcon"`
+
+		// Ссылка на какую-то картинку в avatars.yandex.net.
+		FullImageURL string `json:"fullImageUrl"`
+
+		// см. FullImageURL.
+		MtsFullImageURL string `json:"mtsFullImageUrl"`
+
+		// Пример: "genre-metal_progmetal"
+		IDForFrom string `json:"idForFrom"`
+
+		// Доступные настройки станции.
+		//
+		// Обратите внимание: это не сами настройки, а лишь доступные значения.
+		//
+		// То есть если вы хотите изменить настройки станции, обращайте внимания на
+		// доступные значения, которые обозначены тут.
+		Restrictions struct {
+			// По языку.
+			Language RotorEnum[RotorLanguageRestriction] `json:"language"`
+
+			// По настроению.
+			Mood RotorDiscreteScale `json:"mood"`
+
+			// По энергии.
+			Energy RotorDiscreteScale `json:"energy"`
+
+			// По характеру.
+			Diversity RotorEnum[RotorDiversityRestriction] `json:"diversity"`
+		} `json:"restrictions"`
+		Restrictions2 struct {
+			Diversity  RotorEnum[RotorDiversityRestriction]  `json:"diversity"`
+			MoodEnergy RotorEnum[RotorMoodEnergyRestriction] `json:"moodEnergy"`
+			Language   RotorEnum[RotorLanguageRestriction]   `json:"language"`
+		} `json:"restrictions2"`
+	}
+
+	RotorEnum[T RotorLanguageRestriction | RotorDiversityRestriction | RotorMoodEnergyRestriction] struct {
+		// "enum".
+		Type string `json:"type"`
+
+		// Пример: "По характеру", "По языку".
+		Name string `json:"name"`
+
+		PossibleValues []struct {
+			// Само ограничение.
+			Value T `json:"value"`
+
+			// Имя ограничения (используется в UI).
+			Name string `json:"name"`
+
+			// Ссылка на avatars.mds.yandex.net.
+			//
+			// (может быть) Доступно в Restrictions2.
+			ImageURL *string `json:"imageUrl"`
+
+			// Пример: "settingDiversity:favorite", "settingMoodEnergy:fun".
+			//
+			// (может быть) Доступно в Restrictions2.
+			SerializedSeed *string `json:"serializedSeed"`
+
+			// (может быть) Доступно в Restrictions2.
+			Unspecified *bool `json:"unspecified"`
+		} `json:"possibleValues"`
+	}
+
+	RotorDiscreteScale struct {
+		// "discrete-scale".
+		Type string `json:"type"`
+
+		// Пример: "Энергичность", "Под настроение".
+		Name string `json:"name"`
+
+		Min struct {
+			// Пример: 1.
+			Value uint8 `json:"value"`
+
+			// Пример: "Спокойнее", "Грустнее".
+			Name string `json:"name"`
+		} `json:"min"`
+		Max struct {
+			// Пример: 4.
+			Value uint8 `json:"value"`
+
+			// Пример: "Бодрее", "Веселее".
+			Name string `json:"name"`
+		} `json:"max"`
+	}
+
+	// Треки станции.
+	RotorStationTracks struct {
+		ID       RotorStationID `json:"id"`
+		Sequence []struct {
+			Track *Track `json:"track"`
+			// Параметры трека.
+			TrackParameters struct {
+				// Кол-во ударов в минуту.
+				BPM uint16 `json:"bpm"`
+				Hue uint16 `json:"hue"`
+				// Какой-то супер-точный показатель энергии (?).
+				Energy float64 `json:"energy"`
+			} `json:"trackParameters"`
+			// Трек лайкнут?
+			Liked bool `json:"liked"`
+		} `json:"sequence"`
+		BatchID string `json:"batchId"`
+		Pumpkin bool   `json:"pumpkin"`
+	}
+
+	// Статус аккаунта в Радио.
+	RotorAccountStatus struct {
+		Account      Account            `json:"account"`
+		Permissions  AccountPermissions `json:"permissions"`
+		Subscription struct {
+			End time.Time `json:"end"`
+		} `json:"subscription"`
+		SkipsPerHour  int  `json:"skipsPerHour"`
+		StationExists bool `json:"stationExists"`
+		Plus          Plus `json:"plus"`
+		PremiumRegion int  `json:"premiumRegion"`
+	}
+
+	// Одна станция из RotorStationsList.
+	RotorStationList struct {
 		Station *RotorStation `json:"station"`
+		Data    struct {
+			Title       string    `json:"title"`
+			Description string    `json:"description"`
+			ImageURI    string    `json:"imageUri"`
+			Artists     []*Artist `json:"artists"`
+		} `json:"data"`
+		Settings       RotorSettings  `json:"settings"`
+		Settings2      RotorSettings2 `json:"settings2"`
+		AdParams       *RotorAdParams `json:"adParams"`
+		RupTitle       string         `json:"rupTitle"`
+		RupDescription string         `json:"rupDescription"`
+		// Свое имя станции.
+		CustomName *string `json:"customName"`
+	}
 
-		Settings RotorSettings `json:"settings"`
+	// Аудиореклама.
+	RotorAdParams struct {
+		PartnerID   string `json:"partnerId"`
+		CategoryID  string `json:"categoryId"`
+		PageRef     string `json:"pageRef"`
+		TargetRef   string `json:"targetRef"`
+		GenreID     int    `json:"genreId"`
+		GenreName   string `json:"genreName"`
+		OtherParams string `json:"otherParams"`
+		AdVolume    int    `json:"adVolume"`
+	}
 
-		Settings2 RotorSettings2 `json:"settings2"`
+	// Информация о станции.
+	RotorStationInfo struct {
+		Station *RotorStation
+		Data    *struct {
+			Artists []*Artist `json:"artists"`
+		} `json:"data"`
+		Settings       RotorSettings  `json:"settings"`
+		Settings2      RotorSettings2 `json:"settings2"`
+		AdParams       *RotorAdParams `json:"adParams"`
+		RupTitle       string         `json:"rupTitle"`
+		RupDescription string         `json:"rupDescription"`
+	}
 
-		Explanation string `json:"explanation"`
-
-		AdParams *RotorAdParams `json:"adParams"`
-
-		// Пример: "Моя волна".
-		RupTitle string `json:"rupTitle"`
-
-		// Пример: "Волна подстраивается под жанр и вас. Слушайте только то, что нравится!".
-		RupDescription string `json:"rupDescription"`
-	} `json:"stations"`
-	Pumpkin bool `json:"pumpkin"`
-}
-
-// Настройки станции.
-type RotorSettings struct {
-	Language  RotorLanguageRestriction  `json:"language"`
-	Mood      uint8                     `json:"mood"`
-	Energy    uint8                     `json:"energy"`
-	Diversity RotorDiversityRestriction `json:"diversity"`
-}
-
-// Настройки станции 2 (вторая версия?).
-type RotorSettings2 struct {
-	Language   RotorLanguageRestriction   `json:"language"`
-	MoodEnergy RotorMoodEnergyRestriction `json:"moodEnergy"`
-	Diversity  RotorDiversityRestriction  `json:"diversity"`
-}
+	// GET /rotor/stations/list
+	GetRotorStationsListQueryParams struct {
+		// Язык, на котором будет информация о станциях (ISO 639-1).
+		Language *string `url:"language,omitempty"`
+	}
+)
 
 // ID станции. Отличие от ID других структур в формате "тип_станции:тег_станции".
 type RotorStationID struct {
@@ -134,192 +328,6 @@ func (r RotorStationID) String() string {
 	return string(r.Type) + ":" + r.Tag
 }
 
-// Станция радио.
-type RotorStation struct {
-	ID       RotorStationID  `json:"id"`
-	ParentID *RotorStationID `json:"parentId"`
-
-	// Название. Например: "Прогрессив-метал".
-	Name string `json:"name"`
-
-	// Иконка станции.
-	Icon struct {
-		// Цвет фона в HEX формате. Например: #9D65A9.
-		BackgroundColor string `json:"backgroundColor"`
-
-		// Ссылка на иконку в avatars.yandex.net.
-		ImageURL string `json:"imageUrl"`
-	} `json:"icon"`
-
-	// см. Icon.
-	MtsIcon struct {
-		BackgroundColor string `json:"backgroundColor"`
-		ImageURL        string `json:"imageUrl"`
-	} `json:"mtsIcon"`
-
-	// Ссылка на какую-то картинку в avatars.yandex.net.
-	FullImageURL string `json:"fullImageUrl"`
-
-	// см. FullImageURL.
-	MtsFullImageURL string `json:"mtsFullImageUrl"`
-
-	// Пример: "genre-metal_progmetal"
-	IDForFrom string `json:"idForFrom"`
-
-	// Доступные настройки станции.
-	//
-	// Обратите внимание: это не сами настройки, а лишь доступные значения.
-	//
-	// То есть если вы хотите изменить настройки станции, обращайте внимания на
-	// доступные значения, которые обозначены тут.
-	Restrictions struct {
-		// По языку.
-		Language RotorEnum[RotorLanguageRestriction] `json:"language"`
-
-		// По настроению.
-		Mood RotorDiscreteScale `json:"mood"`
-
-		// По энергии.
-		Energy RotorDiscreteScale `json:"energy"`
-
-		// По характеру.
-		Diversity RotorEnum[RotorDiversityRestriction] `json:"diversity"`
-	} `json:"restrictions"`
-	Restrictions2 struct {
-		Diversity  RotorEnum[RotorDiversityRestriction]  `json:"diversity"`
-		MoodEnergy RotorEnum[RotorMoodEnergyRestriction] `json:"moodEnergy"`
-		Language   RotorEnum[RotorLanguageRestriction]   `json:"language"`
-	} `json:"restrictions2"`
-}
-
-type RotorEnum[T RotorLanguageRestriction | RotorDiversityRestriction | RotorMoodEnergyRestriction] struct {
-	// "enum".
-	Type string `json:"type"`
-
-	// Пример: "По характеру", "По языку".
-	Name string `json:"name"`
-
-	PossibleValues []struct {
-		// Само ограничение.
-		Value T `json:"value"`
-
-		// Имя ограничения (используется в UI).
-		Name string `json:"name"`
-
-		// Ссылка на avatars.mds.yandex.net.
-		//
-		// (может быть) Доступно в Restrictions2.
-		ImageURL *string `json:"imageUrl"`
-
-		// Пример: "settingDiversity:favorite", "settingMoodEnergy:fun".
-		//
-		// (может быть) Доступно в Restrictions2.
-		SerializedSeed *string `json:"serializedSeed"`
-
-		// (может быть) Доступно в Restrictions2.
-		Unspecified *bool `json:"unspecified"`
-	} `json:"possibleValues"`
-}
-
-type RotorDiscreteScale struct {
-	// "discrete-scale".
-	Type string `json:"type"`
-
-	// Пример: "Энергичность", "Под настроение".
-	Name string `json:"name"`
-
-	Min struct {
-		// Пример: 1.
-		Value uint8 `json:"value"`
-
-		// Пример: "Спокойнее", "Грустнее".
-		Name string `json:"name"`
-	} `json:"min"`
-	Max struct {
-		// Пример: 4.
-		Value uint8 `json:"value"`
-
-		// Пример: "Бодрее", "Веселее".
-		Name string `json:"name"`
-	} `json:"max"`
-}
-
-// Треки станции.
-type RotorStationTracks struct {
-	ID       RotorStationID `json:"id"`
-	Sequence []struct {
-		Track *Track `json:"track"`
-		// Параметры трека.
-		TrackParameters struct {
-			// Кол-во ударов в минуту.
-			BPM uint16 `json:"bpm"`
-			Hue uint16 `json:"hue"`
-			// Какой-то супер-точный показатель энергии (?).
-			Energy float64 `json:"energy"`
-		} `json:"trackParameters"`
-		// Трек лайкнут?
-		Liked bool `json:"liked"`
-	} `json:"sequence"`
-	BatchID string `json:"batchId"`
-	Pumpkin bool   `json:"pumpkin"`
-}
-
-// Статус аккаунта в Радио.
-type RotorAccountStatus struct {
-	Account      Account            `json:"account"`
-	Permissions  AccountPermissions `json:"permissions"`
-	Subscription struct {
-		End time.Time `json:"end"`
-	} `json:"subscription"`
-	SkipsPerHour  int  `json:"skipsPerHour"`
-	StationExists bool `json:"stationExists"`
-	Plus          Plus `json:"plus"`
-	PremiumRegion int  `json:"premiumRegion"`
-}
-
-// Одна станция из RotorStationsList.
-type RotorStationList struct {
-	Station *RotorStation `json:"station"`
-	Data    struct {
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		ImageURI    string    `json:"imageUri"`
-		Artists     []*Artist `json:"artists"`
-	} `json:"data"`
-	Settings       RotorSettings  `json:"settings"`
-	Settings2      RotorSettings2 `json:"settings2"`
-	AdParams       *RotorAdParams `json:"adParams"`
-	RupTitle       string         `json:"rupTitle"`
-	RupDescription string         `json:"rupDescription"`
-	// Свое имя станции.
-	CustomName *string `json:"customName"`
-}
-
-// Аудиореклама.
-type RotorAdParams struct {
-	PartnerID   string `json:"partnerId"`
-	CategoryID  string `json:"categoryId"`
-	PageRef     string `json:"pageRef"`
-	TargetRef   string `json:"targetRef"`
-	GenreID     int    `json:"genreId"`
-	GenreName   string `json:"genreName"`
-	OtherParams string `json:"otherParams"`
-	AdVolume    int    `json:"adVolume"`
-}
-
-// Информация о станции.
-type RotorStationInfo struct {
-	Station *RotorStation
-	Data    *struct {
-		Artists []*Artist `json:"artists"`
-	} `json:"data"`
-	Settings       RotorSettings  `json:"settings"`
-	Settings2      RotorSettings2 `json:"settings2"`
-	AdParams       *RotorAdParams `json:"adParams"`
-	RupTitle       string         `json:"rupTitle"`
-	RupDescription string         `json:"rupDescription"`
-}
-
 // GET /rotor/station/{type:tag}/tracks
 type GetRotorStationTracksQueryParams struct {
 	// Использовать ли второй набор настроек.
@@ -335,12 +343,6 @@ func (g *GetRotorStationTracksQueryParams) SetLastTrack(tr *Track) {
 		return
 	}
 	g.Queue = tr.ID.String()
-}
-
-// GET /rotor/stations/list
-type GetRotorStationsListQueryParams struct {
-	// Язык, на котором будет информация о станциях (ISO 639-1).
-	Language *string `url:"language,omitempty"`
 }
 
 // POST /rotor/station/{type:tag}/feedback
@@ -398,6 +400,6 @@ func (r *RotorStationFeedbackRequestBodyQueryString) GetQuery() (url.Values, err
 	type Query struct {
 		BatchID string `url:"batch-id"`
 	}
-	var val = Query{BatchID: r.BatchID}
+	val := Query{BatchID: r.BatchID}
 	return ParamsToValues(val)
 }

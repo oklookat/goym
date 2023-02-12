@@ -24,7 +24,7 @@ func (s AlbumTestSuite) getAlbumId() schema.UniqueID {
 	s.require.Nil(err)
 	s.require.NotNil(res)
 	s.require.NotEmpty(res.Albums.Results)
-	var id = res.Albums.Results[0].ID
+	id := res.Albums.Results[0].ID
 	s.require.Positive(id)
 	return id
 }
@@ -34,7 +34,7 @@ func (s AlbumTestSuite) getAlbumIds() []schema.UniqueID {
 	s.require.Nil(err)
 	s.require.NotNil(res)
 	s.require.NotEmpty(res.Albums.Results)
-	var ids = []schema.UniqueID{}
+	ids := []schema.UniqueID{}
 	for i, al := range res.Albums.Results {
 		ids = append(ids, al.ID)
 		if i == 5 {
@@ -45,10 +45,10 @@ func (s AlbumTestSuite) getAlbumIds() []schema.UniqueID {
 }
 
 func (s AlbumTestSuite) TestGetAlbumById() {
-	var ctx = context.Background()
+	ctx := context.Background()
 
 	// without tracks
-	var id = s.getAlbumId()
+	id := s.getAlbumId()
 	data, err := s.cl.GetAlbumById(ctx, id, false)
 	s.require.Nil(err)
 	s.require.Positive(data.ID)
@@ -61,7 +61,7 @@ func (s AlbumTestSuite) TestGetAlbumById() {
 }
 
 func (s AlbumTestSuite) TestGetAlbumsByIds() {
-	var ids = s.getAlbumIds()
+	ids := s.getAlbumIds()
 	albums, err := s.cl.GetAlbumsByIds(context.Background(), ids)
 	s.require.Nil(err)
 	s.require.NotEmpty(albums)
@@ -69,13 +69,13 @@ func (s AlbumTestSuite) TestGetAlbumsByIds() {
 }
 
 func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
-	var ctx = context.Background()
+	ctx := context.Background()
 
 	found, err := s.cl.Search(ctx, "mujuice downshifting", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
 	s.require.NotNil(found)
 	s.require.NotEmpty(found.Albums.Results)
-	var al = found.Albums.Results[0]
+	al := found.Albums.Results[0]
 	s.require.Positive(al.ID)
 
 	// like

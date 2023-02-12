@@ -28,7 +28,7 @@ func genApiPath(paths []string) string {
 		return ""
 	}
 
-	var base = schema.ApiUrl
+	base := schema.ApiUrl
 	for i := range paths {
 		base += "/" + paths[i]
 	}
@@ -48,6 +48,9 @@ func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error
 	}
 	if data.Error == nil {
 		return ErrNilResponseError
+	}
+	if data.Error.Message == "session-expired" {
+		return ErrTokensExpired
 	}
 	return fmt.Errorf(errPrefix+"%v: %v", data.Error.Name, data.Error.Message)
 }

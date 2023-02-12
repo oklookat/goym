@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/oklookat/goym/vantuz"
@@ -10,7 +9,7 @@ import (
 
 const (
 	// Пользователь еще не ввел код подтверждения.
-	errAuthorizationPending = "authorization_pending"
+	_errAuthorizationPending = "authorization_pending"
 
 	// Приложение с указанным идентификатором (параметр client_id) не найдено или заблокировано.
 	//
@@ -21,20 +20,22 @@ const (
 	//
 	// В таком случае надо брать в руки анализатор трафика,
 	// и идти искать новые коды.
-	errInvalidClient = "invalid_client"
+	_errInvalidClient = "invalid_client"
 
 	// Неверный или просроченный код подтверждения.
-	errInvalidGrant = "invalid_grant"
+	_errInvalidGrant = "invalid_grant"
 )
 
-// Если выдать токен не удалось, то ответ содержит описание ошибки.
-type tokensError struct {
-	// Описание ошибки.
-	ErrorDescription string `json:"error_description"`
+type (
+	// Если выдать токен не удалось, то ответ содержит описание ошибки.
+	tokensError struct {
+		// Описание ошибки.
+		ErrorDescription string `json:"error_description"`
 
-	// Код ошибки.
-	Error string `json:"error"`
-}
+		// Код ошибки.
+		Error string `json:"error"`
+	}
+)
 
 // Яндекс.OAuth возвращает OAuth-токен, refresh-токен и время их жизни в JSON-формате.
 //
@@ -62,15 +63,11 @@ type Tokens struct {
 
 // Приложение начинает периодически запрашивать OAuth-токен, передавая device_code.
 func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) error {
-	if ctx.Err() != nil {
-		return ErrCancelled
-	}
-
 	if codes == nil {
 		return nil
 	}
 
-	var form = map[string]string{
+	form := map[string]string{
 		// Способ запроса OAuth-токена.
 		// Если вы используете код подтверждения, укажите значение «authorization_code».
 		"grant_type": "device_code",
@@ -79,39 +76,32 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 		// Время жизни предоставленного кода — 10 минут. По истечении этого времени код нужно запросить заново.
 		"code": codes.DeviceCode,
 
-		"client_id":     client_id,
-		"client_secret": client_secret,
+		"client_id":     _clientID,
+		"client_secret": _clientSecret,
 	}
 
-	var tokensErr = &tokensError{}
-	var request = vantuz.C().R().
+	tokensErr := &tokensError{}
+	request := vantuz.C().R().
 		SetFormUrlMap(form).
 		SetResult(t).SetError(tokensErr)
 
 	// таймер когда токены истекут
-	var expiredDur = time.Duration(codes.ExpiresIn-8) * time.Second
-	var tokensExpired = time.NewTimer(expiredDur)
-	defer tokensExpired.Stop()
+	expiredDur := time.Duration(codes.ExpiresIn-4) * time.Second
+	ctx, cancel := context.WithTimeout(ctx, expiredDur)
+	defer cancel()
 
 	// ждем *интервал* перед отправкой нового запроса...
-	// +2 секунды на всякий случай
-	var sleepFor = time.Duration(codes.Interval+2) * time.Second
-	var requestSleep = time.NewTicker(sleepFor)
+	// (+2 секунды на всякий случай)
+	sleepFor := time.Duration(codes.Interval+2) * time.Second
+	requestSleep := time.NewTicker(sleepFor)
 	defer requestSleep.Stop()
 
 	for {
 		select {
-		case <-tokensExpired.C:
-			return ErrTokensExpired
+		case <-ctx.Done():
+			return ctx.Err()
 		case <-requestSleep.C:
-			if err := ctx.Err(); err != nil {
-				if errors.Is(err, context.Canceled) {
-					return ErrCancelled
-				}
-				return err
-			}
-
-			resp, err := request.Post(ctx, token_endpoint)
+			resp, err := request.Post(ctx, _tokenEndpoint)
 			if err != nil {
 				return err
 			}
@@ -127,12 +117,12 @@ func (t *Tokens) Request(ctx context.Context, codes *confirmationCodesResponse) 
 
 			switch tokensErr.Error {
 			default:
-				return errors.New(errPrefix + tokensErr.Error)
-			case errAuthorizationPending:
+				return wrapErrStr(tokensErr.Error)
+			case _errAuthorizationPending:
 				continue
-			case errInvalidClient:
+			case _errInvalidClient:
 				return ErrBrokenClient
-			case errInvalidGrant:
+			case _errInvalidGrant:
 				return ErrInvalidGrant
 			}
 		}
@@ -153,30 +143,30 @@ func (t Tokens) Refresh(ctx context.Context) (*Tokens, error) {
 		return nil, nil
 	}
 
-	var form = map[string]string{
+	form := map[string]string{
 		// Способ запроса OAuth-токена.
 		// Если вы используете refresh-токен, укажите значение «refresh_token»
 		"grant_type": "refresh_token",
 
 		// Refresh-токен, полученный от Яндекс.OAuth вместе с OAuth-токеном. Время жизни токенов совпадает.
 		"refresh_token": t.RefreshToken,
-		"client_id":     client_id,
-		"client_secret": client_secret,
+		"client_id":     _clientID,
+		"client_secret": _clientSecret,
 	}
 
-	var refreshed = &Tokens{}
-	var tokenErr = &tokensError{}
-	var request = vantuz.C().R().
+	refreshed := &Tokens{}
+	tokenErr := &tokensError{}
+	request := vantuz.C().R().
 		SetFormUrlMap(form).
 		SetResult(refreshed).SetError(tokenErr)
 
-	resp, err := request.Post(ctx, token_endpoint)
+	resp, err := request.Post(ctx, _tokenEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.IsError() {
-		return nil, errors.New(errPrefix + tokenErr.Error)
+		return nil, wrapErrStr(tokenErr.Error)
 	}
 
 	refreshed.setRefreshAfter()
@@ -186,17 +176,16 @@ func (t Tokens) Refresh(ctx context.Context) (*Tokens, error) {
 
 // Устанавливает RefreshAfter.
 func (t *Tokens) setRefreshAfter() {
-	var now = time.Now()
+	now := time.Now()
 
 	// Основной токен может не обновиться, если оставшийся срок его жизни достаточно длительный
 	// и выдавать новый токен нет необходимости. Рекомендуем обновлять долгоживущие токены раз в три месяца.
-	var after = now.AddDate(0, 3, 5) // +3 месяца и 5 дней
+	after := now.AddDate(0, 3, 1) // +3 месяца и 1 день
 
 	t.RefreshAfter = after.Unix()
 }
 
 // Сравнивает текущую дату и RefreshAfter.
 func (t Tokens) isNeedToRefresh() bool {
-	var now = time.Now().Unix()
-	return now > t.RefreshAfter
+	return time.Now().Unix() > t.RefreshAfter
 }
