@@ -8,35 +8,36 @@ import (
 	"github.com/oklookat/goym/vantuz"
 )
 
-// int в строку (десятичная система).
-func i2s[T int | int64 | int32](val T) string {
+// iToString преобразует число в строку (десятичная система).
+func iToString[T int | int64 | int32](val T) string {
 	return strconv.FormatInt(int64(val), 10)
 }
 
-// строку в int64 (десятичная система).
-func s2i64(val string) (int64, error) {
+// stringToInt64 преобразует строку в int64 (десятичная система).
+func stringToInt64(val string) (int64, error) {
 	return strconv.ParseInt(val, 10, 64)
 }
 
-// Пример:
+// genApiPath создает URL-адрес для запроса к API, используя заданный путь.
 //
-// genApiPath([]string{"users", i2s(1234), "playlists", "list"})
+// Пример использования: genApiPath([]string{"users", iToString(1234), "playlists", "list"})
 //
 // Результат: https://api.music.yandex.net/users/1234/playlists/list
-func genApiPath(paths []string) string {
-	if paths == nil {
-		return ""
+func genApiPath(paths ...string) string {
+	if len(paths) == 0 {
+		return schema.ApiUrl
 	}
 
-	base := schema.ApiUrl
-	for i := range paths {
+	base := schema.ApiUrl + "/" + paths[0]
+	for i := 1; i < len(paths); i++ {
 		base += "/" + paths[i]
 	}
 
 	return base
 }
 
-// Проверить Response на наличие ошибки (поле Error).
+// checkResponse проверяет наличие ошибки в ответе API.
+// Возвращает nil, если ошибки нет.
 //
 // Если ошибка есть, возвращает error с сообщением.
 func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error {

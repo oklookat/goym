@@ -41,7 +41,7 @@ func New(tokens *auth.Tokens) (*Client, error) {
 	}
 
 	// get uid
-	status, err := cl.GetAccountStatus(context.Background())
+	status, err := cl.AccountStatus(context.Background())
 	if err != nil {
 		return nil, err
 	}

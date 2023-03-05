@@ -7,9 +7,9 @@ import (
 )
 
 // Получить лайкнутых артистов.
-func (c Client) GetLikedArtists(ctx context.Context) ([]*schema.Artist, error) {
+func (c Client) LikedArtists(ctx context.Context) ([]*schema.Artist, error) {
 	// GET /users/{userId}/likes/artists
-	endpoint := genApiPath([]string{"users", c.userId, "likes", "artists"})
+	endpoint := genApiPath("users", c.userId, "likes", "artists")
 	data := &schema.Response[[]*schema.Artist]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -18,22 +18,18 @@ func (c Client) GetLikedArtists(ctx context.Context) ([]*schema.Artist, error) {
 	return data.Result, err
 }
 
-// Лайкнуть артиста.
-func (c Client) LikeArtist(ctx context.Context, a *schema.Artist) error {
+// Лайкнуть артиста по ID.
+func (c Client) LikeArtist(ctx context.Context, id schema.UniqueID) error {
 	// POST /users/{userId}/likes/artists/add
-	if a == nil {
-		return nil
-	}
-
 	body := schema.LikeArtistRequestBody{
-		ArtistId: a.ID,
+		ArtistId: id,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
 	}
 
-	endpoint := genApiPath([]string{"users", c.userId, "likes", "artists", "add"})
+	endpoint := genApiPath("users", c.userId, "likes", "artists", "add")
 	data := &schema.Response[any]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
@@ -43,13 +39,10 @@ func (c Client) LikeArtist(ctx context.Context, a *schema.Artist) error {
 	return err
 }
 
-// Убрать лайк с артиста.
-func (c Client) UnlikeArtist(ctx context.Context, ar *schema.Artist) error {
+// Убрать лайк с артиста по ID.
+func (c Client) UnlikeArtist(ctx context.Context, id schema.UniqueID) error {
 	// POST /users/{userId}/likes/artists/{artistId}/remove
-	if ar == nil {
-		return nil
-	}
-	endpoint := genApiPath([]string{"users", c.userId, "likes", "artists", ar.ID.String(), "remove"})
+	endpoint := genApiPath("users", c.userId, "likes", "artists", id.String(), "remove")
 	data := &schema.Response[any]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Post(ctx, endpoint)
 	if err == nil {
@@ -60,7 +53,7 @@ func (c Client) UnlikeArtist(ctx context.Context, ar *schema.Artist) error {
 }
 
 // Получить список треков артиста по его ID.
-func (c Client) GetArtistTracks(ctx context.Context, artistId schema.UniqueID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
+func (c Client) ArtistTracks(ctx context.Context, id schema.UniqueID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
 	// GET /artists/{artistId}/tracks
 	body := schema.GetArtistTracksQueryParams{
 		Page:     page,
@@ -71,7 +64,7 @@ func (c Client) GetArtistTracks(ctx context.Context, artistId schema.UniqueID, p
 		return nil, err
 	}
 
-	endpoint := genApiPath([]string{"artists", artistId.String(), "tracks"})
+	endpoint := genApiPath("artists", id.String(), "tracks")
 	data := &schema.Response[*schema.ArtistTracksPaged]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
 	if err == nil {
@@ -81,7 +74,7 @@ func (c Client) GetArtistTracks(ctx context.Context, artistId schema.UniqueID, p
 }
 
 // Получить альбомы артиста по его ID.
-func (c Client) GetArtistAlbums(ctx context.Context, artistId schema.UniqueID, page uint16, pageSize uint16, sortBy schema.SortBy) (*schema.ArtistAlbumsPaged, error) {
+func (c Client) ArtistAlbums(ctx context.Context, id schema.UniqueID, page uint16, pageSize uint16, sortBy schema.SortBy) (*schema.ArtistAlbumsPaged, error) {
 	// GET /artists/{artistId}/direct-albums
 	body := schema.GetArtistAlbumsQueryParams{
 		Page:     page,
@@ -93,7 +86,7 @@ func (c Client) GetArtistAlbums(ctx context.Context, artistId schema.UniqueID, p
 		return nil, err
 	}
 
-	endpoint := genApiPath([]string{"artists", artistId.String(), "direct-albums"})
+	endpoint := genApiPath("artists", id.String(), "direct-albums")
 	data := &schema.Response[*schema.ArtistAlbumsPaged]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
 	if err == nil {
@@ -102,13 +95,10 @@ func (c Client) GetArtistAlbums(ctx context.Context, artistId schema.UniqueID, p
 	return data.Result, err
 }
 
-// Получить лучшие треки артиста.
-func (c Client) GetArtistTopTracks(ctx context.Context, ar *schema.Artist) (*schema.ArtistTopTracks, error) {
+// Получить лучшие треки артиста по его ID.
+func (c Client) ArtistTopTracks(ctx context.Context, id schema.UniqueID) (*schema.ArtistTopTracks, error) {
 	// GET /artists/{artistId}/track-ids-by-rating
-	if ar == nil {
-		return nil, nil
-	}
-	endpoint := genApiPath([]string{"artists", ar.ID.String(), "track-ids-by-rating"})
+	endpoint := genApiPath("artists", id.String(), "track-ids-by-rating")
 	data := &schema.Response[*schema.ArtistTopTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -117,13 +107,10 @@ func (c Client) GetArtistTopTracks(ctx context.Context, ar *schema.Artist) (*sch
 	return data.Result, err
 }
 
-// Получить полную информацию об артисте.
-func (c Client) GetArtistInfo(ctx context.Context, ar *schema.Artist) (*schema.ArtistBriefInfo, error) {
+// Получить полную информацию об артисте по его ID.
+func (c Client) ArtistInfo(ctx context.Context, id schema.UniqueID) (*schema.ArtistBriefInfo, error) {
 	// GET /artists/{artistId}/brief-info
-	if ar == nil {
-		return nil, nil
-	}
-	endpoint := genApiPath([]string{"artists", ar.ID.String(), "brief-info"})
+	endpoint := genApiPath("artists", id.String(), "brief-info")
 	data := &schema.Response[*schema.ArtistBriefInfo]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {

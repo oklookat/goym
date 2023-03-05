@@ -19,8 +19,8 @@ func (s *AccountTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s AccountTestSuite) TestGetAccountStatus() {
-	stat, err := s.cl.GetAccountStatus(context.Background())
+func (s AccountTestSuite) TestAccountStatus() {
+	stat, err := s.cl.AccountStatus(context.Background())
 	s.require.Nil(err)
 	s.require.NotNil(stat.Account)
 	s.require.Positive(stat.Account.UID)
@@ -29,7 +29,7 @@ func (s AccountTestSuite) TestGetAccountStatus() {
 
 func (s AccountTestSuite) TestGetChangeAccountSettings() {
 	getSettings := func() *schema.AccountSettings {
-		sett, err := s.cl.GetAccountSettings(context.Background())
+		sett, err := s.cl.AccountSettings(context.Background())
 		s.require.Nil(err)
 		s.require.NotNil(sett)
 		s.require.Positive(sett.UID)

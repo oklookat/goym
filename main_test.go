@@ -61,9 +61,9 @@ func getClient(t *testing.T) *Client {
 	err := godotenv.Load()
 	require.Nil(err)
 
-	expiresIn, err := s2i64(os.Getenv("EXPIRES_IN"))
+	expiresIn, err := stringToInt64(os.Getenv("EXPIRES_IN"))
 	require.Nil(err)
-	refreshAfter, err := s2i64(os.Getenv("REFRESH_AFTER"))
+	refreshAfter, err := stringToInt64(os.Getenv("REFRESH_AFTER"))
 	require.Nil(err)
 
 	tok := &auth.Tokens{

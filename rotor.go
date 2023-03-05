@@ -9,7 +9,7 @@ import (
 // Получить рекомендованные станции.
 func (c Client) GetRotorDashboard(ctx context.Context) (*schema.RotorDashboard, error) {
 	// GET /rotor/stations/dashboard
-	endpoint := genApiPath([]string{"rotor", "stations", "dashboard"})
+	endpoint := genApiPath("rotor", "stations", "dashboard")
 	data := &schema.Response[*schema.RotorDashboard]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -35,7 +35,7 @@ func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStati
 		return nil, err
 	}
 
-	endpoint := genApiPath([]string{"rotor", "station", st.ID.String(), "tracks"})
+	endpoint := genApiPath("rotor", "station", st.ID.String(), "tracks")
 	data := &schema.Response[*schema.RotorStationTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
@@ -47,7 +47,7 @@ func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStati
 // Получить информацию об аккаунте в радио.
 func (c Client) GetRotorAccountStatus(ctx context.Context) (*schema.RotorAccountStatus, error) {
 	// GET /rotor/account/status
-	endpoint := genApiPath([]string{"rotor", "account", "status"})
+	endpoint := genApiPath("rotor", "account", "status")
 	data := &schema.Response[*schema.RotorAccountStatus]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -69,7 +69,7 @@ func (c Client) GetRotorStationsList(ctx context.Context, language *string) ([]*
 		return nil, err
 	}
 
-	endpoint := genApiPath([]string{"rotor", "stations", "list"})
+	endpoint := genApiPath("rotor", "stations", "list")
 	data := &schema.Response[[]*schema.RotorStationList]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
@@ -84,7 +84,7 @@ func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation
 	if st == nil {
 		return nil, nil
 	}
-	endpoint := genApiPath([]string{"rotor", "station", st.ID.String(), "info"})
+	endpoint := genApiPath("rotor", "station", st.ID.String(), "info")
 	data := &schema.Response[[]*schema.RotorStationInfo]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -112,7 +112,7 @@ func (c Client) RotorStationFeedback(ctx context.Context, st *schema.RotorStatio
 		return "", err
 	}
 
-	endpoint := genApiPath([]string{"rotor", "station", st.ID.String(), "feedback"})
+	endpoint := genApiPath("rotor", "station", st.ID.String(), "feedback")
 	data := &schema.Response[string]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetJsonString(jsonBody).SetQueryParams(params).Post(ctx, endpoint)
 	if err == nil {

@@ -44,25 +44,25 @@ func (s AlbumTestSuite) getAlbumIds() []schema.UniqueID {
 	return ids
 }
 
-func (s AlbumTestSuite) TestGetAlbumById() {
+func (s AlbumTestSuite) TestAlbum() {
 	ctx := context.Background()
 
 	// without tracks
 	id := s.getAlbumId()
-	data, err := s.cl.GetAlbumById(ctx, id, false)
+	data, err := s.cl.Album(ctx, id, false)
 	s.require.Nil(err)
 	s.require.Positive(data.ID)
 
 	// with tracks
-	data, err = s.cl.GetAlbumById(ctx, 231541, true)
+	data, err = s.cl.Album(ctx, 231541, true)
 	s.require.Nil(err)
 	s.require.Positive(data.ID)
 	s.require.NotEmpty(data.Volumes)
 }
 
-func (s AlbumTestSuite) TestGetAlbumsByIds() {
+func (s AlbumTestSuite) TestAlbums() {
 	ids := s.getAlbumIds()
-	albums, err := s.cl.GetAlbumsByIds(context.Background(), ids)
+	albums, err := s.cl.Albums(context.Background(), ids)
 	s.require.Nil(err)
 	s.require.NotEmpty(albums)
 	s.require.Positive(albums[0].ID)
@@ -79,16 +79,16 @@ func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
 	s.require.Positive(al.ID)
 
 	// like
-	err = s.cl.LikeAlbum(ctx, al)
+	err = s.cl.LikeAlbum(ctx, al.ID)
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeAlbum(ctx, al)
+	err = s.cl.UnlikeAlbum(ctx, al.ID)
 	s.require.Nil(err)
 }
 
-func (s AlbumTestSuite) TestGetLikedAlbums() {
-	albums, err := s.cl.GetLikedAlbums(context.Background())
+func (s AlbumTestSuite) TestLikedAlbums() {
+	albums, err := s.cl.LikedAlbums(context.Background())
 	s.require.Nil(err)
 	s.require.NotEmpty(albums)
 	s.require.Positive(albums[0].ID)

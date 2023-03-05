@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	_userAgent = "goym/v0.2.9 (github.com/oklookat/goym)"
+	_userAgent = "goym/v0.3.0 (github.com/oklookat/goym)"
 	_prefix    = "[goym]"
 )
 

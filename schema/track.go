@@ -322,14 +322,14 @@ type LikeUnlikeTracksRequestBody struct {
 }
 
 // Устанавливает ID в TrackIds. Если слайс треков == nil, ничего не делает.
-func (l *LikeUnlikeTracksRequestBody) SetIds(tracks []*Track) {
-	if tracks == nil {
+func (l *LikeUnlikeTracksRequestBody) SetIds(ids []UniqueID) {
+	if len(ids) == 0 {
 		return
 	}
 	if l.TrackIds == nil {
 		l.TrackIds = make([]UniqueID, 0)
 	}
-	for i := range tracks {
-		l.TrackIds = append(l.TrackIds, tracks[i].ID)
+	for i := range ids {
+		l.TrackIds = append(l.TrackIds, ids[i])
 	}
 }

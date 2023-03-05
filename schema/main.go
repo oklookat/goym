@@ -108,13 +108,13 @@ func (u *UniqueID) FromString(val string) error {
 	return nil
 }
 
-type KindID uint32
+type KindID uint64
 
 func (c KindID) String() string {
 	return strconv.FormatUint(uint64(c), 10)
 }
 
-type RevisionID uint32
+type RevisionID uint64
 
 func (r RevisionID) String() string {
 	return strconv.FormatUint(uint64(r), 10)

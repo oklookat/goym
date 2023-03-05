@@ -41,8 +41,8 @@ func (s ArtistTestSuite) getNonameArtist() *schema.Artist {
 	return ar
 }
 
-func (s ArtistTestSuite) TestGetLikedArtists() {
-	artists, err := s.cl.GetLikedArtists(context.Background())
+func (s ArtistTestSuite) TestLikedArtists() {
+	artists, err := s.cl.LikedArtists(context.Background())
 	s.require.Nil(err)
 	s.require.NotEmpty(artists)
 	s.require.Positive(artists[0].ID)
@@ -53,36 +53,36 @@ func (s ArtistTestSuite) TestArtistLikeUnlike() {
 	ar := s.getArtist()
 
 	// like
-	err := s.cl.LikeArtist(ctx, ar)
+	err := s.cl.LikeArtist(ctx, ar.ID)
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeArtist(ctx, ar)
+	err = s.cl.UnlikeArtist(ctx, ar.ID)
 	s.require.Nil(err)
 }
 
-func (s ArtistTestSuite) TestGetArtistTracks() {
+func (s ArtistTestSuite) TestArtistTracks() {
 	ctx := context.Background()
 	ar := s.getArtist()
-	resp, err := s.cl.GetArtistTracks(ctx, ar.ID, 0, 20)
+	resp, err := s.cl.ArtistTracks(ctx, ar.ID, 0, 20)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Tracks)
 	s.require.Positive(resp.Tracks[0].ID)
 }
 
-func (s ArtistTestSuite) TestGetArtistAlbums() {
+func (s ArtistTestSuite) TestArtistAlbums() {
 	ctx := context.Background()
 	ar := s.getArtist()
-	resp, err := s.cl.GetArtistAlbums(ctx, ar.ID, 0, 20, schema.SortByYear)
+	resp, err := s.cl.ArtistAlbums(ctx, ar.ID, 0, 20, schema.SortByYear)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Albums)
 	s.require.Positive(resp.Albums[0].ID)
 }
 
-func (s ArtistTestSuite) TestGetArtistTopTracks() {
+func (s ArtistTestSuite) TestArtistTopTracks() {
 	ctx := context.Background()
 	ar := s.getArtist()
-	resp, err := s.cl.GetArtistTopTracks(ctx, ar)
+	resp, err := s.cl.ArtistTopTracks(ctx, ar.ID)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Tracks)
 	s.require.Positive(resp.Tracks[0])
@@ -98,12 +98,12 @@ func (s ArtistTestSuite) TestGetArtistInfo() {
 	}
 	ctx := context.Background()
 	ar := s.getArtist()
-	br, err := s.cl.GetArtistInfo(ctx, ar)
+	br, err := s.cl.ArtistInfo(ctx, ar.ID)
 	s.require.Nil(err)
 	verify(ar, br)
 
 	ar = s.getNonameArtist()
-	br, err = s.cl.GetArtistInfo(ctx, ar)
+	br, err = s.cl.ArtistInfo(ctx, ar.ID)
 	s.require.Nil(err)
 	verify(ar, br)
 }

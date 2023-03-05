@@ -7,16 +7,16 @@ import (
 )
 
 // Получить лайкнутые треки.
-func (c Client) GetLikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
-	return c.getLikedDislikedTracks(ctx, true)
+func (c Client) LikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
+	return c.likedDislikedTracks(ctx, true)
 }
 
 // Получить дизлайкнутые треки.
-func (c Client) GetDislikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
-	return c.getLikedDislikedTracks(ctx, false)
+func (c Client) DislikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
+	return c.likedDislikedTracks(ctx, false)
 }
 
-func (c Client) getLikedDislikedTracks(ctx context.Context, liked bool) (*schema.TracksLibrary, error) {
+func (c Client) likedDislikedTracks(ctx context.Context, liked bool) (*schema.TracksLibrary, error) {
 	// GET /users/{userId}/likes/tracks
 	// ||
 	// GET /users/{userId}/dislikes/tracks
@@ -25,7 +25,7 @@ func (c Client) getLikedDislikedTracks(ctx context.Context, liked bool) (*schema
 		ld = "dislikes"
 	}
 
-	endpoint := genApiPath([]string{"users", c.userId, ld, "tracks"})
+	endpoint := genApiPath("users", c.userId, ld, "tracks")
 	data := &schema.Response[*schema.TracksLibrary]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -35,20 +35,17 @@ func (c Client) getLikedDislikedTracks(ctx context.Context, liked bool) (*schema
 }
 
 // Лайкнуть трек.
-func (c Client) LikeTrack(ctx context.Context, track *schema.Track) error {
+func (c Client) LikeTrack(ctx context.Context, id schema.UniqueID) error {
 	// POST /users/{userId}/likes/tracks/add
-	if track == nil {
-		return nil
-	}
 	body := schema.LikeTrackRequestBody{
-		TrackId: track.ID,
+		TrackId: id,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
 	}
 
-	endpoint := genApiPath([]string{"users", c.userId, "likes", "tracks", "add"})
+	endpoint := genApiPath("users", c.userId, "likes", "tracks", "add")
 	data := &schema.Response[any]{}
 	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
@@ -60,24 +57,21 @@ func (c Client) LikeTrack(ctx context.Context, track *schema.Track) error {
 // Лайкнуть треки.
 //
 // Используйте LikeTrack() для лайка одного трека.
-func (c Client) LikeTracks(ctx context.Context, tracks []*schema.Track) error {
-	return c.likeUnlikeTracks(ctx, tracks, true)
+func (c Client) LikeTracks(ctx context.Context, ids []schema.UniqueID) error {
+	return c.likeUnlikeTracks(ctx, ids, true)
 }
 
-// Убрать лайки с трека(ов).
-func (c Client) UnlikeTracks(ctx context.Context, tracks []*schema.Track) error {
-	return c.likeUnlikeTracks(ctx, tracks, false)
+// Снять лайки с треков.
+func (c Client) UnlikeTracks(ctx context.Context, ids []schema.UniqueID) error {
+	return c.likeUnlikeTracks(ctx, ids, false)
 }
 
-func (c Client) likeUnlikeTracks(ctx context.Context, tracks []*schema.Track, like bool) error {
+func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.UniqueID, like bool) error {
 	// POST /users/{userId}/likes/tracks/add-multiple
 	// ||
 	// POST /users/{userId}/likes/tracks/remove
-	if tracks == nil {
-		return nil
-	}
 	body := schema.LikeUnlikeTracksRequestBody{}
-	body.SetIds(tracks)
+	body.SetIds(ids)
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
@@ -87,7 +81,7 @@ func (c Client) likeUnlikeTracks(ctx context.Context, tracks []*schema.Track, li
 	if !like {
 		endEndPoint = "remove"
 	}
-	endpoint := genApiPath([]string{"users", c.userId, "likes", "tracks", endEndPoint})
+	endpoint := genApiPath("users", c.userId, "likes", "tracks", endEndPoint)
 	data := &schema.Response[any]{}
 	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
@@ -97,9 +91,9 @@ func (c Client) likeUnlikeTracks(ctx context.Context, tracks []*schema.Track, li
 }
 
 // Получить трек по id.
-func (c Client) GetTrackById(ctx context.Context, trackId schema.UniqueID) ([]*schema.Track, error) {
+func (c Client) Track(ctx context.Context, trackId schema.UniqueID) ([]*schema.Track, error) {
 	// GET /tracks/{trackId}
-	endpoint := genApiPath([]string{"tracks", trackId.String()})
+	endpoint := genApiPath("tracks", trackId.String())
 	data := &schema.Response[[]*schema.Track]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -109,7 +103,7 @@ func (c Client) GetTrackById(ctx context.Context, trackId schema.UniqueID) ([]*s
 }
 
 // Получить треки по id.
-func (c Client) GetTracksByIds(ctx context.Context, trackIds []schema.UniqueID) ([]*schema.Track, error) {
+func (c Client) Tracks(ctx context.Context, trackIds []schema.UniqueID) ([]*schema.Track, error) {
 	// POST /tracks
 	if trackIds == nil {
 		return nil, nil
@@ -122,7 +116,7 @@ func (c Client) GetTracksByIds(ctx context.Context, trackIds []schema.UniqueID) 
 		return nil, err
 	}
 
-	endpoint := genApiPath([]string{"tracks"})
+	endpoint := genApiPath("tracks")
 	data := &schema.Response[[]*schema.Track]{}
 	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).SetResult(data).Post(ctx, endpoint)
 	if err == nil {
@@ -132,12 +126,9 @@ func (c Client) GetTracksByIds(ctx context.Context, trackIds []schema.UniqueID) 
 }
 
 // Получить информацию о загрузке трека.
-func (c Client) GetTrackDownloadInfo(ctx context.Context, tr *schema.Track) ([]*schema.TrackDownloadInfo, error) {
+func (c Client) TrackDownloadInfo(ctx context.Context, id schema.UniqueID) ([]*schema.TrackDownloadInfo, error) {
 	// GET /tracks/{trackId}/download-info
-	if tr == nil {
-		return nil, nil
-	}
-	endpoint := genApiPath([]string{"tracks", tr.ID.String(), "download-info"})
+	endpoint := genApiPath("tracks", id.String(), "download-info")
 	data := &schema.Response[[]*schema.TrackDownloadInfo]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -147,12 +138,9 @@ func (c Client) GetTrackDownloadInfo(ctx context.Context, tr *schema.Track) ([]*
 }
 
 // Получить дополнительную информацию о треке (текст песни, видео, etc).
-func (c Client) GetTrackSupplement(ctx context.Context, tr *schema.Track) (*schema.Supplement, error) {
+func (c Client) TrackSupplement(ctx context.Context, id schema.UniqueID) (*schema.Supplement, error) {
 	// GET /tracks/{trackId}/supplement
-	if tr == nil {
-		return nil, nil
-	}
-	endpoint := genApiPath([]string{"tracks", tr.ID.String(), "supplement"})
+	endpoint := genApiPath("tracks", id.String(), "supplement")
 	data := &schema.Response[*schema.Supplement]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
@@ -162,12 +150,9 @@ func (c Client) GetTrackSupplement(ctx context.Context, tr *schema.Track) (*sche
 }
 
 // Получить похожие треки.
-func (c Client) GetSimilarTracks(ctx context.Context, tr *schema.Track) (*schema.SimilarTracks, error) {
+func (c Client) SimilarTracks(ctx context.Context, id schema.UniqueID) (*schema.SimilarTracks, error) {
 	// GET /tracks/{trackId}/similar
-	if tr == nil {
-		return nil, nil
-	}
-	endpoint := genApiPath([]string{"tracks", tr.ID.String(), "similar"})
+	endpoint := genApiPath("tracks", id.String(), "similar")
 	data := &schema.Response[*schema.SimilarTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {

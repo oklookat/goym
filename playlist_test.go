@@ -19,8 +19,8 @@ func (s *PlaylistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s PlaylistTestSuite) TestGetMyPlaylists() {
-	pls, err := s.cl.GetMyPlaylists(context.Background())
+func (s PlaylistTestSuite) TestMyPlaylists() {
+	pls, err := s.cl.MyPlaylists(context.Background())
 	s.require.Nil(err)
 	s.require.NotEmpty(pls)
 	s.require.Positive(pls[0].Kind)
@@ -33,14 +33,14 @@ func (s PlaylistTestSuite) TestLikeUnlikePlaylist() {
 	s.require.NotNil(found.Playlists)
 	s.require.NotEmpty(found.Playlists.Results)
 	pl := found.Playlists.Results[0]
-	err = s.cl.LikePlaylist(ctx, pl)
+	err = s.cl.LikePlaylist(ctx, pl.Kind, pl.UID)
 	s.require.Nil(err)
 
-	err = s.cl.UnlikePlaylist(ctx, pl)
+	err = s.cl.UnlikePlaylist(ctx, pl.Kind, pl.UID)
 	s.require.Nil(err)
 }
 
-func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
+func (s PlaylistTestSuite) TestPlaylistsByKindUid() {
 	ctx := context.Background()
 	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
 	s.require.Nil(err)
@@ -58,7 +58,7 @@ func (s PlaylistTestSuite) TestGetPlaylistsByKindUid() {
 		}
 	}
 
-	foundByKind, err := s.cl.GetPlaylistsByKindUid(ctx, kindUid)
+	foundByKind, err := s.cl.PlaylistsByKindUid(ctx, kindUid)
 	s.require.Nil(err)
 	s.require.NotEmpty(foundByKind)
 	if len(foundByKind) <= 5 {
@@ -81,15 +81,15 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	s.require.Nil(err)
 	s.require.NotNil(pl.Kind)
 
-	pl2, err := s.cl.GetMyPlaylistByKind(ctx, pl.Kind)
+	pl2, err := s.cl.MyPlaylist(ctx, pl.Kind)
 	s.require.Nil(err)
 	s.require.Equal(pl.Kind, pl2.Kind)
 
-	pl3, err := s.cl.RenamePlaylist(ctx, pl2, "goymtesting (renamed)")
+	pl3, err := s.cl.RenamePlaylist(ctx, pl2.Kind, "goymtesting (renamed)")
 	s.require.Nil(err)
 	s.require.Equal(pl2.Kind, pl3.Kind)
 
-	pl4, err := s.cl.ChangePlaylistVisibility(ctx, pl3, schema.VisibilityPrivate)
+	pl4, err := s.cl.SetPlaylistVisibility(ctx, pl3.Kind, schema.VisibilityPrivate)
 	s.require.Nil(err)
 	s.require.Equal(pl3.Kind, pl4.Kind)
 
@@ -106,23 +106,23 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 			break
 		}
 	}
-	pl5, err := s.cl.AddTracksToPlaylist(ctx, pl, tracksLittle)
+	pl5, err := s.cl.AddToPlaylist(ctx, pl, tracksLittle)
 	s.require.Nil(err)
 	s.require.Equal(pl4.Kind, pl5.Kind)
 	s.require.Greater(*pl5.Revision, *pl4.Revision)
 	// get with tracks
-	pl5, err = s.cl.GetMyPlaylistByKind(ctx, pl5.Kind)
+	pl5, err = s.cl.MyPlaylist(ctx, pl5.Kind)
 	s.require.Nil(err)
 
 	// GetPlaylistRecommendations
-	recs, err := s.cl.GetPlaylistRecommendations(ctx, pl5)
+	recs, err := s.cl.PlaylistRecommendations(ctx, pl5.Kind)
 	s.require.Nil(err)
 	s.require.NotEmpty(recs.Tracks)
 	s.require.Positive(recs.Tracks[0].ID)
 
 	// DeleteTrackFromPlaylist (remove)
 	trackToDelete := pl5.Tracks[0]
-	pl6, err := s.cl.DeleteTrackFromPlaylist(ctx, pl5, trackToDelete)
+	pl6, err := s.cl.DeleteFromPlaylist(ctx, pl5, trackToDelete)
 	s.require.Nil(err)
 	s.require.Equal(pl5.Kind, pl6.Kind)
 	s.require.Greater(*pl6.Revision, *pl5.Revision)
@@ -132,6 +132,6 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	}
 
 	// DeletePlaylist
-	err = s.cl.DeletePlaylist(ctx, pl6)
+	err = s.cl.DeletePlaylist(ctx, pl6.Kind)
 	s.require.Nil(err)
 }
