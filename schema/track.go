@@ -17,7 +17,7 @@ type (
 	}
 
 	TrackItem struct {
-		ID            UniqueID  `json:"id"`
+		ID            ID        `json:"id"`
 		Track         *Track    `json:"track"`
 		Timestamp     time.Time `json:"timestamp"`
 		OriginalIndex uint16    `json:"originalIndex"`
@@ -41,7 +41,7 @@ type (
 	// Текст трека.
 	Lyrics struct {
 		// Уникальный идентификатор текста трека.
-		ID UniqueID `json:"id"`
+		ID ID `json:"id"`
 
 		// Первые строки текст песни.
 		Lyrics string `json:"lyrics"`
@@ -58,7 +58,7 @@ type (
 		// Доступен ли перевод.
 		ShowTranslation bool `json:"showTranslation"`
 
-		// Ссылка на источник перевода. Обычно genius.com.
+		// Ссылка на источник перевода.
 		Url string `json:"url"`
 	}
 
@@ -66,9 +66,9 @@ type (
 	TracksLibrary struct {
 		Library struct {
 			// Уникальный идентификатор пользователя.
-			Uid UniqueID `json:"uid"`
+			Uid ID `json:"uid"`
 
-			Revision RevisionID `json:"revision"`
+			Revision ID `json:"revision"`
 
 			// Список треков в укороченной версии.
 			Tracks []*TrackShort `json:"tracks"`
@@ -78,6 +78,7 @@ type (
 	// Список похожих треков на другой трек.
 	SimilarTracks struct {
 		Track *Track `json:"track"`
+
 		// Похожие треки.
 		SimilarTracks []*Track `json:"similarTracks"`
 	}
@@ -93,13 +94,7 @@ type (
 		// Предварительный просмотр.
 		Preview bool `json:"preview"`
 
-		// Ссылка на XML документ содержащий данные для загрузки трека
-		//
-		// При переходе по этому
-		// URL также необходимо иметь auth header. Без него или будет 401, или будет массив с mp3/128.
-		//
-		// Если собираетесь сделать загрузку mp3, смотрите в эту сторону:
-		// https://github.com/MarshalX/yandex-music-api/blob/main/yandex_music/download_info.py
+		// Ссылка на XML документ содержащий данные для загрузки трека.
 		DownloadInfoUrl string `json:"downloadInfoUrl"`
 
 		// Прямая ли ссылка.
@@ -112,13 +107,13 @@ type (
 	// POST /users/{userId}/likes/tracks/add
 	LikeTrackRequestBody struct {
 		// ID трека.
-		TrackId UniqueID `url:"track-id"`
+		TrackId ID `url:"track-id"`
 	}
 
 	// POST ​/tracks​
 	GetTracksByIdsRequestBody struct {
 		// ID треков.
-		TrackIds []UniqueID `url:",track-ids"`
+		TrackIds []ID `url:",track-ids"`
 
 		// С позициями?
 		WithPositions bool `url:"with-positions"`
@@ -129,7 +124,7 @@ type (
 	// (!) Я не проверял эти параметры.
 	PlayAudioRequestBody struct {
 		// Уникальный идентификатор трека.
-		TrackId UniqueID `url:"track-id,omitempty"`
+		TrackId ID `url:"track-id,omitempty"`
 
 		// Проигрывается ли трек с кеша.
 		FromCache bool `url:"from-cache,omitempty"`
@@ -141,7 +136,7 @@ type (
 		PlayId string `url:"play-id,omitempty"`
 
 		// Уникальный идентификатор пользователя.
-		Uid UniqueID `url:"uid,omitempty"`
+		Uid ID `url:"uid,omitempty"`
 
 		// Текущая дата и время в ISO.
 		Timestamp time.Time `url:"timestamp,omitempty"`
@@ -156,10 +151,10 @@ type (
 		EndPositionSeconds uint16 `url:"end-position-seconds,omitempty"`
 
 		// Уникальный идентификатор альбома.
-		AlbumId UniqueID `url:"album-id,omitempty"`
+		AlbumId ID `url:"album-id,omitempty"`
 
 		// Уникальный идентификатор проигрывания.
-		PlaylistId UniqueID `url:"playlist-id,omitempty"`
+		PlaylistId ID `url:"playlist-id,omitempty"`
 
 		// Текущая дата и время клиента в ISO.
 		ClientNow string `url:"client-now,omitempty"`
@@ -169,7 +164,7 @@ type (
 // Трек.
 type Track struct {
 	// Идентификатор трека.
-	ID UniqueID `json:"-"`
+	ID ID `json:"-"`
 
 	// Идентификатор подменного трека.
 	//
@@ -230,12 +225,15 @@ type Track struct {
 		HasAvailableSyncLyrics bool `json:"hasAvailableSyncLyrics"`
 		HasAvailableTextLyrics bool `json:"hasAvailableTextLyrics"`
 	} `json:"lyricsInfo"`
+
 	// OWN.
 	TrackSource    string `json:"trackSource"`
 	AvailableAsRbt bool   `json:"availableAsRbt"`
+
 	// Трек 18+?
-	Explicit bool     `json:"explicit"`
-	Regions  []string `json:"regions"`
+	Explicit bool `json:"explicit"`
+
+	Regions []string `json:"regions"`
 
 	// Версия трека.
 	Version *string `json:"version,omitempty"`
@@ -244,7 +242,7 @@ type Track struct {
 // В некоторых запросах ID может быть как строкой, так и числом.
 //
 // Надо привести ID к числу.
-func (t *Track) UnmarshalID(id UniqueID, data []byte) error {
+func (t *Track) UnmarshalID(id ID, data []byte) error {
 	type TrackFake Track
 	// демаршал в TrackFake
 	var faked TrackFake
@@ -259,7 +257,7 @@ func (t *Track) UnmarshalID(id UniqueID, data []byte) error {
 }
 
 func (t *Track) UnmarshalJSON(data []byte) error {
-	dem := func(id UniqueID, data []byte) error {
+	dem := func(id ID, data []byte) error {
 		type TrackFake Track
 		var faked TrackFake
 		if err := json.Unmarshal(data, &faked); err != nil {
@@ -275,10 +273,10 @@ func (t *Track) UnmarshalJSON(data []byte) error {
 // Укороченная версия трека с неполными данными.
 type TrackShort struct {
 	// Уникальный идентификатор трека.
-	ID UniqueID `json:"id"`
+	ID ID `json:"id"`
 
 	// Уникальный идентификатор альбома.
-	AlbumId UniqueID `json:"albumId"`
+	AlbumId ID `json:"albumId"`
 
 	// Дата.
 	Timestamp time.Time `json:"timestamp"`
@@ -295,13 +293,13 @@ func (t *TrackShort) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	var idUid UniqueID = 0
+	var idUid ID = 0
 	if err := idUid.FromString(realVal.ID); err != nil {
 		return err
 	}
 	t.ID = idUid
 
-	var albumId UniqueID = 0
+	var albumId ID = 0
 	if err := albumId.FromString(realVal.AlbumId); err != nil {
 		return err
 	}
@@ -318,18 +316,14 @@ func (t *TrackShort) UnmarshalJSON(data []byte) error {
 // Доступен метод GetIds().
 type LikeUnlikeTracksRequestBody struct {
 	// ID треков.
-	TrackIds []UniqueID `url:",track-ids"`
+	TrackIds []ID `url:",track-ids"`
 }
 
 // Устанавливает ID в TrackIds. Если слайс треков == nil, ничего не делает.
-func (l *LikeUnlikeTracksRequestBody) SetIds(ids []UniqueID) {
+func (l *LikeUnlikeTracksRequestBody) SetIds(ids []ID) {
 	if len(ids) == 0 {
 		return
 	}
-	if l.TrackIds == nil {
-		l.TrackIds = make([]UniqueID, 0)
-	}
-	for i := range ids {
-		l.TrackIds = append(l.TrackIds, ids[i])
-	}
+	l.TrackIds = []ID{}
+	l.TrackIds = append(l.TrackIds, ids...)
 }

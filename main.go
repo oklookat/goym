@@ -61,7 +61,7 @@ func New(tokens *auth.Tokens) (*Client, error) {
 // Клиент для запросов к API.
 type Client struct {
 	// ID текущего пользователя.
-	UserId schema.UniqueID
+	UserId schema.ID
 
 	// Для создания эндпоинтов.
 	// Чтоб не конвертировать по 100 раз UserId.

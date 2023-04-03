@@ -7,6 +7,8 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
+var _hostnamePostfix string
+
 func wrapErrStr(err string) error {
 	return fmt.Errorf(_errPrefix+"%s", err)
 }
@@ -19,7 +21,11 @@ func getHostname() (name string, err error) {
 	if name, err = os.Hostname(); err != nil {
 		return
 	}
-	name += "/goym"
+	if len(_hostnamePostfix) > 0 {
+		name = name + " (" + _hostnamePostfix + ")"
+	} else {
+		name += " (goym)"
+	}
 	return
 }
 

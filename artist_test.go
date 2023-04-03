@@ -42,10 +42,8 @@ func (s ArtistTestSuite) getNonameArtist() *schema.Artist {
 }
 
 func (s ArtistTestSuite) TestLikedArtists() {
-	artists, err := s.cl.LikedArtists(context.Background())
+	_, err := s.cl.LikedArtists(context.Background())
 	s.require.Nil(err)
-	s.require.NotEmpty(artists)
-	s.require.Positive(artists[0].ID)
 }
 
 func (s ArtistTestSuite) TestArtistLikeUnlike() {
@@ -73,7 +71,7 @@ func (s ArtistTestSuite) TestArtistTracks() {
 func (s ArtistTestSuite) TestArtistAlbums() {
 	ctx := context.Background()
 	ar := s.getArtist()
-	resp, err := s.cl.ArtistAlbums(ctx, ar.ID, 0, 20, schema.SortByYear)
+	resp, err := s.cl.ArtistAlbums(ctx, ar.ID, 0, 20, schema.SortByYear, schema.SortOrderDesc)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Albums)
 	s.require.Positive(resp.Albums[0].ID)

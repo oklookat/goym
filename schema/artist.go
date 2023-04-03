@@ -8,7 +8,7 @@ import (
 //
 // Много полей могут быть nil. Например, когда Artist находится в составе Track.
 type Artist struct {
-	ID UniqueID `json:"-"`
+	ID ID `json:"-"`
 
 	// Имя.
 	Name string `json:"name"`
@@ -70,7 +70,7 @@ type Artist struct {
 }
 
 func (a *Artist) UnmarshalJSON(data []byte) error {
-	dem := func(id UniqueID, data []byte) error {
+	dem := func(id ID, data []byte) error {
 		type Fake Artist
 		var faked Fake
 		if err := json.Unmarshal(data, &faked); err != nil {
@@ -150,8 +150,8 @@ type (
 			AnimationURL string `json:"animationUrl"`
 		} `json:"customWave"`
 		PlaylistIds []struct {
-			UID  UniqueID `json:"uid"`
-			Kind KindID   `json:"kind"`
+			UID  ID `json:"uid"`
+			Kind ID `json:"kind"`
 		} `json:"playlistIds"`
 		Playlists []*Playlist `json:"playlists"`
 	}
@@ -167,18 +167,15 @@ type (
 
 	// GET /artists/{artistId}/direct-albums
 	GetArtistAlbumsQueryParams struct {
-		// Страница.
-		Page uint16 `url:"page"`
-
-		// Кол-во результатов на странице (20, например).
-		PageSize uint16 `url:"page-size"`
-
-		SortBy SortBy `url:"sort-by"`
+		Page      uint16    `url:"page"`
+		PageSize  uint16    `url:"page-size"`
+		SortBy    SortBy    `url:"sort-by"`
+		SortOrder SortOrder `url:"sort-order"`
 	}
 
 	// POST /users/{userId}/likes/artists/add
 	LikeArtistRequestBody struct {
-		ArtistId UniqueID `url:"artist-id"`
+		ArtistId ID `url:"artist-id"`
 	}
 
 	ArtistTracksPaged struct {
@@ -193,8 +190,8 @@ type (
 )
 
 type ArtistTopTracks struct {
-	Artist *Artist    `json:"artist"`
-	Tracks []UniqueID `json:"tracks"`
+	Artist *Artist `json:"artist"`
+	Tracks []ID    `json:"tracks"`
 }
 
 // Разбираемся с ID.
@@ -211,9 +208,9 @@ func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
 	if len(realVal.Tracks) == 0 {
 		return nil
 	}
-	a.Tracks = make([]UniqueID, 0)
+	a.Tracks = make([]ID, 0)
 	for _, id := range realVal.Tracks {
-		var uid UniqueID = 0
+		var uid ID = 0
 		err := uid.FromString(id)
 		if err != nil {
 			return err

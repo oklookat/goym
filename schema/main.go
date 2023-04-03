@@ -9,20 +9,6 @@ const (
 	errPrefix = "goym/schema: "
 
 	ApiUrl = "https://api.music.yandex.net"
-
-	VisibilityPrivate  Visibility = "private"
-	VisibilityPublic   Visibility = "public"
-	ThemeBlack         Theme      = "black"
-	ThemeWhite         Theme      = "white"
-	ThemeDefault       Theme      = "default"
-	SearchTypeArtist   SearchType = "artist"
-	SearchTypeAlbum    SearchType = "album"
-	SearchTypeTrack    SearchType = "track"
-	SearchTypePodcast  SearchType = "podcast"
-	SearchTypePlaylist SearchType = "playlist"
-	SearchTypeAll      SearchType = "all"
-	SortByYear         SortBy     = "year"
-	SortByRating       SortBy     = "rating"
 )
 
 var (
@@ -31,12 +17,77 @@ var (
 	ErrNilPlaylist = errors.New(errPrefix + "nil playlist")
 )
 
-type (
-	Visibility string
-	SearchType string
-	Theme      string
-	SortBy     string
+// Сортировка по...
+type SortBy string
 
+const (
+	// Сортировка по году.
+	SortByYear SortBy = "year"
+
+	// Сортировка по рейтингу.
+	SortByRating SortBy = "rating"
+)
+
+// Сортировка по...
+type SortOrder string
+
+const (
+	// Сортировка по убыванию.
+	SortOrderDesc SortOrder = "desc"
+
+	// Сортировка по возрастанию.
+	SortOrderAsc SortOrder = "asc"
+)
+
+// Тема.
+type Theme string
+
+const (
+	// Темная.
+	ThemeBlack Theme = "black"
+
+	// Светлая.
+	ThemeWhite Theme = "white"
+
+	// По умолчанию.
+	ThemeDefault Theme = "default"
+)
+
+// Тип поиска.
+type SearchType string
+
+const (
+	// Поиск артистов.
+	SearchTypeArtist SearchType = "artist"
+
+	// Поиск альбомов.
+	SearchTypeAlbum SearchType = "album"
+
+	// Поиск треков.
+	SearchTypeTrack SearchType = "track"
+
+	// Поиск подкастов.
+	SearchTypePodcast SearchType = "podcast"
+
+	// Поиск плейлистов.
+	SearchTypePlaylist SearchType = "playlist"
+
+	// Поиск всего.
+	SearchTypeAll SearchType = "all"
+)
+
+// Видимость.
+type Visibility string
+
+const (
+	// Приватная.
+	VisibilityPrivate Visibility = "private"
+
+	// Публичная.
+	VisibilityPublic Visibility = "public"
+)
+
+type (
 	// Обычно ответ выглядит так.
 	Response[T any] struct {
 		InvocationInfo InvocationInfo `json:"invocationInfo"`
@@ -63,10 +114,10 @@ type (
 
 	// Ошибка. Ошибка валидации, например.
 	Error struct {
-		// example: validate.
+		// Например: validate.
 		Name string `json:"name"`
 
-		// example: Parameters requirements are not met.
+		// Например: Parameters requirements are not met.
 		Message string `json:"message"`
 	}
 
@@ -93,29 +144,18 @@ type (
 	}
 )
 
-type UniqueID uint64
+// Уникальный ID.
+type ID uint64
 
-func (u UniqueID) String() string {
+func (u ID) String() string {
 	return strconv.FormatUint(uint64(u), 10)
 }
 
-func (u *UniqueID) FromString(val string) error {
+func (u *ID) FromString(val string) error {
 	res, err := strconv.ParseUint(val, 10, 64)
 	if err != nil {
 		return err
 	}
-	*u = UniqueID(res)
+	*u = ID(res)
 	return nil
-}
-
-type KindID uint64
-
-func (c KindID) String() string {
-	return strconv.FormatUint(uint64(c), 10)
-}
-
-type RevisionID uint64
-
-func (r RevisionID) String() string {
-	return strconv.FormatUint(uint64(r), 10)
 }

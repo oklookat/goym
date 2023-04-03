@@ -50,7 +50,7 @@ func (s PlaylistTestSuite) TestPlaylistsByKindUid() {
 		s.require.Fail("too few playlists")
 	}
 	playlists := found.Playlists.Results
-	kindUid := map[schema.KindID]schema.UniqueID{}
+	kindUid := map[schema.ID]schema.ID{}
 	for i, p := range playlists {
 		kindUid[p.Kind] = p.UID
 		if i >= 6 {

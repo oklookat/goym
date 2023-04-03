@@ -35,7 +35,7 @@ func (c Client) likedDislikedTracks(ctx context.Context, liked bool) (*schema.Tr
 }
 
 // Лайкнуть трек.
-func (c Client) LikeTrack(ctx context.Context, id schema.UniqueID) error {
+func (c Client) LikeTrack(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/tracks/add
 	body := schema.LikeTrackRequestBody{
 		TrackId: id,
@@ -57,16 +57,16 @@ func (c Client) LikeTrack(ctx context.Context, id schema.UniqueID) error {
 // Лайкнуть треки.
 //
 // Используйте LikeTrack() для лайка одного трека.
-func (c Client) LikeTracks(ctx context.Context, ids []schema.UniqueID) error {
+func (c Client) LikeTracks(ctx context.Context, ids []schema.ID) error {
 	return c.likeUnlikeTracks(ctx, ids, true)
 }
 
 // Снять лайки с треков.
-func (c Client) UnlikeTracks(ctx context.Context, ids []schema.UniqueID) error {
+func (c Client) UnlikeTracks(ctx context.Context, ids []schema.ID) error {
 	return c.likeUnlikeTracks(ctx, ids, false)
 }
 
-func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.UniqueID, like bool) error {
+func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.ID, like bool) error {
 	// POST /users/{userId}/likes/tracks/add-multiple
 	// ||
 	// POST /users/{userId}/likes/tracks/remove
@@ -91,7 +91,7 @@ func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.UniqueID, lik
 }
 
 // Получить трек по id.
-func (c Client) Track(ctx context.Context, trackId schema.UniqueID) ([]*schema.Track, error) {
+func (c Client) Track(ctx context.Context, trackId schema.ID) ([]*schema.Track, error) {
 	// GET /tracks/{trackId}
 	endpoint := genApiPath("tracks", trackId.String())
 	data := &schema.Response[[]*schema.Track]{}
@@ -103,7 +103,7 @@ func (c Client) Track(ctx context.Context, trackId schema.UniqueID) ([]*schema.T
 }
 
 // Получить треки по id.
-func (c Client) Tracks(ctx context.Context, trackIds []schema.UniqueID) ([]*schema.Track, error) {
+func (c Client) Tracks(ctx context.Context, trackIds []schema.ID) ([]*schema.Track, error) {
 	// POST /tracks
 	if trackIds == nil {
 		return nil, nil
@@ -126,7 +126,7 @@ func (c Client) Tracks(ctx context.Context, trackIds []schema.UniqueID) ([]*sche
 }
 
 // Получить информацию о загрузке трека.
-func (c Client) TrackDownloadInfo(ctx context.Context, id schema.UniqueID) ([]*schema.TrackDownloadInfo, error) {
+func (c Client) TrackDownloadInfo(ctx context.Context, id schema.ID) ([]*schema.TrackDownloadInfo, error) {
 	// GET /tracks/{trackId}/download-info
 	endpoint := genApiPath("tracks", id.String(), "download-info")
 	data := &schema.Response[[]*schema.TrackDownloadInfo]{}
@@ -138,7 +138,7 @@ func (c Client) TrackDownloadInfo(ctx context.Context, id schema.UniqueID) ([]*s
 }
 
 // Получить дополнительную информацию о треке (текст песни, видео, etc).
-func (c Client) TrackSupplement(ctx context.Context, id schema.UniqueID) (*schema.Supplement, error) {
+func (c Client) TrackSupplement(ctx context.Context, id schema.ID) (*schema.Supplement, error) {
 	// GET /tracks/{trackId}/supplement
 	endpoint := genApiPath("tracks", id.String(), "supplement")
 	data := &schema.Response[*schema.Supplement]{}
@@ -150,7 +150,7 @@ func (c Client) TrackSupplement(ctx context.Context, id schema.UniqueID) (*schem
 }
 
 // Получить похожие треки.
-func (c Client) SimilarTracks(ctx context.Context, id schema.UniqueID) (*schema.SimilarTracks, error) {
+func (c Client) SimilarTracks(ctx context.Context, id schema.ID) (*schema.SimilarTracks, error) {
 	// GET /tracks/{trackId}/similar
 	endpoint := genApiPath("tracks", id.String(), "similar")
 	data := &schema.Response[*schema.SimilarTracks]{}

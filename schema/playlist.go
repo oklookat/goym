@@ -12,13 +12,15 @@ type (
 		Owner *Owner `json:"owner"`
 
 		// UID владельца плейлиста.
-		UID UniqueID `json:"uid"`
+		UID ID `json:"uid"`
 
 		// UUID.
 		PlaylistUuid *string `json:"playlistUuid"`
 
+		// Уникальный идентификатор плейлиста.
+		//
 		// Обычно используется для операций над плейлистом.
-		Kind KindID `json:"kind"`
+		Kind ID `json:"kind"`
 
 		// Название.
 		Title string `json:"title"`
@@ -28,11 +30,11 @@ type (
 		DescriptionFormatted string `json:"descriptionFormatted,omitempty"`
 
 		// Что-то типа версии плейлиста.
-		// Если плейлист изменился: добавили, удалили треки,
+		// Если плейлист изменился: добавили/удалили треки,
 		// то Revision прибавляется на 1.
 		//
-		// Может быть nil, если плейлист не ваш(?).
-		Revision *RevisionID `json:"revision"`
+		// Может быть nil, если плейлист не создан вами(?).
+		Revision *ID `json:"revision"`
 
 		Available *bool `json:"available"`
 
@@ -57,7 +59,7 @@ type (
 
 		// Треки.
 		//
-		// Может быть nil. Зависит от метода, которым получен плейлист.
+		// Может быть nil. Зависит от метода, который вернул эту структуру.
 		Tracks []*TrackItem `json:"tracks"`
 	}
 
@@ -66,15 +68,16 @@ type (
 		// Уникальный идентификатор партии треков
 		BatchId string `json:"batch_id"`
 
+		// Треки.
 		Tracks []*Track `json:"tracks"`
 	}
 
 	PlaylistId struct {
 		// Уникальный идентификатор пользователя владеющим плейлистом.
-		UID UniqueID `json:"uid"`
+		UID ID `json:"uid"`
 
 		// Уникальный идентификатор плейлиста.
-		Kind KindID `json:"kind"`
+		Kind ID `json:"kind"`
 	}
 
 	// GET /users/{userId}/playlists
@@ -110,10 +113,10 @@ type (
 	// POST /users/{userId}/likes/playlists/add
 	LikePlaylistRequestBody struct {
 		// Kind плейлиста.
-		Kind KindID `url:"kind"`
+		Kind ID `url:"kind"`
 
 		// UID владельца плейлиста.
-		OwnerUid UniqueID `url:"owner-uid"`
+		OwnerUid ID `url:"owner-uid"`
 	}
 
 	// POST /users/{userId}/likes/playlists/add
@@ -206,7 +209,7 @@ func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
 }
 
 // {"id":"1234","albumId":"1234"}
-func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id UniqueID, albumId UniqueID) string {
+func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id ID, albumId ID) string {
 	idStr := id.String()
 	obj := `{"id":`           // {"id":
 	obj += `"` + idStr + `",` // {"id":"1234",
@@ -226,7 +229,7 @@ type PlaylistsIdsRequestBody struct {
 // owner - владелец плейлиста
 //
 // kind - kind плейлиста
-func (g *PlaylistsIdsRequestBody) Add(kind KindID, owner UniqueID) {
+func (g *PlaylistsIdsRequestBody) Add(kind ID, owner ID) {
 	if g.PlaylistIds == nil {
 		g.PlaylistIds = make([]string, 0)
 	}
@@ -237,7 +240,7 @@ func (g *PlaylistsIdsRequestBody) Add(kind KindID, owner UniqueID) {
 // Добавить в PlaylistIds.
 //
 // map[kind плейлиста]uid_владельца
-func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[KindID]UniqueID) {
+func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[ID]ID) {
 	if len(kindUid) == 0 {
 		return
 	}

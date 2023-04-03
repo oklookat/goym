@@ -19,7 +19,7 @@ func (c Client) LikedArtists(ctx context.Context) ([]*schema.Artist, error) {
 }
 
 // Лайкнуть артиста по ID.
-func (c Client) LikeArtist(ctx context.Context, id schema.UniqueID) error {
+func (c Client) LikeArtist(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/artists/add
 	body := schema.LikeArtistRequestBody{
 		ArtistId: id,
@@ -40,7 +40,7 @@ func (c Client) LikeArtist(ctx context.Context, id schema.UniqueID) error {
 }
 
 // Убрать лайк с артиста по ID.
-func (c Client) UnlikeArtist(ctx context.Context, id schema.UniqueID) error {
+func (c Client) UnlikeArtist(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/artists/{artistId}/remove
 	endpoint := genApiPath("users", c.userId, "likes", "artists", id.String(), "remove")
 	data := &schema.Response[any]{}
@@ -53,7 +53,7 @@ func (c Client) UnlikeArtist(ctx context.Context, id schema.UniqueID) error {
 }
 
 // Получить список треков артиста по его ID.
-func (c Client) ArtistTracks(ctx context.Context, id schema.UniqueID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
+func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
 	// GET /artists/{artistId}/tracks
 	body := schema.GetArtistTracksQueryParams{
 		Page:     page,
@@ -74,12 +74,15 @@ func (c Client) ArtistTracks(ctx context.Context, id schema.UniqueID, page uint1
 }
 
 // Получить альбомы артиста по его ID.
-func (c Client) ArtistAlbums(ctx context.Context, id schema.UniqueID, page uint16, pageSize uint16, sortBy schema.SortBy) (*schema.ArtistAlbumsPaged, error) {
+//
+// Приложение под Windows в качестве pageSize обычно использует 50.
+func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page uint16, pageSize uint16, sortBy schema.SortBy, sortOrder schema.SortOrder) (*schema.ArtistAlbumsPaged, error) {
 	// GET /artists/{artistId}/direct-albums
 	body := schema.GetArtistAlbumsQueryParams{
-		Page:     page,
-		PageSize: pageSize,
-		SortBy:   sortBy,
+		Page:      page,
+		PageSize:  pageSize,
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
@@ -96,7 +99,7 @@ func (c Client) ArtistAlbums(ctx context.Context, id schema.UniqueID, page uint1
 }
 
 // Получить лучшие треки артиста по его ID.
-func (c Client) ArtistTopTracks(ctx context.Context, id schema.UniqueID) (*schema.ArtistTopTracks, error) {
+func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (*schema.ArtistTopTracks, error) {
 	// GET /artists/{artistId}/track-ids-by-rating
 	endpoint := genApiPath("artists", id.String(), "track-ids-by-rating")
 	data := &schema.Response[*schema.ArtistTopTracks]{}
@@ -108,7 +111,7 @@ func (c Client) ArtistTopTracks(ctx context.Context, id schema.UniqueID) (*schem
 }
 
 // Получить полную информацию об артисте по его ID.
-func (c Client) ArtistInfo(ctx context.Context, id schema.UniqueID) (*schema.ArtistBriefInfo, error) {
+func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (*schema.ArtistBriefInfo, error) {
 	// GET /artists/{artistId}/brief-info
 	endpoint := genApiPath("artists", id.String(), "brief-info")
 	data := &schema.Response[*schema.ArtistBriefInfo]{}

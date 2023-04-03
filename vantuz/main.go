@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	_userAgent = "goym/v0.3.0 (github.com/oklookat/goym)"
-	_prefix    = "[goym]"
+	_userAgent = "goym/v0.3.1 (github.com/oklookat/goym)"
 )
 
 // Client.
@@ -20,6 +19,10 @@ func C() *Client {
 	p.SetLogger(&dummyLogger{})
 
 	p.SetGlobalHeader("Content-Type", "application/json")
-	p.SetGlobalHeader("User-Agent", _userAgent)
+	p.SetUserAgent(_userAgent)
 	return p
+}
+
+func (c *Client) SetUserAgent(val string) {
+	c.SetGlobalHeader("User-Agent", val)
 }

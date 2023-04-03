@@ -5,7 +5,7 @@ import "time"
 type (
 	Album struct {
 		// Идентификатор альбома.
-		ID UniqueID `json:"id"`
+		ID ID `json:"id"`
 
 		// Название альбома.
 		Title string `json:"title"`
@@ -65,7 +65,7 @@ type (
 		AvailablePartially bool `json:"availablePartially"`
 
 		// ID лучших треков альбома.
-		Bests []UniqueID `json:"bests"`
+		Bests []ID `json:"bests"`
 
 		// например: "single".
 		Type *string `json:"type"`
@@ -91,19 +91,19 @@ type (
 	}
 
 	AlbumShort struct {
-		ID        UniqueID  `json:"id"`
+		ID        ID        `json:"id"`
 		Timestamp time.Time `json:"timestamp"`
 	}
 
 	// POST /albums
 	GetAlbumsByIdsRequestBody struct {
 		// ID альбомов.
-		AlbumIds []UniqueID `url:",album-ids"`
+		AlbumIds []ID `url:",album-ids"`
 	}
 
 	// POST /users/{userId}/likes/albums/add
 	LikeAlbumRequestBody struct {
 		// ID альбома.
-		AlbumId UniqueID `url:"album-id"`
+		AlbumId ID `url:"album-id"`
 	}
 )

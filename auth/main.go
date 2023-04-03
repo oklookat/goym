@@ -44,12 +44,27 @@ var (
 // 3. Пользователь вводит правильный код до истечения времени его жизни.
 //
 // 4. Яндекс.OAuth возвращает токен в ответ на следующий запрос приложения.
-func New(ctx context.Context,
+//
+// hostnamePostfix:
+//
+// Устанавливает постфикс имени устройства, которое будет отображаться
+// в аккаунте Яндекса после авторизации.
+// Например, если постфикс будет "hello",
+// то имя устройства будет таким: "имяустройства (hello)".
+//
+// Если постфикс не указан, будет использоваться значение по умолчанию.
+func New(
+	ctx context.Context,
 	login string,
-	onUrlCode func(url string, code string)) (*Tokens, error) {
+	onUrlCode func(url string, code string),
+	hostnamePostfix *string) (*Tokens, error) {
 
 	if ctx == nil || onUrlCode == nil {
 		return nil, nil
+	}
+
+	if hostnamePostfix == nil || len(*hostnamePostfix) == 0 {
+		_hostnamePostfix = "goym"
 	}
 
 	// запрашиваем коды.
@@ -69,5 +84,7 @@ func New(ctx context.Context,
 	// проверяем ввод. Если пользователь ввел верный код, выдаем токен.
 	tokens := &Tokens{}
 	err = tokens.Request(ctx, codes)
+
+	_hostnamePostfix = ""
 	return tokens, err
 }

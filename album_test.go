@@ -19,7 +19,7 @@ func (s *AlbumTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s AlbumTestSuite) getAlbumId() schema.UniqueID {
+func (s AlbumTestSuite) getAlbumId() schema.ID {
 	res, err := s.cl.Search(context.Background(), "crystal castles iii", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
 	s.require.NotNil(res)
@@ -29,12 +29,12 @@ func (s AlbumTestSuite) getAlbumId() schema.UniqueID {
 	return id
 }
 
-func (s AlbumTestSuite) getAlbumIds() []schema.UniqueID {
+func (s AlbumTestSuite) getAlbumIds() []schema.ID {
 	res, err := s.cl.Search(context.Background(), "moby", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
 	s.require.NotNil(res)
 	s.require.NotEmpty(res.Albums.Results)
-	ids := []schema.UniqueID{}
+	ids := []schema.ID{}
 	for i, al := range res.Albums.Results {
 		ids = append(ids, al.ID)
 		if i == 5 {

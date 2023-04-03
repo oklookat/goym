@@ -71,7 +71,7 @@ func (s TrackTestSuite) TestLikeUnlikeTrack() {
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeTracks(ctx, []schema.UniqueID{track.ID})
+	err = s.cl.UnlikeTracks(ctx, []schema.ID{track.ID})
 	s.require.Nil(err)
 }
 
@@ -80,7 +80,7 @@ func (s TrackTestSuite) TestLikeUnlikeTracks() {
 	tracks := s.getTracks()
 
 	// like
-	var ids []schema.UniqueID
+	var ids []schema.ID
 	for i := range tracks {
 		ids = append(ids, tracks[i].ID)
 	}
@@ -101,7 +101,7 @@ func (s TrackTestSuite) TestGetTrackById() {
 }
 
 func (s TrackTestSuite) TestTracksById() {
-	ids := []schema.UniqueID{}
+	ids := []schema.ID{}
 	searched := s.getTracks()
 	for _, t := range searched {
 		ids = append(ids, t.ID)

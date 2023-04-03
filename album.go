@@ -11,7 +11,7 @@ import (
 // withTracks - получить альбом с треками?
 //
 // Если да, то треки будут в Volumes и Duplicates.
-func (c Client) Album(ctx context.Context, id schema.UniqueID, withTracks bool) (*schema.Album, error) {
+func (c Client) Album(ctx context.Context, id schema.ID, withTracks bool) (*schema.Album, error) {
 	// GET /albums/{albumId}
 	// ||
 	// GET /albums/{albumId}/with-tracks
@@ -31,7 +31,7 @@ func (c Client) Album(ctx context.Context, id schema.UniqueID, withTracks bool) 
 }
 
 // Получить альбомы по id.
-func (c Client) Albums(ctx context.Context, albumIds []schema.UniqueID) ([]*schema.Album, error) {
+func (c Client) Albums(ctx context.Context, albumIds []schema.ID) ([]*schema.Album, error) {
 	// POST /albums
 	if albumIds == nil {
 		return nil, nil
@@ -57,7 +57,7 @@ func (c Client) Albums(ctx context.Context, albumIds []schema.UniqueID) ([]*sche
 }
 
 // Лайкнуть альбом по ID.
-func (c Client) LikeAlbum(ctx context.Context, id schema.UniqueID) error {
+func (c Client) LikeAlbum(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/albums/add
 	body := schema.LikeAlbumRequestBody{
 		AlbumId: id,
@@ -80,7 +80,7 @@ func (c Client) LikeAlbum(ctx context.Context, id schema.UniqueID) error {
 }
 
 // Убрать лайк с альбома по ID.
-func (c Client) UnlikeAlbum(ctx context.Context, id schema.UniqueID) error {
+func (c Client) UnlikeAlbum(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/albums/{albumId}/remove
 	endpoint := genApiPath("users", c.userId, "likes", "albums", id.String(), "remove")
 	data := &schema.Response[any]{}

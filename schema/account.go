@@ -11,7 +11,7 @@ type (
 	// Настройки пользователя.
 	AccountSettings struct {
 		// ID.
-		UID UniqueID `json:"uid" url:"-"`
+		UID ID `json:"uid" url:"-"`
 
 		// Включен ли скробблинг last.fm?
 		LastFmScrobblingEnabled   bool `json:"lastFmScrobblingEnabled" url:"lastFmScrobblingEnabled,omitempty"`
@@ -56,7 +56,7 @@ type (
 		Now string `json:"now"`
 
 		// Уникальный идентификатор.
-		UID UniqueID `json:"uid"`
+		UID ID `json:"uid"`
 
 		// Виртуальное имя (обычно e-mail).
 		Login string `json:"login"`
@@ -123,7 +123,7 @@ type (
 	// Владелец. Владелец плейлиста, например.
 	Owner struct {
 		// id.
-		UID UniqueID `json:"uid"`
+		UID ID `json:"uid"`
 
 		// Логин.
 		Login string `json:"login"`

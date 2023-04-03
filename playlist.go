@@ -25,7 +25,7 @@ func (c Client) MyPlaylists(ctx context.Context) ([]*schema.Playlist, error) {
 // Доступно только для плейлистов в библиотеке пользователя.
 //
 // Доступно поле Tracks.
-func (c Client) MyPlaylist(ctx context.Context, kind schema.KindID) (*schema.Playlist, error) {
+func (c Client) MyPlaylist(ctx context.Context, kind schema.ID) (*schema.Playlist, error) {
 	// GET /users/{userId}/playlists/{kind}
 	endpoint := genApiPath("users", c.userId, "playlists", kind.String())
 	data := &schema.Response[*schema.Playlist]{}
@@ -58,7 +58,7 @@ func (c Client) CreatePlaylist(ctx context.Context, name string, vis schema.Visi
 }
 
 // Переименовать плейлист.
-func (c Client) RenamePlaylist(ctx context.Context, kind schema.KindID, newName string) (*schema.Playlist, error) {
+func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName string) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/name
 	body := schema.RenamePlaylistRequestBody{
 		Value: newName,
@@ -78,7 +78,7 @@ func (c Client) RenamePlaylist(ctx context.Context, kind schema.KindID, newName 
 }
 
 // Удалить плейлист.
-func (c Client) DeletePlaylist(ctx context.Context, kind schema.KindID) error {
+func (c Client) DeletePlaylist(ctx context.Context, kind schema.ID) error {
 	// POST /users/{userId}/playlists/{kind}/delete
 	endpoint := genApiPath("users", c.userId, "playlists", kind.String(), "delete")
 	data := &schema.Response[any]{}
@@ -94,7 +94,7 @@ func (c Client) DeletePlaylist(ctx context.Context, kind schema.KindID) error {
 // Только для плейлистов, созданных пользователем.
 //
 // Если в плейлисте нет треков, рекомендаций не будет.
-func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.KindID) (*schema.PlaylistRecommendations, error) {
+func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.ID) (*schema.PlaylistRecommendations, error) {
 	// GET /users/{userId}/playlists/{kind}/recommendations
 	endpoint := genApiPath("users", c.userId, "playlists", kind.String(), "recommendations")
 	data := &schema.Response[*schema.PlaylistRecommendations]{}
@@ -106,7 +106,7 @@ func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.KindID)
 }
 
 // Изменить видимость плейлиста.
-func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.KindID, vis schema.Visibility) (*schema.Playlist, error) {
+func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.ID, vis schema.Visibility) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/visibility
 	body := schema.ChangePlaylistVisibilityRequestBody{
 		Value: vis,
@@ -183,7 +183,7 @@ func (c Client) DeleteFromPlaylist(ctx context.Context, pl *schema.Playlist, tra
 // Поставить лайк плейлисту.
 //
 // kind и uid можно получить из плейлиста.
-func (c Client) LikePlaylist(ctx context.Context, kind schema.KindID, uid schema.UniqueID) error {
+func (c Client) LikePlaylist(ctx context.Context, kind schema.ID, uid schema.ID) error {
 	// POST /users/{userId}/likes/playlists/add
 	body := schema.LikePlaylistRequestBody{
 		Kind:     kind,
@@ -206,7 +206,7 @@ func (c Client) LikePlaylist(ctx context.Context, kind schema.KindID, uid schema
 // Убрать лайк с плейлиста.
 //
 // kind и uid можно получить из плейлиста.
-func (c Client) UnlikePlaylist(ctx context.Context, kind schema.KindID, uid schema.UniqueID) error {
+func (c Client) UnlikePlaylist(ctx context.Context, kind schema.ID, uid schema.ID) error {
 	// POST /users/{userId}/likes/playlists/{kind}/remove
 	uidAndKind := uid.String() + "-" + kind.String()
 	endpoint := genApiPath("users", c.userId, "likes", "playlists", uidAndKind, "remove")
@@ -222,7 +222,7 @@ func (c Client) UnlikePlaylist(ctx context.Context, kind schema.KindID, uid sche
 // Получить плейлисты.
 //
 // kindUid - map[kind плейлиста]uid_владельца
-func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.KindID]schema.UniqueID) ([]*schema.Playlist, error) {
+func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]schema.ID) ([]*schema.Playlist, error) {
 	if len(kindUid) == 0 {
 		return nil, nil
 	}
