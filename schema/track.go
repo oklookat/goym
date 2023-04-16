@@ -80,6 +80,8 @@ type (
 		Track *Track `json:"track"`
 
 		// Похожие треки.
+		//
+		// Может быть пуст, если изначальный трек не популярен(?).
 		SimilarTracks []*Track `json:"similarTracks"`
 	}
 
@@ -312,8 +314,6 @@ func (t *TrackShort) UnmarshalJSON(data []byte) error {
 // POST /users/{userId}/likes/tracks/add-multiple
 //
 // POST /users/{userId}/likes/tracks/remove
-//
-// Доступен метод GetIds().
 type LikeUnlikeTracksRequestBody struct {
 	// ID треков.
 	TrackIds []ID `url:",track-ids"`
@@ -321,9 +321,6 @@ type LikeUnlikeTracksRequestBody struct {
 
 // Устанавливает ID в TrackIds. Если слайс треков == nil, ничего не делает.
 func (l *LikeUnlikeTracksRequestBody) SetIds(ids []ID) {
-	if len(ids) == 0 {
-		return
-	}
 	l.TrackIds = []ID{}
 	l.TrackIds = append(l.TrackIds, ids...)
 }

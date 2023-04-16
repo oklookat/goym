@@ -107,3 +107,16 @@ type (
 		AlbumId ID `url:"album-id"`
 	}
 )
+
+// POST /users/{userId}/likes/albums/add-multiple
+//
+// POST /users/{userId}/likes/albums/remove
+type LikeUnlikeAlbumsRequestBody struct {
+	// ID альбомов.
+	AlbumIds []ID `url:",albumIds"`
+}
+
+func (l *LikeUnlikeAlbumsRequestBody) SetIds(ids []ID) {
+	l.AlbumIds = []ID{}
+	l.AlbumIds = append(l.AlbumIds, ids...)
+}

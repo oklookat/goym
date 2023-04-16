@@ -20,7 +20,7 @@ func (s *AlbumTestSuite) SetupSuite() {
 }
 
 func (s AlbumTestSuite) getAlbumId() schema.ID {
-	res, err := s.cl.Search(context.Background(), "crystal castles iii", 0, schema.SearchTypeAlbum, false)
+	res, err := s.cl.Search(context.Background(), "album", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
 	s.require.NotNil(res)
 	s.require.NotEmpty(res.Albums.Results)
@@ -30,16 +30,16 @@ func (s AlbumTestSuite) getAlbumId() schema.ID {
 }
 
 func (s AlbumTestSuite) getAlbumIds() []schema.ID {
-	res, err := s.cl.Search(context.Background(), "moby", 0, schema.SearchTypeAlbum, false)
+	res, err := s.cl.Search(context.Background(), "album", 0, schema.SearchTypeAlbum, false)
 	s.require.Nil(err)
 	s.require.NotNil(res)
 	s.require.NotEmpty(res.Albums.Results)
 	ids := []schema.ID{}
 	for i, al := range res.Albums.Results {
-		ids = append(ids, al.ID)
-		if i == 5 {
+		if i == 8 {
 			break
 		}
+		ids = append(ids, al.ID)
 	}
 	return ids
 }
@@ -84,6 +84,19 @@ func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
 
 	// unlike
 	err = s.cl.UnlikeAlbum(ctx, al.ID)
+	s.require.Nil(err)
+}
+
+func (s AlbumTestSuite) TestLikeUnlikeAlbums() {
+	ctx := context.Background()
+	ids := s.getAlbumIds()
+
+	// like
+	err := s.cl.LikeAlbums(ctx, ids)
+	s.require.Nil(err)
+
+	// unlike
+	err = s.cl.UnlikeAlbums(ctx, ids)
 	s.require.Nil(err)
 }
 

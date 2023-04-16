@@ -66,6 +66,8 @@ func (c Client) AccountSettings(ctx context.Context) (*schema.AccountSettings, e
 // Может вернуть как AccountSettings, так и ничего.
 func (c Client) ChangeAccountSettings(ctx context.Context, set schema.AccountSettings) (any, error) {
 	// POST /account/settings
+	// todo(?) иногда выдает ошибку json unmarshal.
+
 	endpoint := genApiPath("account", "settings")
 
 	body := schema.ChangeAccountSettingsRequestBody{}

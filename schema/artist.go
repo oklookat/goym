@@ -220,3 +220,16 @@ func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+// POST /users/{userId}/likes/artists/add-multiple
+//
+// POST /users/{userId}/likes/artists/remove
+type LikeUnlikeArtistsRequestBody struct {
+	// ID альбомов.
+	ArtistIds []ID `url:",artistIds"`
+}
+
+func (l *LikeUnlikeArtistsRequestBody) SetIds(ids []ID) {
+	l.ArtistIds = []ID{}
+	l.ArtistIds = append(l.ArtistIds, ids...)
+}

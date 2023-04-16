@@ -70,24 +70,7 @@ func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.ID, like bool
 	// POST /users/{userId}/likes/tracks/add-multiple
 	// ||
 	// POST /users/{userId}/likes/tracks/remove
-	body := schema.LikeUnlikeTracksRequestBody{}
-	body.SetIds(ids)
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return err
-	}
-
-	endEndPoint := "add-multiple"
-	if !like {
-		endEndPoint = "remove"
-	}
-	endpoint := genApiPath("users", c.userId, "likes", "tracks", endEndPoint)
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return err
+	return likeUnlikeMultiple(ctx, "tracks", like, &c, &schema.LikeUnlikeTracksRequestBody{}, ids)
 }
 
 // Получить трек по id.

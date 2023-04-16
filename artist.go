@@ -52,6 +52,18 @@ func (c Client) UnlikeArtist(ctx context.Context, id schema.ID) error {
 	return err
 }
 
+// Лайкнуть артистов.
+//
+// Используйте LikeArtists() для лайка одного альбома.
+func (c Client) LikeArtists(ctx context.Context, ids []schema.ID) error {
+	return c.likeUnlikeArtists(ctx, ids, true)
+}
+
+// Снять лайки с артистов.
+func (c Client) UnlikeArtists(ctx context.Context, ids []schema.ID) error {
+	return c.likeUnlikeArtists(ctx, ids, false)
+}
+
 // Получить список треков артиста по его ID.
 func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
 	// GET /artists/{artistId}/tracks
@@ -120,4 +132,11 @@ func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (*schema.ArtistBri
 		err = checkResponse(resp, data)
 	}
 	return data.Result, err
+}
+
+func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like bool) error {
+	// POST /users/{userId}/likes/artists/add-multiple
+	// ||
+	// POST /users/{userId}/likes/artists/remove
+	return likeUnlikeMultiple(ctx, "artists", like, &c, &schema.LikeUnlikeArtistsRequestBody{}, ids)
 }

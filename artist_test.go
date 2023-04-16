@@ -30,6 +30,19 @@ func (s ArtistTestSuite) getArtist() *schema.Artist {
 	return ar
 }
 
+func (s ArtistTestSuite) getArtistsIds() []schema.ID {
+	found, err := s.cl.Search(context.Background(), "artist", 0, schema.SearchTypeArtist, false)
+	s.require.Nil(err)
+	s.require.NotNil(found.Artists)
+	s.require.NotEmpty(found.Artists.Results)
+
+	var result []schema.ID
+	for i := range found.Artists.Results {
+		result = append(result, found.Artists.Results[i].ID)
+	}
+	return result
+}
+
 func (s ArtistTestSuite) getNonameArtist() *schema.Artist {
 	// search & get artist id
 	found, err := s.cl.Search(context.Background(), "LLLL", 0, schema.SearchTypeArtist, false)
@@ -56,6 +69,19 @@ func (s ArtistTestSuite) TestArtistLikeUnlike() {
 
 	// unlike
 	err = s.cl.UnlikeArtist(ctx, ar.ID)
+	s.require.Nil(err)
+}
+
+func (s ArtistTestSuite) TestLikeUnlikeArtists() {
+	ctx := context.Background()
+	ids := s.getArtistsIds()
+
+	// like
+	err := s.cl.LikeArtists(ctx, ids)
+	s.require.Nil(err)
+
+	// unlike
+	err = s.cl.UnlikeArtists(ctx, ids)
 	s.require.Nil(err)
 }
 

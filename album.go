@@ -79,6 +79,18 @@ func (c Client) LikeAlbum(ctx context.Context, id schema.ID) error {
 	return err
 }
 
+// Лайкнуть альбомы.
+//
+// Используйте LikeAlbum() для лайка одного альбома.
+func (c Client) LikeAlbums(ctx context.Context, ids []schema.ID) error {
+	return c.likeUnlikeAlbums(ctx, ids, true)
+}
+
+// Снять лайки с альбомов.
+func (c Client) UnlikeAlbums(ctx context.Context, ids []schema.ID) error {
+	return c.likeUnlikeAlbums(ctx, ids, false)
+}
+
 // Убрать лайк с альбома по ID.
 func (c Client) UnlikeAlbum(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/albums/{albumId}/remove
@@ -102,4 +114,11 @@ func (c Client) LikedAlbums(ctx context.Context) ([]*schema.AlbumShort, error) {
 		err = checkResponse(resp, data)
 	}
 	return data.Result, err
+}
+
+func (c Client) likeUnlikeAlbums(ctx context.Context, ids []schema.ID, like bool) error {
+	// POST /users/{userId}/likes/albums/add-multiple
+	// ||
+	// POST /users/{userId}/likes/albums/remove
+	return likeUnlikeMultiple(ctx, "albums", like, &c, &schema.LikeUnlikeAlbumsRequestBody{}, ids)
 }

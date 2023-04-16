@@ -63,8 +63,10 @@ func New(
 		return nil, nil
 	}
 
-	if hostnamePostfix == nil || len(*hostnamePostfix) == 0 {
+	if hostnamePostfix == nil || len(*hostnamePostfix) < 1 {
 		_hostnamePostfix = "goym"
+	} else {
+		_hostnamePostfix = *hostnamePostfix
 	}
 
 	// запрашиваем коды.
