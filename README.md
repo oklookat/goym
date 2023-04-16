@@ -58,6 +58,8 @@
 - [x] POST /albums
 - [x] POST /users/{userId}/likes/albums/add
 - [x] POST /users/{userId}/likes/albums/{albumId}/remove
+- [x] POST /users/{userId}/likes/albums/add-multiple
+- [x] POST /users/{userId}/likes/albums/remove
 
 ## Artist
 - [x] GET /users/{userId}/likes/artists
@@ -67,6 +69,8 @@
 - [x] GET /artists/{artistId}/direct-albums
 - [x] POST /users/{userId}/likes/artists/add
 - [x] POST /users/{userId}/likes/artists/{artistId}/remove
+- [x] POST /users/{userId}/likes/artists/add-multiple
+- [x] POST /users/{userId}/likes/artists/remove
 
 ## Playlist
 - [x] GET /users/{userId}/playlists/list
