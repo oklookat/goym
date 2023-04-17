@@ -28,7 +28,7 @@ func (c *Client) R() *Request {
 // Set header for all requests from this client.
 func (c *Client) SetGlobalHeader(name string, value string) *Client {
 	if c.headers == nil {
-		c.headers = make(map[string]string)
+		c.headers = map[string]string{}
 	}
 	c.headers[name] = value
 	return c
@@ -37,7 +37,7 @@ func (c *Client) SetGlobalHeader(name string, value string) *Client {
 // Set headers for all requests from this client.
 func (c *Client) SetGlobalHeaders(h map[string]string) *Client {
 	if c.headers == nil {
-		c.headers = make(map[string]string)
+		c.headers = map[string]string{}
 	}
 	for k, v := range h {
 		c.headers[k] = v
@@ -50,6 +50,7 @@ func (c *Client) SetGlobalHeaders(h map[string]string) *Client {
 // requests == 0 - disables limiting.
 func (c *Client) SetRateLimit(requests int, per time.Duration) *Client {
 	if requests == 0 || per <= 0 {
+		c.limiter = nil
 		return c
 	}
 	c.limiter = rate.NewLimiter(rate.Every(per), requests)

@@ -148,11 +148,11 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []*Track
 	}
 
 	trackObjs := []string{}
-	for _, t := range tracks {
-		if len(t.Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %d) without albums", t.ID)
+	for i := range tracks {
+		if len(tracks[i].Albums) == 0 {
+			return fmt.Errorf(errPrefix+"track (id %d) without albums", tracks[i].ID)
 		}
-		trackObjs = append(trackObjs, a.getTrackObj(t.ID, t.Albums[0].ID))
+		trackObjs = append(trackObjs, a.getTrackObj(tracks[i].ID, tracks[i].Albums[0].ID))
 	}
 
 	at := strconv.FormatUint(uint64(pl.TrackCount), 10) // добавить треки в конец плейлиста
@@ -177,19 +177,19 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Delete(pl *Playlist, track *Track
 	var from uint16 = 0
 	var to uint16 = 0
 
-	for _, t := range pl.Tracks {
-		if t.Track == nil {
+	for i := range pl.Tracks {
+		if pl.Tracks[i] == nil {
 			return ErrNilTrack
 		}
-		if len(t.Track.Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %d) without albums", t.ID)
+		if len(pl.Tracks[i].Track.Albums) == 0 {
+			return fmt.Errorf(errPrefix+"track (id %d) without albums", pl.Tracks[i].ID)
 		}
-		if track.ID != t.ID {
+		if track.ID != pl.Tracks[i].ID {
 			continue
 		}
 		from = track.OriginalIndex
 		to = from + 1
-		trackObj = a.getTrackObj(t.Track.ID, t.Track.Albums[0].ID)
+		trackObj = a.getTrackObj(pl.Tracks[i].Track.ID, pl.Tracks[i].Track.Albums[0].ID)
 	}
 
 	// {"diff":{"op":"delete","from":0,"to":1,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
@@ -230,8 +230,8 @@ type PlaylistsIdsRequestBody struct {
 //
 // kind - kind плейлиста
 func (g *PlaylistsIdsRequestBody) Add(kind ID, owner ID) {
-	if g.PlaylistIds == nil {
-		g.PlaylistIds = make([]string, 0)
+	if len(g.PlaylistIds) == 0 {
+		g.PlaylistIds = []string{}
 	}
 	dat := owner.String() + ":" + kind.String()
 	g.PlaylistIds = append(g.PlaylistIds, dat)
@@ -244,8 +244,8 @@ func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[ID]ID) {
 	if len(kindUid) == 0 {
 		return
 	}
-	if g.PlaylistIds == nil {
-		g.PlaylistIds = make([]string, 0)
+	if len(g.PlaylistIds) == 0 {
+		g.PlaylistIds = []string{}
 	}
 	for k, v := range kindUid {
 		g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%d:%d", v, k))

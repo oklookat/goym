@@ -34,7 +34,7 @@ type (
 		//
 		// Например: если тип поиска будет "artist", то
 		// поля best, playlists, и подобные, будут nil (кроме поля Artists).
-		Best *Best[any] `json:"best"`
+		Best *Best `json:"best"`
 
 		// Найденные треки.
 		Tracks SearchResult[*Track] `json:"tracks"`
@@ -72,7 +72,7 @@ type (
 	}
 
 	// Лучший результат поиска
-	Best[T Track | Artist | Album | Playlist | Video | any] struct {
+	Best struct {
 		// Тип лучшего результата
 		//
 		// track | artist | album | playlist | video
@@ -80,13 +80,15 @@ type (
 
 		Text string `json:"text"`
 
-		Result T `json:"result"`
+		Result any `json:"result"`
 	}
 
 	// Поисковая подсказка.
-	Suggestions[T Track | Artist | Album | Playlist | Video | any] struct {
+	Suggestions struct {
 		// Лучший результат.
-		Best Best[T] `json:"best"`
+		//
+		// Альбом, артист, плейлист, видео, nil(?), и так далее.
+		Best Best `json:"best"`
 
 		// Предложения на основе запроса.
 		//

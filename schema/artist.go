@@ -208,7 +208,7 @@ func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
 	if len(realVal.Tracks) == 0 {
 		return nil
 	}
-	a.Tracks = make([]ID, 0)
+	a.Tracks = []ID{}
 	for _, id := range realVal.Tracks {
 		var uid ID = 0
 		err := uid.FromString(id)

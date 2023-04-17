@@ -13,7 +13,7 @@ import (
 func newRequest(cl *Client) *Request {
 	r := &Request{
 		cl:      cl,
-		headers: make(map[string]string),
+		headers: map[string]string{},
 	}
 
 	if len(cl.headers) == 0 {

@@ -45,7 +45,7 @@ func (c Client) Search(ctx context.Context, text string, page uint16, what schem
 // Подсказать что-нибудь по поисковому запросу.
 //
 // например: SearchSuggest("emine")
-func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggestions[any], error) {
+func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggestions, error) {
 	// GET /search/suggest
 	query := schema.SearchSuggestQueryParams{
 		Part: part,
@@ -56,7 +56,7 @@ func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggest
 	}
 
 	endpoint := genApiPath("search", "suggest")
-	data := &schema.Response[*schema.Suggestions[any]]{}
+	data := &schema.Response[*schema.Suggestions]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
