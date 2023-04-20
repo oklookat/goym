@@ -174,7 +174,7 @@ type (
 	}
 
 	// POST /users/{userId}/likes/artists/add
-	LikeArtistRequestBody struct {
+	ArtistIdRequestBody struct {
 		ArtistId ID `url:"artist-id"`
 	}
 
@@ -224,12 +224,12 @@ func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
 // POST /users/{userId}/likes/artists/add-multiple
 //
 // POST /users/{userId}/likes/artists/remove
-type LikeUnlikeArtistsRequestBody struct {
+type ArtistIdsRequestBody struct {
 	// ID альбомов.
 	ArtistIds []ID `url:",artistIds"`
 }
 
-func (l *LikeUnlikeArtistsRequestBody) SetIds(ids []ID) {
+func (l *ArtistIdsRequestBody) SetIds(ids ...ID) {
 	l.ArtistIds = []ID{}
 	l.ArtistIds = append(l.ArtistIds, ids...)
 }

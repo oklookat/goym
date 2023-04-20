@@ -3,6 +3,7 @@ package schema
 type (
 	// Результаты поиска.
 	Search struct {
+		// По какому типу был выполнен поиск.
 		Type SearchType `json:"type"`
 
 		// Текущая страница. Доступно при использовании параметра type.
@@ -14,6 +15,7 @@ type (
 		// Поисковой запрос (оригинальный или исправленный).
 		Text string `json:"text"`
 
+		// ID запроса.
 		SearchRequestID string `json:"searchRequestId"`
 
 		// Был ли исправлен запрос. Доступен при Type "all".
@@ -71,23 +73,11 @@ type (
 		Results []T `json:"results"`
 	}
 
-	// Лучший результат поиска
-	Best struct {
-		// Тип лучшего результата
-		//
-		// track | artist | album | playlist | video
-		Type string `json:"type"`
-
-		Text string `json:"text"`
-
-		Result any `json:"result"`
-	}
-
 	// Поисковая подсказка.
 	Suggestions struct {
 		// Лучший результат.
 		//
-		// Альбом, артист, плейлист, видео, nil(?), и так далее.
+		// Альбом, артист, плейлист, видео, и так далее.
 		Best Best `json:"best"`
 
 		// Предложения на основе запроса.
@@ -98,6 +88,19 @@ type (
 		//
 		// ["eminem", "mount eminest", "eminen", "eminem - encore"], и так далее.
 		Suggestions []string `json:"suggestions"`
+	}
+
+	// Лучший результат поиска
+	Best struct {
+		// Тип лучшего результата
+		//
+		// track | artist | album | playlist | video
+		Type string `json:"type"`
+
+		Text string `json:"text"`
+
+		// Может быть nil.
+		Result any `json:"result"`
 	}
 
 	// GET /search

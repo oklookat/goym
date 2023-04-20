@@ -28,8 +28,7 @@
 
 5. Отдайте токены функции [New() в пакете goym](./main.go), в ответ вернется клиент для запросов к API.
 
-# Обновление токенов
-**метод не тестировался**
+## Обновление токенов (не проверял)
 
 В токенах есть поле "RefreshAfter", которое обозначает время, когда эти токены надо обновить. Если токены получены только что, то это время будет +- 3 месяца. 
 
@@ -40,10 +39,6 @@
 Вызывайте время от времени `Refresh()`, получайте новые токены, и перезаписывайте старые.
 
 # Реализовано
-
-## Недокументированные методы
-- [ ] Методы, не указанные в [документации](https://www.cherkashin.dev/yandex-music-open-api/).
-- Новые методы можно искать [тут](https://github.com/MarshalX/yandex-music-api). Или с помощью анализатора трафика смотреть приложения ЯМ.
 
 ## Account
 - [x] GET /account/status
@@ -57,7 +52,6 @@
 - [x] GET /users/{userId}/likes/albums
 - [x] POST /albums
 - [x] POST /users/{userId}/likes/albums/add
-- [x] POST /users/{userId}/likes/albums/{albumId}/remove
 - [x] POST /users/{userId}/likes/albums/add-multiple
 - [x] POST /users/{userId}/likes/albums/remove
 
@@ -68,7 +62,6 @@
 - [x] GET /artists/{artistId}/tracks
 - [x] GET /artists/{artistId}/direct-albums
 - [x] POST /users/{userId}/likes/artists/add
-- [x] POST /users/{userId}/likes/artists/{artistId}/remove
 - [x] POST /users/{userId}/likes/artists/add-multiple
 - [x] POST /users/{userId}/likes/artists/remove
 
@@ -83,8 +76,10 @@
 - [x] POST /users/{userId}/playlists/{kind}/visibility
 - [x] POST /users/{userId}/playlists/{kind}/change-relative
 - [x] POST /users/{userId}/playlists/{kind}/change
+- [x] GET /users/{userId}/likes/playlists
 - [x] POST /users/{userId}/likes/playlists/add
-- [x] POST /users/{userId}/likes/playlists/{ownerUID}-{kind}/remove
+- [x] POST /users/{userId}/likes/playlists/add-multiple
+- [x] POST /users/{userId}/likes/playlists/remove
 
 ## Search
 - [x] GET /search
@@ -128,6 +123,12 @@
 - [ ] GET /feed/wizard/is-passed
 - [ ] GET /feed
 - [ ] GET /genres
+
+# Где искать новые методы
+- С помощью анализатора трафика смотреть приложения ЯМ.
+- [Или тут](https://www.cherkashin.dev/yandex-music-open-api/).
+- [И тут](https://github.com/MarshalX/yandex-music-api). 
+- [И здесь](https://github.com/K1llMan/Yandex.Music.Api). 
 
 # Чем можно помочь?
 - Рефакторингом.

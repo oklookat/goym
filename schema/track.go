@@ -107,7 +107,7 @@ type (
 	}
 
 	// POST /users/{userId}/likes/tracks/add
-	LikeTrackRequestBody struct {
+	TrackIdRequestBody struct {
 		// ID трека.
 		TrackId ID `url:"track-id"`
 	}
@@ -314,13 +314,12 @@ func (t *TrackShort) UnmarshalJSON(data []byte) error {
 // POST /users/{userId}/likes/tracks/add-multiple
 //
 // POST /users/{userId}/likes/tracks/remove
-type LikeUnlikeTracksRequestBody struct {
+type TrackIdsRequestBody struct {
 	// ID треков.
 	TrackIds []ID `url:",track-ids"`
 }
 
-// Устанавливает ID в TrackIds. Если слайс треков == nil, ничего не делает.
-func (l *LikeUnlikeTracksRequestBody) SetIds(ids []ID) {
+func (l *TrackIdsRequestBody) SetIds(ids ...ID) {
 	l.TrackIds = []ID{}
 	l.TrackIds = append(l.TrackIds, ids...)
 }

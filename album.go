@@ -37,7 +37,7 @@ func (c Client) Albums(ctx context.Context, albumIds []schema.ID) ([]*schema.Alb
 		return nil, nil
 	}
 
-	body := schema.GetAlbumsByIdsRequestBody{
+	body := schema.AlbumIdsRequestBody{
 		AlbumIds: albumIds,
 	}
 	vals, err := schema.ParamsToValues(body)
@@ -56,27 +56,20 @@ func (c Client) Albums(ctx context.Context, albumIds []schema.ID) ([]*schema.Alb
 	return data.Result, err
 }
 
-// Лайкнуть альбом по ID.
+// Получить лайкнутые альбомы.
+func (c Client) LikedAlbums(ctx context.Context) ([]*schema.AlbumShort, error) {
+	// GET /users/{userId}/likes/albums
+	return likesDislikes[[]*schema.AlbumShort](ctx, &c, true, "albums")
+}
+
+// Лайкнуть альбом.
 func (c Client) LikeAlbum(ctx context.Context, id schema.ID) error {
-	// POST /users/{userId}/likes/albums/add
-	body := schema.LikeAlbumRequestBody{
-		AlbumId: id,
-	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return err
-	}
+	return c.likeUnlikeAlbums(ctx, []schema.ID{id}, true)
+}
 
-	endpoint := genApiPath("users", c.userId, "likes", "albums", "add")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).
-		SetFormUrlValues(vals).
-		Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-
-	return err
+// Убрать лайк с альбома.
+func (c Client) UnlikeAlbum(ctx context.Context, id schema.ID) error {
+	return c.likeUnlikeAlbums(ctx, []schema.ID{id}, false)
 }
 
 // Лайкнуть альбомы.
@@ -91,34 +84,15 @@ func (c Client) UnlikeAlbums(ctx context.Context, ids []schema.ID) error {
 	return c.likeUnlikeAlbums(ctx, ids, false)
 }
 
-// Убрать лайк с альбома по ID.
-func (c Client) UnlikeAlbum(ctx context.Context, id schema.ID) error {
-	// POST /users/{userId}/likes/albums/{albumId}/remove
-	endpoint := genApiPath("users", c.userId, "likes", "albums", id.String(), "remove")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-
-	return err
-}
-
-// Получить лайкнутые альбомы.
-func (c Client) LikedAlbums(ctx context.Context) ([]*schema.AlbumShort, error) {
-	// GET /users/{userId}/likes/albums
-	endpoint := genApiPath("users", c.userId, "likes", "albums")
-	data := &schema.Response[[]*schema.AlbumShort]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return data.Result, err
-}
-
 func (c Client) likeUnlikeAlbums(ctx context.Context, ids []schema.ID, like bool) error {
 	// POST /users/{userId}/likes/albums/add-multiple
 	// ||
 	// POST /users/{userId}/likes/albums/remove
-	return likeUnlikeMultiple(ctx, "albums", like, &c, &schema.LikeUnlikeAlbumsRequestBody{}, ids)
+	body := schema.AlbumIdsRequestBody{}
+	body.SetIds(ids...)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+	return addRemoveMultiple(ctx, &c, vals, like, "albums")
 }

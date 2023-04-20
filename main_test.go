@@ -13,7 +13,8 @@ import (
 )
 
 func TestAll(t *testing.T) {
-	TestAuth(t)
+	//TestAuth(t)
+	//TestDebug(t)
 	TestService(t)
 	TestAccount(t)
 	TestAlbum(t)
@@ -26,6 +27,10 @@ func TestAll(t *testing.T) {
 
 func TestAuth(t *testing.T) {
 	suite.Run(t, &AuthTestSuite{})
+}
+
+func TestDebug(t *testing.T) {
+	suite.Run(t, &DebugTestSuite{})
 }
 
 func TestService(t *testing.T) {

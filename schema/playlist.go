@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type (
@@ -111,7 +112,7 @@ type (
 	}
 
 	// POST /users/{userId}/likes/playlists/add
-	LikePlaylistRequestBody struct {
+	KindOwnerUidRequestBody struct {
 		// Kind плейлиста.
 		Kind ID `url:"kind"`
 
@@ -119,9 +120,9 @@ type (
 		OwnerUid ID `url:"owner-uid"`
 	}
 
-	// POST /users/{userId}/likes/playlists/add
-	GetPlaylistByUidKindQueryParams struct {
-		LikePlaylistRequestBody
+	ResponseLikedPlaylist struct {
+		Playlist  Playlist  `json:"playlist"`
+		Timestamp time.Time `json:"timestamp"`
 	}
 )
 
@@ -219,21 +220,25 @@ func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id ID, albumId ID) str
 }
 
 // POST /playlists/list
+//
+// POST /users/{userId}/likes/playlists/add-multiple
 type PlaylistsIdsRequestBody struct {
-	// uid владельца плейлиста и kind плейлиста через двоеточие и запятую
+	// uid владельца плейлиста и kind плейлиста через двоеточие и запятую.
+	//
+	// "123:9482", "999:8888".
 	PlaylistIds []string `url:",playlistIds"`
 }
 
 // Добавить в PlaylistIds.
 //
-// owner - владелец плейлиста
+// owner - uid владелеца плейлиста
 //
 // kind - kind плейлиста
-func (g *PlaylistsIdsRequestBody) Add(kind ID, owner ID) {
+func (g *PlaylistsIdsRequestBody) Add(kind ID, uid ID) {
 	if len(g.PlaylistIds) == 0 {
 		g.PlaylistIds = []string{}
 	}
-	dat := owner.String() + ":" + kind.String()
+	dat := uid.String() + ":" + kind.String()
 	g.PlaylistIds = append(g.PlaylistIds, dat)
 }
 

@@ -10,7 +10,7 @@ import (
 //
 // text - текст запроса.
 //
-// page - страница (первая страница начинается с нуля).
+// page - страница (первая начинается с нуля).
 //
 // what - тип поиска.
 //
@@ -19,8 +19,8 @@ import (
 // Например: если тип поиска будет "artist", то
 // поля best, playlists, и подобные, будут nil (кроме поля Artists).
 //
-// noCorrect - исправить опечатки?
-func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (*schema.Search, error) {
+// noCorrect - не исправлять опечатки?
+func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (schema.Search, error) {
 	// GET /search
 	query := schema.SearchQueryParams{
 		Text:      text,
@@ -30,11 +30,11 @@ func (c Client) Search(ctx context.Context, text string, page uint16, what schem
 	}
 	vals, err := schema.ParamsToValues(query)
 	if err != nil {
-		return nil, err
+		return schema.Search{}, err
 	}
 
 	endpoint := genApiPath("search")
-	data := &schema.Response[*schema.Search]{}
+	data := &schema.Response[schema.Search]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)

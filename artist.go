@@ -9,47 +9,32 @@ import (
 // Получить лайкнутых артистов.
 func (c Client) LikedArtists(ctx context.Context) ([]*schema.Artist, error) {
 	// GET /users/{userId}/likes/artists
-	endpoint := genApiPath("users", c.userId, "likes", "artists")
-	data := &schema.Response[[]*schema.Artist]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return data.Result, err
+	return likesDislikes[[]*schema.Artist](ctx, &c, true, "artists")
 }
 
 // Лайкнуть артиста по ID.
 func (c Client) LikeArtist(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/artists/add
-	body := schema.LikeArtistRequestBody{
+	body := schema.ArtistIdRequestBody{
 		ArtistId: id,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
 	}
-
-	endpoint := genApiPath("users", c.userId, "likes", "artists", "add")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-
-	return err
+	return addRemove(ctx, &c, vals, true, "artists")
 }
 
 // Убрать лайк с артиста по ID.
 func (c Client) UnlikeArtist(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/artists/{artistId}/remove
-	endpoint := genApiPath("users", c.userId, "likes", "artists", id.String(), "remove")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
+	body := schema.ArtistIdsRequestBody{}
+	body.SetIds(id)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
 	}
-
-	return err
+	return addRemove(ctx, &c, vals, false, "artists")
 }
 
 // Лайкнуть артистов.
@@ -62,6 +47,19 @@ func (c Client) LikeArtists(ctx context.Context, ids []schema.ID) error {
 // Снять лайки с артистов.
 func (c Client) UnlikeArtists(ctx context.Context, ids []schema.ID) error {
 	return c.likeUnlikeArtists(ctx, ids, false)
+}
+
+func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like bool) error {
+	// POST /users/{userId}/likes/artists/add-multiple
+	// ||
+	// POST /users/{userId}/likes/artists/remove
+	body := schema.ArtistIdsRequestBody{}
+	body.SetIds(ids...)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+	return addRemoveMultiple(ctx, &c, vals, like, "artists")
 }
 
 // Получить список треков артиста по его ID.
@@ -132,11 +130,4 @@ func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (*schema.ArtistBri
 		err = checkResponse(resp, data)
 	}
 	return data.Result, err
-}
-
-func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like bool) error {
-	// POST /users/{userId}/likes/artists/add-multiple
-	// ||
-	// POST /users/{userId}/likes/artists/remove
-	return likeUnlikeMultiple(ctx, "artists", like, &c, &schema.LikeUnlikeArtistsRequestBody{}, ids)
 }

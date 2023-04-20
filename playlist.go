@@ -183,24 +183,17 @@ func (c Client) DeleteFromPlaylist(ctx context.Context, pl *schema.Playlist, tra
 // Поставить лайк плейлисту.
 //
 // kind и uid можно получить из плейлиста.
-func (c Client) LikePlaylist(ctx context.Context, kind schema.ID, uid schema.ID) error {
+func (c Client) LikePlaylist(ctx context.Context, kind schema.ID, ownerUid schema.ID) error {
 	// POST /users/{userId}/likes/playlists/add
-	body := schema.LikePlaylistRequestBody{
+	body := schema.KindOwnerUidRequestBody{
 		Kind:     kind,
-		OwnerUid: uid,
+		OwnerUid: ownerUid,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
 	}
-
-	endpoint := genApiPath("users", c.userId, "likes", "playlists", "add")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return err
+	return addRemove(ctx, &c, vals, true, "playlists")
 }
 
 // Убрать лайк с плейлиста.
@@ -208,15 +201,39 @@ func (c Client) LikePlaylist(ctx context.Context, kind schema.ID, uid schema.ID)
 // kind и uid можно получить из плейлиста.
 func (c Client) UnlikePlaylist(ctx context.Context, kind schema.ID, uid schema.ID) error {
 	// POST /users/{userId}/likes/playlists/{kind}/remove
-	uidAndKind := uid.String() + "-" + kind.String()
-	endpoint := genApiPath("users", c.userId, "likes", "playlists", uidAndKind, "remove")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
+	body := schema.PlaylistsIdsRequestBody{}
+	body.Add(kind, uid)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
 	}
+	return addRemove(ctx, &c, vals, false, "playlists")
+}
 
-	return err
+// Поставить лайк плейлистам.
+//
+// kind и uid можно получить из плейлиста.
+func (c Client) LikePlaylists(ctx context.Context, kindUid map[schema.ID]schema.ID) error {
+	return c.likeUnlikePlaylists(ctx, kindUid, true)
+}
+
+// Снять лайк с плейлистов.
+//
+// kind и uid можно получить из плейлиста.
+func (c Client) UnlikePlaylists(ctx context.Context, kindUid map[schema.ID]schema.ID) error {
+	return c.likeUnlikePlaylists(ctx, kindUid, false)
+}
+
+func (c Client) likeUnlikePlaylists(ctx context.Context, kindUid map[schema.ID]schema.ID, like bool) error {
+	// POST /users/{userId}/likes/playlists/add-multiple
+	// // POST /users/{userId}/likes/playlists/remove
+	body := schema.PlaylistsIdsRequestBody{}
+	body.AddMany(kindUid)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+	return addRemoveMultiple(ctx, &c, vals, like, "playlists")
 }
 
 // Получить плейлисты.
@@ -242,4 +259,11 @@ func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]sc
 		err = checkResponse(resp, data)
 	}
 	return data.Result, err
+}
+
+// Получить лайкнутые плейлисты.
+func (c Client) LikedPlaylists(ctx context.Context) ([]*schema.ResponseLikedPlaylist, error) {
+	// GET /users/{userId}/likes/playlists
+	// todo тут еще pager есть
+	return likesDislikes[[]*schema.ResponseLikedPlaylist](ctx, &c, true, "playlists")
 }

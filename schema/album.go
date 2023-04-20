@@ -95,14 +95,8 @@ type (
 		Timestamp time.Time `json:"timestamp"`
 	}
 
-	// POST /albums
-	GetAlbumsByIdsRequestBody struct {
-		// ID альбомов.
-		AlbumIds []ID `url:",album-ids"`
-	}
-
 	// POST /users/{userId}/likes/albums/add
-	LikeAlbumRequestBody struct {
+	AlbumIdRequestBody struct {
 		// ID альбома.
 		AlbumId ID `url:"album-id"`
 	}
@@ -111,12 +105,12 @@ type (
 // POST /users/{userId}/likes/albums/add-multiple
 //
 // POST /users/{userId}/likes/albums/remove
-type LikeUnlikeAlbumsRequestBody struct {
+type AlbumIdsRequestBody struct {
 	// ID альбомов.
 	AlbumIds []ID `url:",albumIds"`
 }
 
-func (l *LikeUnlikeAlbumsRequestBody) SetIds(ids []ID) {
+func (l *AlbumIdsRequestBody) SetIds(ids ...ID) {
 	l.AlbumIds = []ID{}
 	l.AlbumIds = append(l.AlbumIds, ids...)
 }

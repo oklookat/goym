@@ -96,6 +96,10 @@ type (
 		Error *Error `json:"error"`
 
 		Result T `json:"result"`
+
+		// Может быть при некоторых запросах.
+		// Например при получении лайкнутых плейлистов.
+		Pager *Pager `json:"pager"`
 	}
 
 	// Что-то техническое.

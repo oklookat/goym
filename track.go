@@ -8,50 +8,25 @@ import (
 
 // Получить лайкнутые треки.
 func (c Client) LikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
-	return c.likedDislikedTracks(ctx, true)
+	return likesDislikes[*schema.TracksLibrary](ctx, &c, true, "tracks")
 }
 
 // Получить дизлайкнутые треки.
 func (c Client) DislikedTracks(ctx context.Context) (*schema.TracksLibrary, error) {
-	return c.likedDislikedTracks(ctx, false)
-}
-
-func (c Client) likedDislikedTracks(ctx context.Context, liked bool) (*schema.TracksLibrary, error) {
-	// GET /users/{userId}/likes/tracks
-	// ||
-	// GET /users/{userId}/dislikes/tracks
-	ld := "likes"
-	if !liked {
-		ld = "dislikes"
-	}
-
-	endpoint := genApiPath("users", c.userId, ld, "tracks")
-	data := &schema.Response[*schema.TracksLibrary]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return data.Result, err
+	return likesDislikes[*schema.TracksLibrary](ctx, &c, false, "tracks")
 }
 
 // Лайкнуть трек.
 func (c Client) LikeTrack(ctx context.Context, id schema.ID) error {
 	// POST /users/{userId}/likes/tracks/add
-	body := schema.LikeTrackRequestBody{
+	body := schema.TrackIdRequestBody{
 		TrackId: id,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
 		return err
 	}
-
-	endpoint := genApiPath("users", c.userId, "likes", "tracks", "add")
-	data := &schema.Response[any]{}
-	resp, err := c.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return err
+	return addRemove(ctx, &c, vals, true, "tracks")
 }
 
 // Лайкнуть треки.
@@ -70,7 +45,13 @@ func (c Client) likeUnlikeTracks(ctx context.Context, ids []schema.ID, like bool
 	// POST /users/{userId}/likes/tracks/add-multiple
 	// ||
 	// POST /users/{userId}/likes/tracks/remove
-	return likeUnlikeMultiple(ctx, "tracks", like, &c, &schema.LikeUnlikeTracksRequestBody{}, ids)
+	body := schema.TrackIdsRequestBody{}
+	body.SetIds(ids...)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return err
+	}
+	return addRemoveMultiple(ctx, &c, vals, like, "tracks")
 }
 
 // Получить трек по id.
