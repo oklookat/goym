@@ -107,6 +107,7 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	pl2, err := s.cl.MyPlaylist(ctx, pl.Kind)
 	s.require.Nil(err)
 	s.require.Equal(pl.Kind, pl2.Kind)
+	s.require.NotNil(pl2.Tracks)
 
 	// Get many.
 	pls, err := s.cl.MyPlaylists(context.Background())

@@ -8,7 +8,7 @@ import (
 
 // Получить плейлисты текущего пользователя.
 //
-// Доступно поле Tracks.
+// Без поля Tracks.
 func (c Client) MyPlaylists(ctx context.Context) ([]*schema.Playlist, error) {
 	// GET /users/{userId}/playlists/list
 	endpoint := genApiPath("users", c.userId, "playlists", "list")
@@ -18,6 +18,15 @@ func (c Client) MyPlaylists(ctx context.Context) ([]*schema.Playlist, error) {
 		err = checkResponse(resp, data)
 	}
 	return data.Result, err
+}
+
+// Получить лайкнутые плейлисты.
+//
+// Без поля Tracks.
+func (c Client) LikedPlaylists(ctx context.Context) ([]*schema.ResponseLikedPlaylist, error) {
+	// GET /users/{userId}/likes/playlists
+	// todo тут еще pager есть
+	return likesDislikes[[]*schema.ResponseLikedPlaylist](ctx, &c, true, "playlists")
 }
 
 // Получить плейлист по kind.
@@ -30,6 +39,33 @@ func (c Client) MyPlaylist(ctx context.Context, kind schema.ID) (*schema.Playlis
 	endpoint := genApiPath("users", c.userId, "playlists", kind.String())
 	data := &schema.Response[*schema.Playlist]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
+	if err == nil {
+		err = checkResponse(resp, data)
+	}
+	return data.Result, err
+}
+
+// Получить плейлисты.
+//
+// kindUid - map[kind плейлиста]uid_владельца
+//
+// Доступно поле Tracks.
+func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]schema.ID) ([]*schema.Playlist, error) {
+	if len(kindUid) == 0 {
+		return nil, nil
+	}
+
+	// GET /playlists/list
+	body := schema.PlaylistsIdsRequestBody{}
+	body.AddMany(kindUid)
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := genApiPath("playlists", "list")
+	data := &schema.Response[[]*schema.Playlist]{}
+	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -234,36 +270,4 @@ func (c Client) likeUnlikePlaylists(ctx context.Context, kindUid map[schema.ID]s
 		return err
 	}
 	return addRemoveMultiple(ctx, &c, vals, like, "playlists")
-}
-
-// Получить плейлисты.
-//
-// kindUid - map[kind плейлиста]uid_владельца
-func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]schema.ID) ([]*schema.Playlist, error) {
-	if len(kindUid) == 0 {
-		return nil, nil
-	}
-
-	// GET /playlists/list
-	body := schema.PlaylistsIdsRequestBody{}
-	body.AddMany(kindUid)
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint := genApiPath("playlists", "list")
-	data := &schema.Response[[]*schema.Playlist]{}
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
-	if err == nil {
-		err = checkResponse(resp, data)
-	}
-	return data.Result, err
-}
-
-// Получить лайкнутые плейлисты.
-func (c Client) LikedPlaylists(ctx context.Context) ([]*schema.ResponseLikedPlaylist, error) {
-	// GET /users/{userId}/likes/playlists
-	// todo тут еще pager есть
-	return likesDislikes[[]*schema.ResponseLikedPlaylist](ctx, &c, true, "playlists")
 }
