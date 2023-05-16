@@ -91,41 +91,44 @@ func (s PlaylistTestSuite) TestPlaylistsByKindUid() {
 // GetUserPlaylistById()
 // RenamePlaylist()
 // DeletePlaylist()
-// ChangePlaylistVisibility()
+// SetPlaylistVisibility()
+// SetPlaylistDescription()
 // AddTracksToPlaylist()
 // DeleteTrackFromPlaylist()
 // GetPlaylistRecommendations()
 func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	ctx := context.Background()
 
-	// Create.
-	pl, err := s.cl.CreatePlaylist(ctx, "goymtesting", schema.VisibilityPublic)
+	// CreatePlaylist
+	pl, err := s.cl.CreatePlaylist(ctx, "goym", "test1", schema.VisibilityPublic)
 	s.require.Nil(err)
-	s.require.NotNil(pl.Kind)
+	s.require.Equal(pl.Title, "goym")
+	s.require.Equal(pl.Description, "test1")
 
-	// Get.
-	pl2, err := s.cl.MyPlaylist(ctx, pl.Kind)
+	// MyPlaylist
+	pl, err = s.cl.MyPlaylist(ctx, pl.Kind)
 	s.require.Nil(err)
-	s.require.Equal(pl.Kind, pl2.Kind)
-	s.require.NotNil(pl2.Tracks)
 
-	// Get many.
+	// MyPlaylists
 	pls, err := s.cl.MyPlaylists(context.Background())
 	s.require.Nil(err)
 	s.require.NotEmpty(pls)
 	s.require.Positive(pls[0].Kind)
 
-	// Rename.
-	pl3, err := s.cl.RenamePlaylist(ctx, pl2.Kind, "goymtesting (renamed)")
+	// RenamePlaylist
+	pl, err = s.cl.RenamePlaylist(ctx, pl.Kind, "goym (renamed)")
 	s.require.Nil(err)
-	s.require.Equal(pl2.Kind, pl3.Kind)
 
-	// Change vis.
-	pl4, err := s.cl.SetPlaylistVisibility(ctx, pl3.Kind, schema.VisibilityPrivate)
+	// SetPlaylistVisibility
+	pl, err = s.cl.SetPlaylistVisibility(ctx, pl.Kind, schema.VisibilityPrivate)
 	s.require.Nil(err)
-	s.require.Equal(pl3.Kind, pl4.Kind)
 
-	// Add tracks.
+	// SetPlaylistDescription
+	pl, err = s.cl.SetPlaylistDescription(ctx, pl.Kind, "123")
+	s.require.Nil(err)
+	s.require.Equal(pl.Description, "123")
+
+	// AddToPlaylist
 	tracksResp, err := s.cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
 	s.require.NotEmpty(tracksResp.Tracks)
@@ -138,33 +141,29 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 			break
 		}
 	}
-	pl5, err := s.cl.AddToPlaylist(ctx, pl, tracksLittle)
+	pl, err = s.cl.AddToPlaylist(ctx, pl, tracksLittle)
 	s.require.Nil(err)
-	s.require.Equal(pl4.Kind, pl5.Kind)
-	s.require.Greater(*pl5.Revision, *pl4.Revision)
 
 	// Get with tracks.
-	pl5, err = s.cl.MyPlaylist(ctx, pl5.Kind)
+	pl, err = s.cl.MyPlaylist(ctx, pl.Kind)
 	s.require.Nil(err)
 
-	// Get recs.
-	recs, err := s.cl.PlaylistRecommendations(ctx, pl5.Kind)
+	// PlaylistRecommendations
+	recs, err := s.cl.PlaylistRecommendations(ctx, pl.Kind)
 	s.require.Nil(err)
 	s.require.NotEmpty(recs.Tracks)
 	s.require.Positive(recs.Tracks[0].ID)
 
-	// Delete from playlist.
-	trackToDelete := pl5.Tracks[0]
-	pl6, err := s.cl.DeleteFromPlaylist(ctx, pl5, trackToDelete)
+	// DeleteFromPlaylist
+	trackToDelete := pl.Tracks[0]
+	pl, err = s.cl.DeleteFromPlaylist(ctx, pl, trackToDelete)
 	s.require.Nil(err)
-	s.require.Equal(pl5.Kind, pl6.Kind)
-	s.require.Greater(*pl6.Revision, *pl5.Revision)
 	// is track actually removed?
-	for _, ti := range pl6.Tracks {
+	for _, ti := range pl.Tracks {
 		s.require.NotEqual(ti.Track.ID, trackToDelete.ID)
 	}
 
-	// Delete playlist.
-	err = s.cl.DeletePlaylist(ctx, pl6.Kind)
+	// DeletePlaylist
+	err = s.cl.DeletePlaylist(ctx, pl.Kind)
 	s.require.Nil(err)
 }

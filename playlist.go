@@ -73,11 +73,12 @@ func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]sc
 }
 
 // Создать плейлист.
-func (c Client) CreatePlaylist(ctx context.Context, name string, vis schema.Visibility) (*schema.Playlist, error) {
+func (c Client) CreatePlaylist(ctx context.Context, name, description string, vis schema.Visibility) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/create
 	body := schema.CreatePlaylistRequestBody{
-		Title:      name,
-		Visibility: vis,
+		Title:       name,
+		Visibility:  vis,
+		Description: description,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
@@ -96,7 +97,7 @@ func (c Client) CreatePlaylist(ctx context.Context, name string, vis schema.Visi
 // Переименовать плейлист.
 func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName string) (*schema.Playlist, error) {
 	// POST /users/{userId}/playlists/{kind}/name
-	body := schema.RenamePlaylistRequestBody{
+	body := schema.ValuePlaylistRequestBody{
 		Value: newName,
 	}
 	vals, err := schema.ParamsToValues(body)
@@ -105,6 +106,26 @@ func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName stri
 	}
 
 	endpoint := genApiPath("users", c.userId, "playlists", kind.String(), "name")
+	data := &schema.Response[*schema.Playlist]{}
+	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	if err == nil {
+		err = checkResponse(resp, data)
+	}
+	return data.Result, err
+}
+
+// Изменить описание плейлиста.
+func (c Client) SetPlaylistDescription(ctx context.Context, kind schema.ID, description string) (*schema.Playlist, error) {
+	// POST /users/{userId}/playlists/{kind}/description
+	body := schema.ValuePlaylistRequestBody{
+		Value: description,
+	}
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := genApiPath("users", c.userId, "playlists", kind.String(), "description")
 	data := &schema.Response[*schema.Playlist]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {

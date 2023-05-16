@@ -93,16 +93,21 @@ type (
 
 	// POST /users/{userId}/playlists/create
 	CreatePlaylistRequestBody struct {
-		// Название плейлиста.
+		// Название.
 		Title string `url:"title"`
 
-		// Видимость плейлиста.
+		// Видимость.
 		Visibility Visibility `url:"visibility"`
+
+		// Описание.
+		Description string `url:"description"`
 	}
 
 	// POST /users/{userId}/playlists/{kind}/name
-	RenamePlaylistRequestBody struct {
-		// Новое имя плейлиста.
+	//
+	// POST /users/{userId}/playlists/{kind}/description
+	ValuePlaylistRequestBody struct {
+		// Новое значение.
 		Value string `url:"value"`
 	}
 

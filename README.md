@@ -74,6 +74,7 @@
 - [x] POST /users/{userId}/playlists/{kind}/name
 - [x] POST /users/{userId}/playlists/{kind}/delete
 - [x] POST /users/{userId}/playlists/{kind}/visibility
+- [x] POST /users/{userId}/playlists/{kind}/description
 - [x] POST /users/{userId}/playlists/{kind}/change-relative
 - [x] POST /users/{userId}/playlists/{kind}/change
 - [x] GET /users/{userId}/likes/playlists
