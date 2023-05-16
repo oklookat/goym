@@ -28,10 +28,13 @@ type Artist struct {
 	Counts *struct {
 		// Общее количество треков исполнителя, доступных в каталоге ЯМ.
 		Tracks uint32 `json:"tracks"`
+
 		// Количество собственных альбомов.
 		DirectAlbums uint32 `json:"directAlbums"`
+
 		// Количество альбомов, где представлен исполнитель.
 		AlsoAlbums uint32 `json:"alsoAlbums"`
+
 		// Количество треков, где представлен исполнитель.
 		AlsoTracks uint32 `json:"alsoTracks"`
 	} `json:"counts"`
@@ -43,8 +46,10 @@ type Artist struct {
 	Ratings *struct {
 		// За месяц.
 		Month uint32 `json:"month"`
+
 		// За неделю.
 		Week *uint32 `json:"week"`
+
 		// За день.
 		Day *uint32 `json:"day"`
 	} `json:"ratings"`
@@ -53,10 +58,13 @@ type Artist struct {
 	Links []struct {
 		// Заголовок ссылки.
 		Title string `json:"title"`
+
 		// Сама ссылка. YouTube, Twitter, персональный сайт, etc.
 		Href string `json:"href"`
+
 		// social | official
 		Type string `json:"type"`
+
 		// twitter | youtube | vk | telegram. Может быть nil, когда Type == official.
 		SocialNetwork *string `json:"socialNetwork"`
 	} `json:"links"`
@@ -103,27 +111,27 @@ type (
 		} `json:"artist"`
 
 		// Собственные альбомы исполнителя (где он указан исполнителем), в базовой информации.
-		Albums []*Album `json:"albums"`
+		Albums []Album `json:"albums"`
 
 		// Альбомы, где представлен исполнитель (где он указан исполнителем), в базовой информации.
-		AlsoAlbums []*Album `json:"alsoAlbums"`
+		AlsoAlbums []Album `json:"alsoAlbums"`
 
 		// Популярные треки, в базовой информации.
-		PopularTracks []*Track `json:"popularTracks"`
+		PopularTracks []Track `json:"popularTracks"`
 
 		// Похожие (по стилю) исполнители, в базовой информации.
-		SimilarArtists []*Artist `json:"similarArtists"`
+		SimilarArtists []Artist `json:"similarArtists"`
 
 		// Все изображения исполнителя.
-		AllCovers []*Cover `json:"allCovers"`
+		AllCovers []Cover `json:"allCovers"`
 
 		// Список концертов исполнителя.
-		Concerts      []any    `json:"concerts"`
-		Videos        []*Video `json:"videos"`
-		Clips         []any    `json:"clips"`
-		Vinyls        []any    `json:"vinyls"`
-		HasPromotions bool     `json:"hasPromotions"`
-		LastReleases  []any    `json:"lastReleases"`
+		Concerts      []any   `json:"concerts"`
+		Videos        []Video `json:"videos"`
+		Clips         []any   `json:"clips"`
+		Vinyls        []any   `json:"vinyls"`
+		HasPromotions bool    `json:"hasPromotions"`
+		LastReleases  []any   `json:"lastReleases"`
 		Stats         struct {
 			LastMonthListeners uint32 `json:"lastMonthListeners"`
 		} `json:"stats"`
@@ -135,7 +143,7 @@ type (
 			UID  ID `json:"uid"`
 			Kind ID `json:"kind"`
 		} `json:"playlistIds"`
-		Playlists []*Playlist `json:"playlists"`
+		Playlists []Playlist `json:"playlists"`
 	}
 
 	// GET /artists/{artistId}/tracks
@@ -161,13 +169,13 @@ type (
 	}
 
 	ArtistTracksPaged struct {
-		Pager  Pager    `json:"pager"`
-		Tracks []*Track `json:"tracks"`
+		Pager  Pager   `json:"pager"`
+		Tracks []Track `json:"tracks"`
 	}
 
 	ArtistAlbumsPaged struct {
-		Pager  Pager    `json:"pager"`
-		Albums []*Album `json:"albums"`
+		Pager  Pager   `json:"pager"`
+		Albums []Album `json:"albums"`
 	}
 )
 

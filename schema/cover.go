@@ -19,22 +19,22 @@ type (
 	CoverType string
 
 	Cover struct {
-		// Если не nil, значит остальные поля структуры будут пустыми/nil.
+		// Если не пуста, значит остальные поля структуры будут пусты.
 		//
 		// Пример: "cover doesn't exist".
-		Error *string `json:"error"`
+		Error string `json:"error"`
 
 		// (?) Пользовательская обложка?
-		Custom *bool `json:"custom"`
+		Custom bool `json:"custom"`
 
 		// Тип обложки.
-		Type *CoverType `json:"type"`
+		Type CoverType `json:"type"`
 
 		// Пример: "7d7e16a0.p.ЕЩЁ_КАКОЙ_ТО_ID/"
-		Prefix *string `json:"prefix"`
+		Prefix string `json:"prefix"`
 
-		// Существует когда поле type = "pic".
-		Dir *string `json:"dir"`
+		// Не пуста когда поле type = "pic".
+		Dir string `json:"dir"`
 
 		// Существует когда поле type == mosaic.
 		//
@@ -44,9 +44,9 @@ type (
 		// Существует, когда поле Type не mosaic.
 		//
 		// пример: "avatars.yandex.net/get-music-content/КАКОЙ_ТО_ID/7d7e16a0.p.ЕЩЁ_КАКОЙ_ТО_ID/%%"
-		URI *string `json:"uri"`
+		URI string `json:"uri"`
 
 		// ???.
-		Version *string `json:"version"`
+		Version string `json:"version"`
 	}
 )

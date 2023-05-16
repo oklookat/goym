@@ -63,30 +63,31 @@ func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like boo
 }
 
 // Получить список треков артиста по его ID.
-func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pageSize uint16) (*schema.ArtistTracksPaged, error) {
+func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pageSize uint16) (schema.Response[*schema.ArtistTracksPaged], error) {
 	// GET /artists/{artistId}/tracks
 	body := schema.GetArtistTracksQueryParams{
 		Page:     page,
 		PageSize: pageSize,
 	}
+	data := &schema.Response[*schema.ArtistTracksPaged]{}
+
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
-		return nil, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("artists", string(id), "tracks")
-	data := &schema.Response[*schema.ArtistTracksPaged]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить альбомы артиста по его ID.
 //
 // Приложение под Windows в качестве pageSize обычно использует 50.
-func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page uint16, pageSize uint16, sortBy schema.SortBy, sortOrder schema.SortOrder) (*schema.ArtistAlbumsPaged, error) {
+func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page uint16, pageSize uint16, sortBy schema.SortBy, sortOrder schema.SortOrder) (schema.Response[*schema.ArtistAlbumsPaged], error) {
 	// GET /artists/{artistId}/direct-albums
 	body := schema.GetArtistAlbumsQueryParams{
 		Page:      page,
@@ -94,22 +95,22 @@ func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page uint16, pag
 		SortBy:    sortBy,
 		SortOrder: sortOrder,
 	}
+	data := &schema.Response[*schema.ArtistAlbumsPaged]{}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
-		return nil, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("artists", string(id), "direct-albums")
-	data := &schema.Response[*schema.ArtistAlbumsPaged]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить лучшие треки артиста по его ID.
-func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (*schema.ArtistTopTracks, error) {
+func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (schema.Response[*schema.ArtistTopTracks], error) {
 	// GET /artists/{artistId}/track-ids-by-rating
 	endpoint := genApiPath("artists", string(id), "track-ids-by-rating")
 	data := &schema.Response[*schema.ArtistTopTracks]{}
@@ -117,11 +118,11 @@ func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (*schema.Arti
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить полную информацию об артисте по его ID.
-func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (*schema.ArtistBriefInfo, error) {
+func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (schema.Response[*schema.ArtistBriefInfo], error) {
 	// GET /artists/{artistId}/brief-info
 	endpoint := genApiPath("artists", string(id), "brief-info")
 	data := &schema.Response[*schema.ArtistBriefInfo]{}
@@ -129,5 +130,5 @@ func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (*schema.ArtistBri
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }

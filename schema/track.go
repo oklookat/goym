@@ -29,7 +29,7 @@ type (
 		ID string `json:"id"`
 
 		// Текст.
-		Lyrics *Lyrics `json:"lyrics"`
+		Lyrics Lyrics `json:"lyrics"`
 
 		// Видео (клипы?).
 		Videos *VideoSupplement `json:"videos"`
@@ -80,7 +80,7 @@ type (
 
 	// Список похожих треков на другой трек.
 	SimilarTracks struct {
-		Track *Track `json:"track"`
+		Track Track `json:"track"`
 
 		// Похожие треки.
 		//

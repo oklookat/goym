@@ -38,10 +38,10 @@ type (
 		Type SearchType `json:"type"`
 
 		// Текущая страница. Доступно при использовании параметра type.
-		Page *uint16 `json:"page"`
+		Page uint16 `json:"page"`
 
 		// Результатов на странице. Доступно при использовании параметра type.
-		PerPage *uint16 `json:"perPage"`
+		PerPage uint16 `json:"perPage"`
 
 		// Поисковой запрос (оригинальный или исправленный).
 		Text string `json:"text"`
@@ -50,16 +50,16 @@ type (
 		SearchRequestID string `json:"searchRequestId"`
 
 		// Был ли исправлен запрос. Доступен при Type "all".
-		MisspellCorrected *bool `json:"misspellCorrected"`
+		MisspellCorrected bool `json:"misspellCorrected"`
 
-		// Исправленный поисковой запрос. Не nil, если запрос был исправлен.
-		MisspellResult *string `json:"misspellResult"`
+		// Исправленный поисковой запрос. Не пуст, если запрос был исправлен.
+		MisspellResult string `json:"misspellResult"`
 
-		// Оригинальный поисковой запрос. Не nil, если запрос был исправлен.
-		MisspellOriginal *string `json:"misspellOriginal"`
+		// Оригинальный поисковой запрос. Не пуст, если запрос был исправлен.
+		MisspellOriginal string `json:"misspellOriginal"`
 
 		// ID запроса.
-		SearchResultID *string `json:"searchResultId"`
+		SearchResultID string `json:"searchResultId"`
 
 		// Лучший результат.
 		//

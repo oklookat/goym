@@ -52,29 +52,29 @@ func (s ArtistTestSuite) TestArtistTracks() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistTracks(ctx, artistIds[0], 0, 20)
 	s.require.Nil(err)
-	s.require.NotEmpty(resp.Tracks)
+	s.require.NotEmpty(resp.Result.Tracks)
 }
 
 func (s ArtistTestSuite) TestArtistAlbums() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistAlbums(ctx, artistIds[0], 0, 20, schema.SortByYear, schema.SortOrderDesc)
 	s.require.Nil(err)
-	s.require.NotEmpty(resp.Albums)
+	s.require.NotEmpty(resp.Result.Albums)
 }
 
 func (s ArtistTestSuite) TestArtistTopTracks() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistTopTracks(ctx, artistIds[0])
 	s.require.Nil(err)
-	s.require.NotEmpty(resp.Tracks)
+	s.require.NotEmpty(resp.Result.Tracks)
 }
 
 func (s ArtistTestSuite) TestGetArtistInfo() {
 	ctx := context.Background()
 	br, err := s.cl.ArtistInfo(ctx, artistIds[0])
 	s.require.Nil(err)
-	s.require.NotEmpty(br.Albums)
-	s.require.NotEmpty(br.AllCovers)
-	s.require.NotEmpty(br.PopularTracks)
-	s.require.NotEmpty(br.SimilarArtists)
+	s.require.NotEmpty(br.Result.Albums)
+	s.require.NotEmpty(br.Result.AllCovers)
+	s.require.NotEmpty(br.Result.PopularTracks)
+	s.require.NotEmpty(br.Result.SimilarArtists)
 }

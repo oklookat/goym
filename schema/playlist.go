@@ -34,10 +34,10 @@ type (
 		// Если плейлист изменился: добавили/удалили треки,
 		// то Revision прибавляется на 1.
 		//
-		// Может быть nil, если плейлист не создан вами(?).
-		Revision *ID `json:"revision"`
+		// Может быть пуст, если плейлист не создан вами(?).
+		Revision ID `json:"revision"`
 
-		Available *bool `json:"available"`
+		Available bool `json:"available"`
 
 		// Совместный плейлист?
 		Collective bool `json:"collective"`
@@ -77,7 +77,7 @@ type (
 		BatchId string `json:"batch_id"`
 
 		// Треки.
-		Tracks []*Track `json:"tracks"`
+		Tracks []Track `json:"tracks"`
 	}
 
 	PlaylistId struct {
@@ -208,10 +208,7 @@ func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
 	if pl == nil {
 		return ErrNilPlaylist
 	}
-	if pl.Revision == nil {
-		return ErrNilPlaylist
-	}
-	a.Revision = string(*pl.Revision)
+	a.Revision = string(pl.Revision)
 	return nil
 }
 
