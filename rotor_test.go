@@ -22,17 +22,17 @@ func (s *RotorTestSuite) SetupSuite() {
 func (s RotorTestSuite) getStation() *schema.RotorStation {
 	dash, err := s.cl.GetRotorDashboard(context.Background())
 	s.require.Nil(err)
-	s.require.NotEmpty(dash.Stations)
-	s.require.NotEmpty(dash.Stations[0].Station.ID.Tag)
-	return dash.Stations[0].Station
+	s.require.NotEmpty(dash.Result.Stations)
+	s.require.NotEmpty(dash.Result.Stations[0].Station.ID.Tag)
+	return dash.Result.Stations[0].Station
 }
 
 func (s RotorTestSuite) getTracks(st *schema.RotorStation) *schema.RotorStationTracks {
 	res, err := s.cl.GetRotorStationTracks(context.Background(), st, nil)
 	s.require.Nil(err)
-	s.require.NotEmpty(res.Sequence)
-	s.require.NotNil(res.Sequence[0].Track)
-	return res
+	s.require.NotEmpty(res.Result.Sequence)
+	s.require.NotNil(res.Result.Sequence[0].Track)
+	return res.Result
 }
 
 func (s RotorTestSuite) TestGetRotorDashboard() {
@@ -47,14 +47,14 @@ func (s RotorTestSuite) TestGetRotorStationInfo() {
 	st := s.getStation()
 	res, err := s.cl.GetRotorStationInfo(context.Background(), st)
 	s.require.Nil(err)
-	s.require.NotEmpty(res)
-	s.require.NotEmpty(res[0].Station.ID.Tag)
+	s.require.NotEmpty(res.Result)
+	s.require.NotEmpty(res.Result[0].Station.ID.Tag)
 }
 
 func (s RotorTestSuite) TestGetRotorAccountStatus() {
 	res, err := s.cl.GetRotorAccountStatus(context.Background())
 	s.require.Nil(err)
-	s.require.Equal(res.Account.UID, s.cl.UserId)
+	s.require.Equal(res.Result.Account.UID, s.cl.UserId)
 }
 
 func (s RotorTestSuite) TestGetRotorStationsList() {
@@ -62,7 +62,7 @@ func (s RotorTestSuite) TestGetRotorStationsList() {
 		res, err := s.cl.GetRotorStationsList(context.Background(), lang)
 		s.require.Nil(err)
 		s.require.NotEmpty(res)
-		s.require.NotEmpty(res[0].Station.ID.Tag)
+		s.require.NotEmpty(res.Result[0].Station.ID.Tag)
 	}
 	lang := "en"
 	getWithLang(&lang)

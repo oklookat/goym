@@ -1,14 +1,10 @@
 package schema
 
-import (
-	"encoding/json"
-)
-
 // Артист.
 //
 // Много полей могут быть nil. Например, когда Artist находится в составе Track.
 type Artist struct {
-	ID ID `json:"-"`
+	ID ID `json:"id"`
 
 	// Имя.
 	Name string `json:"name"`
@@ -67,20 +63,6 @@ type Artist struct {
 
 	// Доступны билеты на концерт?
 	TicketsAvailable *bool `json:"ticketsAvailable"`
-}
-
-func (a *Artist) UnmarshalJSON(data []byte) error {
-	dem := func(id ID, data []byte) error {
-		type Fake Artist
-		var faked Fake
-		if err := json.Unmarshal(data, &faked); err != nil {
-			return err
-		}
-		*a = Artist(faked)
-		a.ID = id
-		return nil
-	}
-	return unmarshalID(dem, data)
 }
 
 type (
@@ -192,33 +174,6 @@ type (
 type ArtistTopTracks struct {
 	Artist *Artist `json:"artist"`
 	Tracks []ID    `json:"tracks"`
-}
-
-// Разбираемся с ID.
-func (a *ArtistTopTracks) UnmarshalJSON(data []byte) error {
-	// TODO: сделать демаршал []string в []int64
-	type real struct {
-		Artist *Artist  `json:"artist"`
-		Tracks []string `json:"tracks"`
-	}
-	realVal := &real{}
-	if err := json.Unmarshal(data, realVal); err != nil {
-		return err
-	}
-	if len(realVal.Tracks) == 0 {
-		return nil
-	}
-	a.Tracks = []ID{}
-	for _, id := range realVal.Tracks {
-		var uid ID = 0
-		err := uid.FromString(id)
-		if err != nil {
-			return err
-		}
-		a.Tracks = append(a.Tracks, uid)
-	}
-
-	return nil
 }
 
 // POST /users/{userId}/likes/artists/add-multiple

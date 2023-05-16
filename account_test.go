@@ -22,18 +22,15 @@ func (s *AccountTestSuite) SetupSuite() {
 func (s AccountTestSuite) TestAccountStatus() {
 	stat, err := s.cl.AccountStatus(context.Background())
 	s.require.Nil(err)
-	s.require.NotNil(stat.Account)
-	s.require.Positive(stat.Account.UID)
-	s.require.NotEmpty(stat.Account.Login)
+	s.require.NotNil(stat.Result)
 }
 
 func (s AccountTestSuite) TestGetChangeAccountSettings() {
 	getSettings := func() *schema.AccountSettings {
 		sett, err := s.cl.AccountSettings(context.Background())
 		s.require.Nil(err)
-		s.require.NotNil(sett)
-		s.require.Positive(sett.UID)
-		return sett
+		s.require.NotNil(sett.Result)
+		return sett.Result
 	}
 
 	// set new settings

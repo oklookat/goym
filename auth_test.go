@@ -30,6 +30,6 @@ func (s *AuthTestSuite) TestAuth() {
 	}, nil)
 	s.require.Nil(err)
 
-	_, err = New(acc)
+	_, err = New(acc, nil)
 	s.require.Nil(err)
 }

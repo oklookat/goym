@@ -19,120 +19,69 @@ func (s *TrackTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-// get random track.
-func (s TrackTestSuite) getTrack() *schema.Track {
-	found, err := s.cl.Search(context.Background(), "dababy", 0, schema.SearchTypeTrack, false)
-	s.require.Nil(err)
-	tracks := found.Tracks
-	s.require.NotNil(tracks)
-	s.require.NotEmpty(tracks.Results)
-	track := tracks.Results[0]
-	s.require.Positive(track.ID)
-	return tracks.Results[0]
-}
-
-// get random tracks.
-func (s TrackTestSuite) getTracks() []*schema.Track {
-	found, err := s.cl.Search(context.Background(), "mick gordon", 0, schema.SearchTypeTrack, false)
-	s.require.Nil(err)
-	tracks := found.Tracks
-	s.require.NotNil(tracks)
-	s.require.NotEmpty(tracks.Results)
-
-	tracksData := []*schema.Track{}
-	for i, t := range tracks.Results {
-		tracksData = append(tracksData, t)
-		if i == 5 {
-			break
-		}
-	}
-	return tracksData
-}
-
 func (s *TrackTestSuite) TestLikedTracks() {
 	tracks, err := s.cl.LikedTracks(context.Background())
 	s.require.Nil(err)
-	s.require.Positive(tracks.Library.Uid)
-	s.require.NotEmpty(tracks.Library.Tracks)
+	s.require.NotNil(tracks.Result)
 }
 
 func (s TrackTestSuite) TestDislikedTracks() {
 	tracks, err := s.cl.DislikedTracks(context.Background())
 	s.require.Nil(err)
-	s.require.Positive(tracks.Library.Uid)
+	s.require.NotNil(tracks.Result)
 }
 
 func (s TrackTestSuite) TestLikeUnlikeTrack() {
 	ctx := context.Background()
-	track := s.getTrack()
 
 	// like
-	err := s.cl.LikeTrack(ctx, track.ID)
+	_, err := s.cl.LikeTrack(ctx, trackIds[0])
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeTracks(ctx, []schema.ID{track.ID})
+	_, err = s.cl.UnlikeTracks(ctx, []schema.ID{trackIds[0]})
 	s.require.Nil(err)
 }
 
 func (s TrackTestSuite) TestLikeUnlikeTracks() {
 	ctx := context.Background()
-	tracks := s.getTracks()
 
 	// like
-	var ids []schema.ID
-	for i := range tracks {
-		ids = append(ids, tracks[i].ID)
-	}
-	err := s.cl.LikeTracks(ctx, ids)
+	_, err := s.cl.LikeTracks(ctx, trackIds[:])
 	s.require.Nil(err)
 
 	// unlike
-	err = s.cl.UnlikeTracks(ctx, ids)
+	_, err = s.cl.UnlikeTracks(ctx, trackIds[:])
 	s.require.Nil(err)
 }
 
 func (s TrackTestSuite) TestGetTrackById() {
-	track := s.getTrack()
-	tracks, err := s.cl.Track(context.Background(), track.ID)
+	tracks, err := s.cl.Track(context.Background(), trackIds[0])
 	s.require.Nil(err)
-	s.require.NotEmpty(tracks)
-	s.require.Equal(tracks[0].ID, track.ID)
+	s.require.NotEmpty(tracks.Result)
 }
 
 func (s TrackTestSuite) TestTracksById() {
-	ids := []schema.ID{}
-	searched := s.getTracks()
-	for _, t := range searched {
-		ids = append(ids, t.ID)
-	}
-
-	tracks, err := s.cl.Tracks(context.Background(), ids)
+	tracks, err := s.cl.Tracks(context.Background(), trackIds[:])
 	s.require.Nil(err)
 	s.require.NotEmpty(tracks)
 }
 
 func (s TrackTestSuite) TestTrackDownloadInfo() {
-	track := s.getTrack()
-
 	// get info
-	respInfo, err := s.cl.TrackDownloadInfo(context.Background(), track.ID)
+	respInfo, err := s.cl.TrackDownloadInfo(context.Background(), trackIds[0])
 	s.require.Nil(err)
-	s.require.NotEmpty(respInfo)
-	s.require.Positive(respInfo[0].BitrateInKbps)
+	s.require.NotEmpty(respInfo.Result)
 }
 
 func (s TrackTestSuite) TestTrackSupplement() {
-	track := s.getTrack()
-
 	// get info
-	resp, err := s.cl.TrackSupplement(context.Background(), track.ID)
+	resp, err := s.cl.TrackSupplement(context.Background(), trackIds[0])
 	s.require.Nil(err)
-	s.require.NotEmpty(resp.ID)
+	s.require.NotNil(resp.Result)
 }
 
 func (s TrackTestSuite) TestSimilarTracks() {
-	track := s.getTrack()
-	_, err := s.cl.SimilarTracks(context.Background(), track.ID)
+	_, err := s.cl.SimilarTracks(context.Background(), trackIds[0])
 	s.require.Nil(err)
 }

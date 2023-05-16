@@ -21,13 +21,20 @@ var (
 	ErrNilResponse      = errors.New(errPrefix + "nil http or schema response (dev error?)")
 	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
 	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
-	ErrNilAccount       = errors.New(errPrefix + "nil Status.Account (API changed?)")
 )
 
 // Получить Client для запросов к API.
 //
 // Получить tokens можно войдя в аккаунт, используя пакет auth.
-func New(tokens *auth.Tokens) (*Client, error) {
+//
+// ==== accountID
+//
+// Для запросов к API помимо токенов нужен ID аккаунта, которому они принадлежат.
+//
+// Если accountID будет nil, то при вызове метода New будет запрос к API для получения информации об аккаунте, чтобы получить ID.
+//
+// В целом этот аргумент нужен чтобы не делать лишних запросов к API, если вы уже знаете ID аккаунта которому принадлежат токены.
+func New(tokens *auth.Tokens, accountID *schema.ID) (*Client, error) {
 	if tokens == nil {
 		return nil, nil
 	}
@@ -40,32 +47,24 @@ func New(tokens *auth.Tokens) (*Client, error) {
 		Http: httpCl,
 	}
 
-	// get uid
-	status, err := cl.AccountStatus(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	if status == nil {
-		return nil, ErrNilStatus
-	}
-
-	if status.Account == nil {
-		return nil, ErrNilAccount
+	if accountID == nil {
+		// get uid
+		status, err := cl.AccountStatus(context.Background())
+		if err != nil {
+			return nil, err
+		}
+		cl.UserId = status.Result.Account.UID
+	} else {
+		cl.UserId = *accountID
 	}
 
-	cl.UserId = status.Account.UID
-	cl.userId = cl.UserId.String()
-	return cl, err
+	return cl, nil
 }
 
 // Клиент для запросов к API.
 type Client struct {
 	// ID текущего пользователя.
 	UserId schema.ID
-
-	// Для создания эндпоинтов.
-	// Чтоб не конвертировать по 100 раз UserId.
-	userId string
 
 	// Отправляет запросы.
 	Http *vantuz.Client

@@ -3,6 +3,7 @@ package goym
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/goym/vantuz"
@@ -50,7 +51,7 @@ func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error
 	if data.Error == nil {
 		return ErrNilResponseError
 	}
-	if data.Error.Message == "session-expired" {
+	if strings.EqualFold(data.Error.Message, "session-expired") {
 		return ErrTokensExpired
 	}
 	return fmt.Errorf(errPrefix+"%v: %v", data.Error.Name, data.Error.Message)

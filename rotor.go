@@ -7,7 +7,7 @@ import (
 )
 
 // Получить рекомендованные станции.
-func (c Client) GetRotorDashboard(ctx context.Context) (*schema.RotorDashboard, error) {
+func (c Client) GetRotorDashboard(ctx context.Context) (schema.Response[*schema.RotorDashboard], error) {
 	// GET /rotor/stations/dashboard
 	endpoint := genApiPath("rotor", "stations", "dashboard")
 	data := &schema.Response[*schema.RotorDashboard]{}
@@ -15,16 +15,17 @@ func (c Client) GetRotorDashboard(ctx context.Context) (*schema.RotorDashboard, 
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить треки со станции.
 //
 // lastTrack - последний трек со станции. Может быть nil.
-func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStation, lastTrack *schema.Track) (*schema.RotorStationTracks, error) {
+func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStation, lastTrack *schema.Track) (schema.Response[*schema.RotorStationTracks], error) {
 	// GET /rotor/station/{type:tag}/tracks
+	data := &schema.Response[*schema.RotorStationTracks]{}
 	if st == nil {
-		return nil, nil
+		return *data, nil
 	}
 	body := schema.GetRotorStationTracksQueryParams{
 		Settings2: true,
@@ -32,20 +33,19 @@ func (c Client) GetRotorStationTracks(ctx context.Context, st *schema.RotorStati
 	body.SetLastTrack(lastTrack)
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
-		return nil, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("rotor", "station", st.ID.String(), "tracks")
-	data := &schema.Response[*schema.RotorStationTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить информацию об аккаунте в радио.
-func (c Client) GetRotorAccountStatus(ctx context.Context) (*schema.RotorAccountStatus, error) {
+func (c Client) GetRotorAccountStatus(ctx context.Context) (schema.Response[*schema.RotorAccountStatus], error) {
 	// GET /rotor/account/status
 	endpoint := genApiPath("rotor", "account", "status")
 	data := &schema.Response[*schema.RotorAccountStatus]{}
@@ -53,44 +53,45 @@ func (c Client) GetRotorAccountStatus(ctx context.Context) (*schema.RotorAccount
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить все станции с настройками пользователя.
 //
 // language: язык ответа (ISO 639-1). Может быть nil.
-func (c Client) GetRotorStationsList(ctx context.Context, language *string) ([]*schema.RotorStationList, error) {
+func (c Client) GetRotorStationsList(ctx context.Context, language *string) (schema.Response[[]schema.RotorStationList], error) {
 	// GET /rotor/stations/list
+	data := &schema.Response[[]schema.RotorStationList]{}
 	body := schema.GetRotorStationsListQueryParams{
 		Language: language,
 	}
 	vals, err := schema.ParamsToValues(body)
 	if err != nil {
-		return nil, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("rotor", "stations", "list")
-	data := &schema.Response[[]*schema.RotorStationList]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Получить информацию о станции.
-func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation) ([]*schema.RotorStationInfo, error) {
+func (c Client) GetRotorStationInfo(ctx context.Context, st *schema.RotorStation) (schema.Response[[]schema.RotorStationInfo], error) {
 	// GET /rotor/station/{type:tag}/info
+	data := &schema.Response[[]schema.RotorStationInfo]{}
+
 	if st == nil {
-		return nil, nil
+		return *data, nil
 	}
 	endpoint := genApiPath("rotor", "station", st.ID.String(), "info")
-	data := &schema.Response[[]*schema.RotorStationInfo]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Отправка ответной реакции на происходящее при прослушивании радио.

@@ -20,19 +20,24 @@ func (s *SearchTestSuite) SetupSuite() {
 }
 
 func (s SearchTestSuite) TestSearch() {
-	// 🤘🤘🤘
-	found, err := s.cl.Search(context.Background(), "король и шут бедняжка", 0, schema.SearchTypeTrack, false)
+	// Track.
+	found, err := s.cl.Search(context.Background(), "трек", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
-	s.require.NotEmpty(found.Tracks.Results)
-	s.require.Positive(found.Tracks.Results[0].ID)
+	s.require.NotNil(found.Result)
+	s.require.NotEmpty(found.Result.Tracks)
+
+	// Any.
+	found, err = s.cl.Search(context.Background(), "что-то", 0, schema.SearchTypeAll, false)
+	s.require.Nil(err)
+	s.require.NotNil(found.Result)
 }
 
 func (s SearchTestSuite) TestSearchSuggest() {
 	sugg, err := s.cl.SearchSuggest(context.Background(), "emine")
 	s.require.Nil(err)
-	s.require.NotEmpty(sugg.Suggestions)
-	s.require.NotNil(sugg.Best.Result)
+	s.require.NotNil(sugg.Result)
+	s.require.NotEmpty(sugg.Result.Suggestions)
 
-	suggestion := sugg.Suggestions[0]
+	suggestion := sugg.Result.Suggestions[0]
 	s.require.Equal("eminem", suggestion)
 }

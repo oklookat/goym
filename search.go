@@ -20,46 +20,49 @@ import (
 // поля best, playlists, и подобные, будут nil (кроме поля Artists).
 //
 // noCorrect - не исправлять опечатки?
-func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (schema.Search, error) {
+func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (schema.Response[*schema.Search], error) {
 	// GET /search
+	data := &schema.Response[*schema.Search]{}
+
 	query := schema.SearchQueryParams{
 		Text:      text,
 		Page:      page,
 		Type:      what,
 		NoCorrect: noCorrect,
 	}
+
 	vals, err := schema.ParamsToValues(query)
 	if err != nil {
-		return schema.Search{}, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("search")
-	data := &schema.Response[schema.Search]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }
 
 // Подсказать что-нибудь по поисковому запросу.
 //
 // например: SearchSuggest("emine")
-func (c Client) SearchSuggest(ctx context.Context, part string) (*schema.Suggestions, error) {
+func (c Client) SearchSuggest(ctx context.Context, part string) (schema.Response[*schema.Suggestions], error) {
 	// GET /search/suggest
 	query := schema.SearchSuggestQueryParams{
 		Part: part,
 	}
+	data := &schema.Response[*schema.Suggestions]{}
+
 	vals, err := schema.ParamsToValues(query)
 	if err != nil {
-		return nil, err
+		return *data, err
 	}
 
 	endpoint := genApiPath("search", "suggest")
-	data := &schema.Response[*schema.Suggestions]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).SetQueryParams(vals).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+	return *data, err
 }

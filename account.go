@@ -7,7 +7,7 @@ import (
 )
 
 // Получить информацию об аккаунте.
-func (c Client) AccountStatus(ctx context.Context) (*schema.Status, error) {
+func (c Client) AccountStatus(ctx context.Context) (schema.Response[*schema.Status], error) {
 	// GET /account/status
 	endpoint := genApiPath("account", "status")
 
@@ -17,13 +17,13 @@ func (c Client) AccountStatus(ctx context.Context) (*schema.Status, error) {
 		err = checkResponse(resp, data)
 	}
 
-	return data.Result, err
+	return *data, err
 }
 
 // Активировать промокод.
 //
 // Метод не тестировался.
-func (c Client) AccountConsumePromocode(ctx context.Context, code string, language string) (*schema.PromocodeStatus, error) {
+func (c Client) AccountConsumePromocode(ctx context.Context, code string, language string) (schema.Response[*schema.PromocodeStatus], error) {
 	// POST /account/consume-promo-code
 	endpoint := genApiPath("account", "consume-promo-code")
 
@@ -31,32 +31,34 @@ func (c Client) AccountConsumePromocode(ctx context.Context, code string, langua
 		Code:     code,
 		Language: language,
 	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return nil, err
-	}
 
 	data := &schema.Response[*schema.PromocodeStatus]{}
+
+	vals, err := schema.ParamsToValues(body)
+	if err != nil {
+		return *data, err
+	}
+
 	resp, err := c.Http.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
 
-	return data.Result, err
+	return *data, err
 }
 
 // Получить настройки аккаунта.
-func (c Client) AccountSettings(ctx context.Context) (*schema.AccountSettings, error) {
+func (c Client) AccountSettings(ctx context.Context) (schema.Response[*schema.AccountSettings], error) {
 	// GET /account/settings
 	endpoint := genApiPath("account", "settings")
-
 	data := &schema.Response[*schema.AccountSettings]{}
+
 	resp, err := c.Http.R().SetResult(data).SetError(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
 
-	return data.Result, err
+	return *data, err
 }
 
 // Изменить настройки аккаунта.
@@ -78,10 +80,11 @@ func (c Client) ChangeAccountSettings(ctx context.Context, set schema.AccountSet
 	}
 
 	data := &schema.Response[any]{}
+
 	resp, err := c.Http.R().SetResult(data).SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
 
-	return data.Result, err
+	return *data, err
 }

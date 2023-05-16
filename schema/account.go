@@ -4,8 +4,8 @@ import "time"
 
 type (
 	Status struct {
-		Account      *Account      `json:"account"`
-		Subscription *Subscription `json:"subscription"`
+		Account      Account      `json:"account"`
+		Subscription Subscription `json:"subscription"`
 	}
 
 	// Настройки пользователя.

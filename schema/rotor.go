@@ -12,6 +12,7 @@ type RotorStationType string
 const (
 	// Жанровая станция.
 	RotorStationTypeGenre = "genre"
+
 	// Локальная станция. Типа "что слушают в Москве?".
 	RotorStationTypeLocal = "local"
 )
@@ -22,8 +23,10 @@ type RotorLanguageRestriction string
 const (
 	// Любой.
 	RotorLanguageRestrictionAny RotorLanguageRestriction = "any"
+
 	// Русский.
 	RotorLanguageRestrictionRussian RotorLanguageRestriction = "russian"
+
 	// Иностранный.
 	RotorLanguageRestrictionNotRussian RotorLanguageRestriction = "not-russian"
 )
@@ -54,12 +57,16 @@ type RotorMoodEnergyRestriction string
 const (
 	// Борое.
 	RotorMoodEnergyRestrictionActive = "active"
+
 	// Веселое.
 	RotorMoodEnergyRestrictionFun = "fun"
+
 	// Спокойное.
 	RotorMoodEnergyRestrictionCalm = "calm"
+
 	// Грустное.
 	RotorMoodEnergyRestrictionSad = "sad"
+
 	// Любое.
 	RotorMoodEnergyRestrictionAll = "all"
 )
@@ -70,10 +77,13 @@ type RotorStationFeedbackType string
 const (
 	// Запустили радио.
 	RotorStationFeedbackTypeRadioStarted RotorStationFeedbackType = "radioStarted"
+
 	// Начался трек.
 	RotorStationFeedbackTypeTrackStarted RotorStationFeedbackType = "trackStarted"
+
 	// Трек закончился.
 	RotorStationFeedbackTypeTrackFinished RotorStationFeedbackType = "trackFinished"
+
 	// Трек пропущен.
 	RotorStationFeedbackTypeSkip RotorStationFeedbackType = "skip"
 )
@@ -82,6 +92,7 @@ type (
 	// Список радио.
 	RotorDashboard struct {
 		DashboardID string `json:"dashboardId"`
+
 		// Станции.
 		Stations []struct {
 			Station *RotorStation `json:"station"`
@@ -342,7 +353,7 @@ func (g *GetRotorStationTracksQueryParams) SetLastTrack(tr *Track) {
 	if tr == nil {
 		return
 	}
-	g.Queue = tr.ID.String()
+	g.Queue = string(tr.ID)
 }
 
 // POST /rotor/station/{type:tag}/feedback
@@ -382,7 +393,7 @@ func (r *RotorStationFeedbackRequestBodyQueryString) Fill(fType RotorStationFeed
 	r.Timestamp = time.Now()
 	r.TotalPlayedSeconds = TotalPlayedSeconds
 	if len(currentTrack.Albums) > 0 {
-		r.TrackID = currentTrack.ID.String() + ":" + currentTrack.Albums[0].ID.String()
+		r.TrackID = string(currentTrack.ID) + ":" + string(currentTrack.Albums[0].ID)
 	}
 }
 

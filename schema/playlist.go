@@ -10,13 +10,13 @@ import (
 type (
 	Playlist struct {
 		// Владелец плейлиста.
-		Owner *Owner `json:"owner"`
+		Owner Owner `json:"owner"`
 
 		// UID владельца плейлиста.
 		UID ID `json:"uid"`
 
 		// UUID.
-		PlaylistUuid *string `json:"playlistUuid"`
+		PlaylistUuid string `json:"playlistUuid"`
 
 		// Уникальный идентификатор плейлиста.
 		//
@@ -39,29 +39,36 @@ type (
 
 		Available *bool `json:"available"`
 
+		// Совместный плейлист?
 		Collective bool `json:"collective"`
 
 		// Обложка.
-		Cover *Cover `json:"cover"`
+		Cover Cover `json:"cover"`
 
-		Created    *string `json:"created"`
-		Modified   *string `json:"modified"`
-		DurationMs *uint64 `json:"durationMs"`
-		OgImage    *string `json:"ogImage"`
+		// Дата создания.
+		Created time.Time `json:"created"`
+
+		// Дата изменения.
+		Modified time.Time `json:"modified"`
+
+		// Общая длина в миллисекундах.
+		DurationMs uint64 `json:"durationMs"`
+
+		OgImage string `json:"ogImage"`
 
 		// Количество треков.
 		TrackCount uint32 `json:"trackCount"`
 
 		// Количество лайков.
-		LikesCount *uint32 `json:"likesCount"`
+		LikesCount uint32 `json:"likesCount"`
 
 		// Видимость.
-		Visibility *Visibility `json:"visibility"`
+		Visibility Visibility `json:"visibility"`
 
 		// Треки.
 		//
-		// Может быть nil. Зависит от метода, который вернул эту структуру.
-		Tracks []*TrackItem `json:"tracks"`
+		// Может быть пустым. Зависит от метода, который вернул эту структуру.
+		Tracks []TrackItem `json:"tracks"`
 	}
 
 	// Рекомендации для плейлиста
@@ -145,10 +152,7 @@ type AddDeleteTracksToPlaylistRequestBody struct {
 }
 
 // Добавить треки в плейлист.
-func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []*Track) error {
-	if len(tracks) == 0 {
-		return ErrNilTracks
-	}
+func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []Track) error {
 	if err := a.fillBase(pl); err != nil {
 		return err
 	}
@@ -156,7 +160,7 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []*Track
 	trackObjs := []string{}
 	for i := range tracks {
 		if len(tracks[i].Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %d) without albums", tracks[i].ID)
+			return fmt.Errorf(errPrefix+"track (id %s) without albums", tracks[i].ID)
 		}
 		trackObjs = append(trackObjs, a.getTrackObj(tracks[i].ID, tracks[i].Albums[0].ID))
 	}
@@ -184,11 +188,8 @@ func (a *AddDeleteTracksToPlaylistRequestBody) Delete(pl *Playlist, track *Track
 	var to uint16 = 0
 
 	for i := range pl.Tracks {
-		if pl.Tracks[i] == nil {
-			return ErrNilTrack
-		}
 		if len(pl.Tracks[i].Track.Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %d) without albums", pl.Tracks[i].ID)
+			return fmt.Errorf(errPrefix+"track (id %s) without albums", pl.Tracks[i].ID)
 		}
 		if track.ID != pl.Tracks[i].ID {
 			continue
@@ -210,18 +211,13 @@ func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
 	if pl.Revision == nil {
 		return ErrNilPlaylist
 	}
-	a.Revision = pl.Revision.String()
+	a.Revision = string(*pl.Revision)
 	return nil
 }
 
 // {"id":"1234","albumId":"1234"}
 func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id ID, albumId ID) string {
-	idStr := id.String()
-	obj := `{"id":`           // {"id":
-	obj += `"` + idStr + `",` // {"id":"1234",
-	albumIdStr := albumId.String()
-	obj += `"albumId":"` + albumIdStr + `"}` // {"id":"1234","albumId":"1234"}
-	return obj
+	return fmt.Sprintf(`{"id":"%s", "albumId": "%s"}`, string(id), string(albumId))
 }
 
 // POST /playlists/list
@@ -243,7 +239,7 @@ func (g *PlaylistsIdsRequestBody) Add(kind ID, uid ID) {
 	if len(g.PlaylistIds) == 0 {
 		g.PlaylistIds = []string{}
 	}
-	dat := uid.String() + ":" + kind.String()
+	dat := string(uid) + ":" + string(kind)
 	g.PlaylistIds = append(g.PlaylistIds, dat)
 }
 
@@ -258,6 +254,6 @@ func (g *PlaylistsIdsRequestBody) AddMany(kindUid map[ID]ID) {
 		g.PlaylistIds = []string{}
 	}
 	for k, v := range kindUid {
-		g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%d:%d", v, k))
+		g.PlaylistIds = append(g.PlaylistIds, fmt.Sprintf("%s:%s", v, k))
 	}
 }

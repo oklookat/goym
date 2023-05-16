@@ -41,7 +41,7 @@ type (
 		VeryImportant bool `json:"veryImportant"`
 
 		// Исполнители альбома, в минимальной информации.
-		Artists []*Artist `json:"artists"`
+		Artists []Artist `json:"artists"`
 
 		// Лейблы.
 		//
@@ -68,7 +68,7 @@ type (
 		Bests []ID `json:"bests"`
 
 		// например: "single".
-		Type *string `json:"type"`
+		Type string `json:"type"`
 
 		// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
 		Duplicates []*Album `json:"duplicates"`
@@ -84,10 +84,10 @@ type (
 		AvailableRegions []interface{} `json:"availableRegions"`
 
 		// например: "Remix".
-		Version *string `json:"version"`
+		Version string `json:"version"`
 
 		// Треки альбома, разделенные по дискам.
-		Volumes [][]*Track `json:"volumes"`
+		Volumes [][]Track `json:"volumes"`
 	}
 
 	AlbumShort struct {

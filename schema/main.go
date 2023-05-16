@@ -53,29 +53,6 @@ const (
 	ThemeDefault Theme = "default"
 )
 
-// Тип поиска.
-type SearchType string
-
-const (
-	// Поиск артистов.
-	SearchTypeArtist SearchType = "artist"
-
-	// Поиск альбомов.
-	SearchTypeAlbum SearchType = "album"
-
-	// Поиск треков.
-	SearchTypeTrack SearchType = "track"
-
-	// Поиск подкастов.
-	SearchTypePodcast SearchType = "podcast"
-
-	// Поиск плейлистов.
-	SearchTypePlaylist SearchType = "playlist"
-
-	// Поиск всего.
-	SearchTypeAll SearchType = "all"
-)
-
 // Видимость.
 type Visibility string
 
@@ -90,11 +67,13 @@ const (
 type (
 	// Обычно ответ выглядит так.
 	Response[T any] struct {
+		// Информация о запросе.
 		InvocationInfo InvocationInfo `json:"invocationInfo"`
 
 		// Если не nil, то поле result будет nil.
 		Error *Error `json:"error"`
 
+		// Результат запроса.
 		Result T `json:"result"`
 
 		// Может быть при некоторых запросах.
@@ -116,7 +95,7 @@ type (
 		ExecDurationMillis any `json:"exec-duration-millis"`
 	}
 
-	// Ошибка. Ошибка валидации, например.
+	// Ошибка. Например ошибка валидации.
 	Error struct {
 		// Например: validate.
 		Name string `json:"name"`
@@ -134,32 +113,35 @@ type (
 		//
 		// Обратите внимание:
 		//
-		// Допустим, вы отправили запрос, где указали perPage = 20.
+		// Допустим вы отправили запрос с perPage = 20.
 		//
 		// Вам пришел ответ с этой структурой (Pager). И вот это поле (PerPage)
-		// может не быть равным 20. Такое может быть, когда всего элементов не намного больше, чем perPage.
+		// может не быть равным 20. Такое может быть когда элементов чуть больше чем perPage.
 		//
 		// Например вы указали perPage = 20, и пришел ответ, где Total равен 22.
 		// В таком случае это поле (PerPage) будет равно 22.
 		PerPage uint16 `json:"perPage"`
 
-		// Всего элементов.
+		// Общее кол-во элементов.
 		Total uint16 `json:"total"`
 	}
 )
 
-// Уникальный ID.
-type ID uint64
+type ID string
 
-func (u ID) String() string {
-	return strconv.FormatUint(uint64(u), 10)
+func (i ID) String() string {
+	return string(i)
 }
 
-func (u *ID) FromString(val string) error {
-	res, err := strconv.ParseUint(val, 10, 64)
-	if err != nil {
-		return err
+func (i *ID) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 {
+		return nil
 	}
-	*u = ID(res)
+	str, err := strconv.Unquote(string(data))
+	if err != nil {
+		*i = ID(data)
+		return nil
+	}
+	*i = ID(str)
 	return nil
 }

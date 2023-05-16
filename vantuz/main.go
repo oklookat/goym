@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	_userAgent = "goym/v0.3.5 (github.com/oklookat/goym)"
+	_userAgent = "goym/v0.4.0 (github.com/oklookat/goym)"
 )
 
 // Client.
@@ -17,7 +17,6 @@ func C() *Client {
 		Timeout: 20 * time.Second,
 	})
 	p.SetLogger(&dummyLogger{})
-
 	p.SetGlobalHeader("Content-Type", "application/json")
 	p.SetUserAgent(_userAgent)
 	return p

@@ -13,7 +13,7 @@ func addRemoveMultiple(
 	vals url.Values,
 	add bool,
 	entityName string,
-) error {
+) (schema.Response[string], error) {
 	// POST /users/{userId}/likes/ENTITIES/add-multiple
 	// ||
 	// POST /users/{userId}/likes/ENTITIES/remove
@@ -21,15 +21,14 @@ func addRemoveMultiple(
 	if !add {
 		endEndPoint = "remove"
 	}
+	endpoint := genApiPath("users", string(client.UserId), "likes", entityName, endEndPoint)
+	data := &schema.Response[string]{}
 
-	endpoint := genApiPath("users", client.userId, "likes", entityName, endEndPoint)
-	data := &schema.Response[any]{}
 	resp, err := client.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-
-	return err
+	return *data, err
 }
 
 // If add: use "id" request body.
@@ -40,7 +39,7 @@ func addRemove(
 	client *Client,
 	vals url.Values,
 	add bool,
-	entityName string) error {
+	entityName string) (schema.Response[string], error) {
 	// POST /users/{userId}/likes/ENTITIES/add
 	// ||
 	// POST /users/{userId}/likes/ENTITIES/remove
@@ -49,17 +48,16 @@ func addRemove(
 		endEndPoint = "remove"
 	}
 
-	endpoint := genApiPath("users", client.userId, "likes", entityName, endEndPoint)
-	data := &schema.Response[any]{}
+	endpoint := genApiPath("users", string(client.UserId), "likes", entityName, endEndPoint)
+	data := &schema.Response[string]{}
 	resp, err := client.Http.R().SetError(data).SetFormUrlValues(vals).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-
-	return err
+	return *data, err
 }
 
-func likesDislikes[T any](ctx context.Context, client *Client, likes bool, entityName string) (T, error) {
+func likesDislikes[T any](ctx context.Context, client *Client, likes bool, entityName string) (schema.Response[T], error) {
 	// GET /users/{userId}/likes/ENTITY
 	// ||
 	// GET /users/{userId}/dislikes/ENTITY
@@ -67,12 +65,13 @@ func likesDislikes[T any](ctx context.Context, client *Client, likes bool, entit
 	if !likes {
 		lord = "dislikes"
 	}
-
-	endpoint := genApiPath("users", client.userId, lord, entityName)
+	endpoint := genApiPath("users", string(client.UserId), lord, entityName)
 	data := &schema.Response[T]{}
+
 	resp, err := client.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
-	return data.Result, err
+
+	return *data, err
 }

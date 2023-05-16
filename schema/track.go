@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -18,7 +17,7 @@ type (
 
 	TrackItem struct {
 		ID            ID        `json:"id"`
-		Track         *Track    `json:"track"`
+		Track         Track     `json:"track"`
 		Timestamp     time.Time `json:"timestamp"`
 		OriginalIndex uint16    `json:"originalIndex"`
 		Recent        bool      `json:"recent"`
@@ -27,14 +26,18 @@ type (
 	// Дополнительная информация о треке.
 	Supplement struct {
 		// Уникальный идентификатор дополнительной информации.
-		ID     string           `json:"id"`
-		Lyrics *Lyrics          `json:"lyrics"`
+		ID string `json:"id"`
+
+		// Текст.
+		Lyrics *Lyrics `json:"lyrics"`
+
+		// Видео (клипы?).
 		Videos *VideoSupplement `json:"videos"`
 
-		// Доступно ли радио.
+		// Станция по треку доступна?
 		RadioIsAvailable bool `json:"radioIsAvailable"`
 
-		// Полное описание эпизода подкаста.
+		// Описание эпизода подкаста.
 		Description string `json:"description"`
 	}
 
@@ -71,7 +74,7 @@ type (
 			Revision ID `json:"revision"`
 
 			// Список треков в укороченной версии.
-			Tracks []*TrackShort `json:"tracks"`
+			Tracks []TrackShort `json:"tracks"`
 		} `json:"library"`
 	}
 
@@ -82,7 +85,7 @@ type (
 		// Похожие треки.
 		//
 		// Может быть пуст, если изначальный трек не популярен(?).
-		SimilarTracks []*Track `json:"similarTracks"`
+		SimilarTracks []Track `json:"similarTracks"`
 	}
 
 	// Информация о вариантах загрузки трека.
@@ -166,7 +169,7 @@ type (
 // Трек.
 type Track struct {
 	// Идентификатор трека.
-	ID ID `json:"-"`
+	ID ID `json:"id"`
 
 	// Идентификатор подменного трека.
 	//
@@ -175,7 +178,7 @@ type Track struct {
 	// 1. Трек доступен для прослушивания.
 	//
 	// 2. Трек недоступен и не имеет идентичного трека для автозамены.
-	RealID string `json:"realId"`
+	RealID ID `json:"realId"`
 
 	// Название трека.
 	Title string `json:"title"`
@@ -186,9 +189,10 @@ type Track struct {
 	// Доступен для стриминга?
 	Available bool `json:"available"`
 
+	// Доступен только для пользователей с подпиской?
 	AvailableForPremiumUsers bool `json:"availableForPremiumUsers"`
 
-	// (?) Трек могут послушать даже те, кто без подписки, или не вошел в аккаунт?
+	// Трек могут послушать даже те, кто без подписки, или не вошел в аккаунт?
 	AvailableFullWithoutPermission bool `json:"availableFullWithoutPermission"`
 
 	// Например: ["bookmate"].
@@ -201,15 +205,19 @@ type Track struct {
 	DurationMs uint64 `json:"durationMs"`
 
 	// Размер трека в байтах.
-	FileSize          uint64 `json:"fileSize"`
-	R128              *R128  `json:"r128"`
+	FileSize uint64 `json:"fileSize"`
+
+	// Нормализация.
+	R128 *R128 `json:"r128"`
+
+	// Длина превью в миллисекундах.
 	PreviewDurationMs uint16 `json:"previewDurationMs"`
 
 	// Список исполнителей трека, в минимальной информации.
-	Artists []*Artist `json:"artists"`
+	Artists []Artist `json:"artists"`
 
 	// Список альбомов, в которые входит трек, в базовой информации.
-	Albums []*Album `json:"albums"`
+	Albums []Album `json:"albums"`
 
 	// URI обложки.
 	CoverUri string `json:"coverUri"`
@@ -223,8 +231,13 @@ type Track struct {
 	Type             string `json:"type"`
 	RememberPosition bool   `json:"rememberPosition"`
 	TrackSharingFlag string `json:"trackSharingFlag"`
-	LyricsInfo       struct {
+
+	// Информация о тексте.
+	LyricsInfo struct {
+		// Текст с треком будет синхронизироваться?
 		HasAvailableSyncLyrics bool `json:"hasAvailableSyncLyrics"`
+
+		// Текст для трека доступен?
 		HasAvailableTextLyrics bool `json:"hasAvailableTextLyrics"`
 	} `json:"lyricsInfo"`
 
@@ -232,44 +245,14 @@ type Track struct {
 	TrackSource    string `json:"trackSource"`
 	AvailableAsRbt bool   `json:"availableAsRbt"`
 
-	// Трек 18+?
+	// Трек 18+? (E)
 	Explicit bool `json:"explicit"`
 
+	// Регионы в которых доступен трек.
 	Regions []string `json:"regions"`
 
-	// Версия трека.
-	Version *string `json:"version,omitempty"`
-}
-
-// В некоторых запросах ID может быть как строкой, так и числом.
-//
-// Надо привести ID к числу.
-func (t *Track) UnmarshalID(id ID, data []byte) error {
-	type TrackFake Track
-	// демаршал в TrackFake
-	var faked TrackFake
-	if err := json.Unmarshal(data, &faked); err != nil {
-		return err
-	}
-	// копирование полей из TrackFake в Track,
-	// только ID ставим сами
-	*t = Track(faked)
-	t.ID = id
-	return nil
-}
-
-func (t *Track) UnmarshalJSON(data []byte) error {
-	dem := func(id ID, data []byte) error {
-		type TrackFake Track
-		var faked TrackFake
-		if err := json.Unmarshal(data, &faked); err != nil {
-			return err
-		}
-		*t = Track(faked)
-		t.ID = id
-		return nil
-	}
-	return unmarshalID(dem, data)
+	// Версия трека. Remix, deluxe, и так далее.
+	Version string `json:"version"`
 }
 
 // Укороченная версия трека с неполными данными.
@@ -282,33 +265,6 @@ type TrackShort struct {
 
 	// Дата.
 	Timestamp time.Time `json:"timestamp"`
-}
-
-func (t *TrackShort) UnmarshalJSON(data []byte) error {
-	type real struct {
-		ID        string    `json:"id"`
-		AlbumId   string    `json:"albumId"`
-		Timestamp time.Time `json:"timestamp"`
-	}
-	realVal := &real{}
-	if err := json.Unmarshal(data, realVal); err != nil {
-		return err
-	}
-
-	var idUid ID = 0
-	if err := idUid.FromString(realVal.ID); err != nil {
-		return err
-	}
-	t.ID = idUid
-
-	var albumId ID = 0
-	if err := albumId.FromString(realVal.AlbumId); err != nil {
-		return err
-	}
-	t.AlbumId = albumId
-
-	t.Timestamp = realVal.Timestamp
-	return nil
 }
 
 // POST /users/{userId}/likes/tracks/add-multiple

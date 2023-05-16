@@ -8,8 +8,30 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/oklookat/goym/auth"
+	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+)
+
+var (
+	albumIds = [4]schema.ID{
+		"3370827",
+		"14143149",
+		"4979501",
+		"389132",
+	}
+	artistIds = [4]schema.ID{
+		"419326",
+		"1813",
+		"205640",
+		"1053",
+	}
+	trackIds = [4]schema.ID{
+		"27694817",
+		"27694818",
+		"27694819",
+		"27694820",
+	}
 )
 
 func TestAll(t *testing.T) {
@@ -84,7 +106,10 @@ func getClient(t *testing.T) *Client {
 		RefreshAfter: refreshAfter,
 	}
 
-	cl, err := New(tok)
+	cl, err := New(tok, nil)
+	if err != nil {
+		println(err.Error())
+	}
 	require.Nil(err)
 
 	cl.Http.SetLogger(loggerDefault{})
