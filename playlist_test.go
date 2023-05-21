@@ -124,21 +124,25 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	// AddToPlaylist
 	tracksResp, err := s.cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
-	tracks := tracksResp.Result.Tracks.Results
-	// 10 tracks
-	tracksLittle := []schema.Track{}
-	for i := range tracks {
-		tracksLittle = append(tracksLittle, tracks[i])
-		if len(tracksLittle) >= 10 {
+
+	tracksIds := map[schema.ID]bool{}
+	var tracksToAdd []schema.Track
+	var tracksToDelete []schema.ID
+	for i, tr := range tracksResp.Result.Tracks.Results {
+		tracksToAdd = append(tracksToAdd, tr)
+		tracksToDelete = append(tracksToDelete, tr.ID)
+		tracksIds[tr.ID] = true
+		if i >= 9 {
 			break
 		}
 	}
-	pl, err = s.cl.AddToPlaylist(ctx, pl.Result, tracksLittle)
+	pl, err = s.cl.AddToPlaylist(ctx, *pl.Result, tracksToAdd)
 	s.require.Nil(err)
 
 	// Get with tracks.
 	pl, err = s.cl.MyPlaylist(ctx, pl.Result.Kind)
 	s.require.Nil(err)
+	s.require.NotEmpty(pl.Result.Tracks)
 
 	// PlaylistRecommendations
 	recs, err := s.cl.PlaylistRecommendations(ctx, pl.Result.Kind)
@@ -146,12 +150,14 @@ func (s PlaylistTestSuite) TestPlaylistCRUD() {
 	s.require.NotEmpty(recs.Result.Tracks)
 
 	// DeleteFromPlaylist
-	trackToDelete := pl.Result.Tracks[0]
-	pl, err = s.cl.DeleteFromPlaylist(ctx, pl.Result, &trackToDelete)
+	pl, err = s.cl.DeleteTracksFromPlaylist(ctx, *pl.Result, tracksToDelete)
 	s.require.Nil(err)
 	// is track actually removed?
 	for _, ti := range pl.Result.Tracks {
-		s.require.NotEqual(ti.Track.ID, trackToDelete.ID)
+		_, ok := tracksIds[ti.ID]
+		if ok {
+			s.Failf("fail", "track id %s not removed", ti.ID)
+		}
 	}
 
 	// DeletePlaylist

@@ -2,6 +2,7 @@ package goym
 
 import (
 	"context"
+	"errors"
 
 	"github.com/oklookat/goym/schema"
 )
@@ -190,7 +191,7 @@ func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.ID, vis s
 // Добавить треки в плейлист.
 //
 // Возвращает плейлист без поля Tracks.
-func (c Client) AddToPlaylist(ctx context.Context, pl *schema.Playlist, tracks []schema.Track) (schema.Response[*schema.Playlist], error) {
+func (c Client) AddToPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.Track) (schema.Response[*schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	// ||
 	// POST /users/{userId}/playlists/{kind}/change
@@ -200,11 +201,9 @@ func (c Client) AddToPlaylist(ctx context.Context, pl *schema.Playlist, tracks [
 		return *data, nil
 	}
 
-	body := schema.AddDeleteTracksToPlaylistRequestBody{}
-	if err := body.Add(pl, tracks); err != nil {
-		return *data, err
-	}
-	vals, err := schema.ParamsToValues(body)
+	body := schema.NewAddPlaylistTracksRequestBody(pl)
+	body.AddTracks(tracks)
+	vals, err := body.ParamsToValues()
 	if err != nil {
 		return *data, err
 	}
@@ -223,17 +222,36 @@ func (c Client) AddToPlaylist(ctx context.Context, pl *schema.Playlist, tracks [
 // Возвращает плейлист без поля Tracks.
 //
 // track - TrackItem из плейлиста (pl).
-func (c Client) DeleteFromPlaylist(ctx context.Context, pl *schema.Playlist, track *schema.TrackItem) (schema.Response[*schema.Playlist], error) {
+func (c Client) DeleteTracksFromPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.ID) (schema.Response[*schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	//
 	// POST /users/{userId}/playlists/{kind}/change
 	data := &schema.Response[*schema.Playlist]{}
 
-	body := schema.AddDeleteTracksToPlaylistRequestBody{}
-	if err := body.Delete(pl, track); err != nil {
-		return *data, err
+	if len(tracks) == 0 {
+		return *data, nil
 	}
-	vals, err := schema.ParamsToValues(body)
+
+	// Try to get playlist tracks if playlist tracks from args empty.
+	if len(pl.Tracks) == 0 {
+		myPl, err := c.MyPlaylist(ctx, pl.Kind)
+		if err != nil {
+			return *data, err
+		}
+		if myPl.Result == nil {
+			return *data, errors.New("deleteFromPlaylist: nil result")
+		}
+		if len(myPl.Result.Tracks) == 0 {
+			return *data, nil
+		}
+		pl = *myPl.Result
+	}
+
+	body := schema.NewDeletePlaylistTracksRequestBody(pl)
+	for _, item := range pl.Tracks {
+		body.AddTrack(item)
+	}
+	vals, err := body.ParamsToValues()
 	if err != nil {
 		return *data, err
 	}

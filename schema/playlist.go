@@ -1,9 +1,9 @@
 package schema
 
 import (
+	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
+	"net/url"
 	"time"
 )
 
@@ -57,7 +57,7 @@ type (
 		OgImage string `json:"ogImage"`
 
 		// Количество треков.
-		TrackCount uint32 `json:"trackCount"`
+		TrackCount uint64 `json:"trackCount"`
 
 		// Количество лайков.
 		LikesCount uint32 `json:"likesCount"`
@@ -136,85 +136,130 @@ type (
 		Playlist  Playlist  `json:"playlist"`
 		Timestamp time.Time `json:"timestamp"`
 	}
+
+	PlaylistAddTracksOperation struct {
+		// insert.
+		Op     string `json:"op"`
+		At     uint64 `json:"at"`
+		Tracks []struct {
+			ID      ID `json:"id"`
+			AlbumID ID `json:"albumId"`
+		} `json:"tracks"`
+	}
+
+	PlaylistDeleteTracksOperation struct {
+		// delete.
+		Op     string `json:"op"`
+		From   uint64 `json:"from"`
+		To     uint64 `json:"to"`
+		Tracks []struct {
+			ID      ID `json:"id"`
+			AlbumID ID `json:"albumId"`
+		} `json:"tracks"`
+	}
 )
 
-// Доступны методы Add() и Delete()
-//
+func NewAddPlaylistTracksRequestBody(pl Playlist) AddPlaylistTracksRequestBody {
+	return AddPlaylistTracksRequestBody{
+		Revision: pl.Revision,
+		pl:       pl,
+	}
+}
+
 // POST /users/{userId}/playlists/{kind}/change-relative
 //
 // POST /users/{userId}/playlists/{kind}/change
-type AddDeleteTracksToPlaylistRequestBody struct {
-	// Playlist difference. Операция над плейлистом.
-	Diff string `url:"diff"`
+type AddPlaylistTracksRequestBody struct {
+	Revision ID     `url:"revision"`
+	Diff     string `url:"diff"`
 
-	// см. Playlist.Revision.
-	Revision string `url:"revision"`
+	// Не входит в API.
+	hDiff []PlaylistAddTracksOperation `url:"-"`
+	pl    Playlist                     `url:"-"`
 }
 
-// Добавить треки в плейлист.
-func (a *AddDeleteTracksToPlaylistRequestBody) Add(pl *Playlist, tracks []Track) error {
-	if err := a.fillBase(pl); err != nil {
-		return err
+func (a *AddPlaylistTracksRequestBody) ParamsToValues() (url.Values, error) {
+	diffBytes, err := json.Marshal(a.hDiff)
+	if err != nil {
+		return nil, err
 	}
-
-	trackObjs := []string{}
-	for i := range tracks {
-		if len(tracks[i].Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %s) without albums", tracks[i].ID)
-		}
-		trackObjs = append(trackObjs, a.getTrackObj(tracks[i].ID, tracks[i].Albums[0].ID))
-	}
-
-	at := strconv.FormatUint(uint64(pl.TrackCount), 10) // добавить треки в конец плейлиста
-	tracksObj := strings.Join(trackObjs, ",")           // trackobj,trackobj,trackobj
-
-	// {"diff":{"op":"insert","at":144,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
-	a.Diff = fmt.Sprintf(`{"diff":{"op":"insert","at":%s,"tracks":[%s]}}`, at, tracksObj)
-	return nil
+	a.Diff = string(diffBytes)
+	return ParamsToValues(*a)
 }
 
-// Удалить трек из плейлиста.
-//
-// track - TrackItem из Playlist.Tracks
-func (a *AddDeleteTracksToPlaylistRequestBody) Delete(pl *Playlist, track *TrackItem) error {
-	if track == nil {
-		return ErrNilTrack
-	}
-	if err := a.fillBase(pl); err != nil {
-		return err
-	}
-	trackObj := ""
-	var from uint16 = 0
-	var to uint16 = 0
-
-	for i := range pl.Tracks {
-		if len(pl.Tracks[i].Track.Albums) == 0 {
-			return fmt.Errorf(errPrefix+"track (id %s) without albums", pl.Tracks[i].ID)
-		}
-		if track.ID != pl.Tracks[i].ID {
+func (a *AddPlaylistTracksRequestBody) AddTracks(item []Track) {
+	for _, track := range item {
+		if len(track.Albums) == 0 {
 			continue
 		}
-		from = track.OriginalIndex
-		to = from + 1
-		trackObj = a.getTrackObj(pl.Tracks[i].Track.ID, pl.Tracks[i].Track.Albums[0].ID)
+		if len(a.hDiff) > 0 {
+			a.hDiff[0].Tracks = append(a.hDiff[0].Tracks, struct {
+				ID      ID "json:\"id\""
+				AlbumID ID "json:\"albumId\""
+			}{
+				ID:      track.ID,
+				AlbumID: track.Albums[0].ID,
+			})
+			continue
+		}
+		a.hDiff = append(a.hDiff, PlaylistAddTracksOperation{
+			Op: "insert",
+			At: a.pl.TrackCount,
+			Tracks: []struct {
+				ID      ID "json:\"id\""
+				AlbumID ID "json:\"albumId\""
+			}{
+				{
+					ID:      track.ID,
+					AlbumID: track.Albums[0].ID,
+				},
+			},
+		})
 	}
-
-	// {"diff":{"op":"delete","from":0,"to":1,"tracks":[{"id":"20599729","albumId":"2347459"}]}}
-	a.Diff = fmt.Sprintf(`{"diff":{"op":"delete","from":%d,"to":%d,"tracks":[%s]}}`, from, to, trackObj)
-	return nil
 }
 
-func (a *AddDeleteTracksToPlaylistRequestBody) fillBase(pl *Playlist) error {
-	if pl == nil {
-		return ErrNilPlaylist
+func NewDeletePlaylistTracksRequestBody(pl Playlist) DeletePlaylistTracksRequestBody {
+	return DeletePlaylistTracksRequestBody{
+		Kind:     pl.Kind,
+		Revision: pl.Revision,
+		pl:       pl,
 	}
-	a.Revision = string(pl.Revision)
-	return nil
 }
 
-// {"id":"1234","albumId":"1234"}
-func (a AddDeleteTracksToPlaylistRequestBody) getTrackObj(id ID, albumId ID) string {
-	return fmt.Sprintf(`{"id":"%s", "albumId": "%s"}`, string(id), string(albumId))
+type DeletePlaylistTracksRequestBody struct {
+	Kind     ID     `url:"kind"`
+	Revision ID     `url:"revision"`
+	Diff     string `url:"diff"`
+
+	// Не входит в API.
+	hDiff []PlaylistDeleteTracksOperation `url:"-"`
+	pl    Playlist                        `url:"-"`
+}
+
+func (d *DeletePlaylistTracksRequestBody) ParamsToValues() (url.Values, error) {
+	diffBytes, err := json.Marshal(d.hDiff)
+	if err != nil {
+		return nil, err
+	}
+	d.Diff = string(diffBytes)
+	return ParamsToValues(*d)
+}
+
+func (d *DeletePlaylistTracksRequestBody) AddTrack(item TrackItem) {
+	d.hDiff = append(d.hDiff, PlaylistDeleteTracksOperation{
+		Op:   "delete",
+		From: item.OriginalIndex,
+		To:   item.OriginalIndex + 1,
+		Tracks: []struct {
+			ID      ID "json:\"id\""
+			AlbumID ID "json:\"albumId\""
+		}{
+			{
+				ID:      item.ID,
+				AlbumID: item.Track.Albums[0].ID,
+			},
+		},
+	})
 }
 
 // POST /playlists/list

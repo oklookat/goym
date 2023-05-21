@@ -19,7 +19,7 @@ type (
 		ID            ID        `json:"id"`
 		Track         Track     `json:"track"`
 		Timestamp     time.Time `json:"timestamp"`
-		OriginalIndex uint16    `json:"originalIndex"`
+		OriginalIndex uint64    `json:"originalIndex"`
 		Recent        bool      `json:"recent"`
 	}
 
