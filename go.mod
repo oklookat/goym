@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	golang.org/x/time v0.3.0
 )
 
