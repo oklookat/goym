@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	_userAgent = "goym/v0.4.2 (github.com/oklookat/goym)"
+	_userAgent = "goym/v0.4.3 (github.com/oklookat/goym)"
 )
 
 // Client.
