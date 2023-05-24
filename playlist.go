@@ -3,6 +3,7 @@ package goym
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/oklookat/goym/schema"
 )
@@ -249,7 +250,11 @@ func (c Client) DeleteTracksFromPlaylist(ctx context.Context, pl schema.Playlist
 
 	body := schema.NewDeletePlaylistTracksRequestBody(pl)
 	for _, item := range pl.Tracks {
-		body.AddTrack(item)
+		for _, deleteID := range tracks {
+			if strings.EqualFold(item.ID.String(), deleteID.String()) {
+				body.AddTrack(item)
+			}
+		}
 	}
 	vals, err := body.ParamsToValues()
 	if err != nil {
