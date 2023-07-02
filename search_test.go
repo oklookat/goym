@@ -19,7 +19,7 @@ func (s *SearchTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s SearchTestSuite) TestSearch() {
+func (s *SearchTestSuite) TestSearch() {
 	// Track.
 	found, err := s.cl.Search(context.Background(), "трек", 0, schema.SearchTypeTrack, false)
 	s.require.Nil(err)
@@ -32,7 +32,7 @@ func (s SearchTestSuite) TestSearch() {
 	s.require.NotNil(found.Result)
 }
 
-func (s SearchTestSuite) TestSearchSuggest() {
+func (s *SearchTestSuite) TestSearchSuggest() {
 	sugg, err := s.cl.SearchSuggest(context.Background(), "emine")
 	s.require.Nil(err)
 	s.require.NotNil(sugg.Result)

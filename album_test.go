@@ -18,7 +18,7 @@ func (s *AlbumTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s AlbumTestSuite) TestAlbum() {
+func (s *AlbumTestSuite) TestAlbum() {
 	ctx := context.Background()
 
 	// without tracks
@@ -31,13 +31,13 @@ func (s AlbumTestSuite) TestAlbum() {
 	s.require.NotEmpty(data.Result.Volumes)
 }
 
-func (s AlbumTestSuite) TestAlbums() {
+func (s *AlbumTestSuite) TestAlbums() {
 	resp, err := s.cl.Albums(context.Background(), albumIds[:])
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Result)
 }
 
-func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
+func (s *AlbumTestSuite) TestLikeUnlikeAlbum() {
 	ctx := context.Background()
 
 	// like
@@ -49,7 +49,7 @@ func (s AlbumTestSuite) TestLikeUnlikeAlbum() {
 	s.require.Nil(err)
 }
 
-func (s AlbumTestSuite) TestLikeUnlikeLikedAlbums() {
+func (s *AlbumTestSuite) TestLikeUnlikeLikedAlbums() {
 	ctx := context.Background()
 
 	// like

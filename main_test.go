@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/oklookat/goym/auth"
 	"github.com/oklookat/goym/schema"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -35,7 +34,6 @@ var (
 )
 
 func TestAll(t *testing.T) {
-	//TestAuth(t)
 	//TestDebug(t)
 	TestService(t)
 	TestAccount(t)
@@ -45,10 +43,6 @@ func TestAll(t *testing.T) {
 	TestSearch(t)
 	TestTrack(t)
 	TestRotor(t)
-}
-
-func TestAuth(t *testing.T) {
-	suite.Run(t, &AuthTestSuite{})
 }
 
 func TestDebug(t *testing.T) {
@@ -93,20 +87,7 @@ func getClient(t *testing.T) *Client {
 	err := godotenv.Load()
 	require.Nil(err)
 
-	expiresIn, err := stringToInt64(os.Getenv("EXPIRES_IN"))
-	require.Nil(err)
-	refreshAfter, err := stringToInt64(os.Getenv("REFRESH_AFTER"))
-	require.Nil(err)
-
-	tok := &auth.Tokens{
-		TokenType:    os.Getenv("TOKEN_TYPE"),
-		AccessToken:  os.Getenv("ACCESS_TOKEN"),
-		ExpiresIn:    expiresIn,
-		RefreshToken: os.Getenv("REFRESH_TOKEN"),
-		RefreshAfter: refreshAfter,
-	}
-
-	cl, err := New(tok, nil)
+	cl, err := New(os.Getenv("ACCESS_TOKEN"))
 	if err != nil {
 		println(err.Error())
 	}

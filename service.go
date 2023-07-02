@@ -6,17 +6,12 @@ import (
 	"strings"
 
 	"github.com/oklookat/goym/schema"
-	"github.com/oklookat/goym/vantuz"
+	"github.com/oklookat/vantuz"
 )
 
 // iToString преобразует число в строку (десятичная система).
 func iToString[T int | int64 | int32](val T) string {
 	return strconv.FormatInt(int64(val), 10)
-}
-
-// stringToInt64 преобразует строку в int64 (десятичная система).
-func stringToInt64(val string) (int64, error) {
-	return strconv.ParseInt(val, 10, 64)
 }
 
 // genApiPath создает URL-адрес для запроса к API, используя заданный путь.

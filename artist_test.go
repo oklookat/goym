@@ -19,12 +19,12 @@ func (s *ArtistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s ArtistTestSuite) TestLikedArtists() {
+func (s *ArtistTestSuite) TestLikedArtists() {
 	_, err := s.cl.LikedArtists(context.Background())
 	s.require.Nil(err)
 }
 
-func (s ArtistTestSuite) TestArtistLikeUnlike() {
+func (s *ArtistTestSuite) TestArtistLikeUnlike() {
 	ctx := context.Background()
 
 	// like
@@ -36,7 +36,7 @@ func (s ArtistTestSuite) TestArtistLikeUnlike() {
 	s.require.Nil(err)
 }
 
-func (s ArtistTestSuite) TestLikeUnlikeArtists() {
+func (s *ArtistTestSuite) TestLikeUnlikeArtists() {
 	ctx := context.Background()
 
 	// like
@@ -48,28 +48,28 @@ func (s ArtistTestSuite) TestLikeUnlikeArtists() {
 	s.require.Nil(err)
 }
 
-func (s ArtistTestSuite) TestArtistTracks() {
+func (s *ArtistTestSuite) TestArtistTracks() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistTracks(ctx, artistIds[0], 0, 20)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Result.Tracks)
 }
 
-func (s ArtistTestSuite) TestArtistAlbums() {
+func (s *ArtistTestSuite) TestArtistAlbums() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistAlbums(ctx, artistIds[0], 0, 20, schema.SortByYear, schema.SortOrderDesc)
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Result.Albums)
 }
 
-func (s ArtistTestSuite) TestArtistTopTracks() {
+func (s *ArtistTestSuite) TestArtistTopTracks() {
 	ctx := context.Background()
 	resp, err := s.cl.ArtistTopTracks(ctx, artistIds[0])
 	s.require.Nil(err)
 	s.require.NotEmpty(resp.Result.Tracks)
 }
 
-func (s ArtistTestSuite) TestGetArtistInfo() {
+func (s *ArtistTestSuite) TestGetArtistInfo() {
 	ctx := context.Background()
 	br, err := s.cl.ArtistInfo(ctx, artistIds[0])
 	s.require.Nil(err)

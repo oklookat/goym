@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/oklookat/goym/auth"
 	"github.com/oklookat/goym/schema"
-	"github.com/oklookat/goym/vantuz"
+	"github.com/oklookat/vantuz"
 )
 
 const (
@@ -25,40 +24,20 @@ var (
 
 // Получить Client для запросов к API.
 //
-// Получить tokens можно войдя в аккаунт, используя пакет auth.
-//
-// ==== accountID
-//
-// Для запросов к API помимо токенов нужен ID аккаунта, которому они принадлежат.
-//
-// Если accountID будет nil, то при вызове метода New будет запрос к API для получения информации об аккаунте, чтобы получить ID.
-//
-// В целом этот аргумент нужен чтобы не делать лишних запросов к API, если вы уже знаете ID аккаунта которому принадлежат токены.
-func New(tokens *auth.Tokens, accountID *schema.ID) (*Client, error) {
-	if tokens == nil {
-		return nil, nil
-	}
-
-	httpCl := vantuz.C().
-		SetGlobalHeaders(map[string]string{
-			"Authorization": "OAuth " + tokens.AccessToken,
-		})
+// accessToken - его можно получить выполнив авторизацию в Яндексе.
+func New(accessToken string) (*Client, error) {
+	httpCl := vantuz.C().SetAuthorization("OAuth " + accessToken)
 	cl := &Client{
 		Http: httpCl,
 	}
 
-	if accountID == nil {
-		// get uid
-		status, err := cl.AccountStatus(context.Background())
-		if err != nil {
-			return nil, err
-		}
-		cl.UserId = status.Result.Account.UID
-	} else {
-		cl.UserId = *accountID
+	status, err := cl.AccountStatus(context.Background())
+	if err != nil {
+		return nil, err
 	}
+	cl.UserId = status.Result.Account.UID
 
-	return cl, nil
+	return cl, err
 }
 
 // Клиент для запросов к API.

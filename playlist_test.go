@@ -19,7 +19,7 @@ func (s *PlaylistTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s PlaylistTestSuite) TestLikesPlaylist() {
+func (s *PlaylistTestSuite) TestLikesPlaylist() {
 	// Search.
 	ctx := context.Background()
 	found, err := s.cl.Search(ctx, "музыка в машину", 0, schema.SearchTypePlaylist, false)
@@ -57,7 +57,7 @@ func (s PlaylistTestSuite) TestLikesPlaylist() {
 	s.require.Nil(err)
 }
 
-func (s PlaylistTestSuite) TestPlaylistsByKindUid() {
+func (s *PlaylistTestSuite) TestPlaylistsByKindUid() {
 	// Search.
 	ctx := context.Background()
 	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
@@ -90,7 +90,7 @@ func (s PlaylistTestSuite) TestPlaylistsByKindUid() {
 // AddTracksToPlaylist()
 // DeleteTrackFromPlaylist()
 // GetPlaylistRecommendations()
-func (s PlaylistTestSuite) TestPlaylistCRUD() {
+func (s *PlaylistTestSuite) TestPlaylistCRUD() {
 	ctx := context.Background()
 
 	// CreatePlaylist

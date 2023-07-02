@@ -3,6 +3,7 @@ package schema
 import "time"
 
 type (
+	// Альбом.
 	Album struct {
 		// Идентификатор альбома.
 		ID ID `json:"id"`
@@ -70,7 +71,7 @@ type (
 		// например: "single".
 		Type string `json:"type"`
 
-		// Ремиксы, и прочее. Не nil, например когда запрашивается альбом с треками.
+		// Ремиксы, и прочее. Не пуст, например когда запрашивается альбом с треками.
 		Duplicates []*Album `json:"duplicates"`
 
 		StorageDir string `json:"storageDir"`

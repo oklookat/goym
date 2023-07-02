@@ -19,13 +19,13 @@ func (s *AccountTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s AccountTestSuite) TestAccountStatus() {
+func (s *AccountTestSuite) TestAccountStatus() {
 	stat, err := s.cl.AccountStatus(context.Background())
 	s.require.Nil(err)
 	s.require.NotNil(stat.Result)
 }
 
-func (s AccountTestSuite) TestGetChangeAccountSettings() {
+func (s *AccountTestSuite) TestGetChangeAccountSettings() {
 	getSettings := func() *schema.AccountSettings {
 		sett, err := s.cl.AccountSettings(context.Background())
 		s.require.Nil(err)

@@ -19,7 +19,7 @@ func (s *RotorTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s RotorTestSuite) getStation() *schema.RotorStation {
+func (s *RotorTestSuite) getStation() *schema.RotorStation {
 	dash, err := s.cl.GetRotorDashboard(context.Background())
 	s.require.Nil(err)
 	s.require.NotEmpty(dash.Result.Stations)
@@ -27,7 +27,7 @@ func (s RotorTestSuite) getStation() *schema.RotorStation {
 	return dash.Result.Stations[0].Station
 }
 
-func (s RotorTestSuite) getTracks(st *schema.RotorStation) *schema.RotorStationTracks {
+func (s *RotorTestSuite) getTracks(st *schema.RotorStation) *schema.RotorStationTracks {
 	res, err := s.cl.GetRotorStationTracks(context.Background(), st, nil)
 	s.require.Nil(err)
 	s.require.NotEmpty(res.Result.Sequence)
@@ -35,15 +35,15 @@ func (s RotorTestSuite) getTracks(st *schema.RotorStation) *schema.RotorStationT
 	return res.Result
 }
 
-func (s RotorTestSuite) TestGetRotorDashboard() {
+func (s *RotorTestSuite) TestGetRotorDashboard() {
 	s.getStation()
 }
 
-func (s RotorTestSuite) TestGetRotorStationTracks() {
+func (s *RotorTestSuite) TestGetRotorStationTracks() {
 	s.getTracks(s.getStation())
 }
 
-func (s RotorTestSuite) TestGetRotorStationInfo() {
+func (s *RotorTestSuite) TestGetRotorStationInfo() {
 	st := s.getStation()
 	res, err := s.cl.GetRotorStationInfo(context.Background(), st)
 	s.require.Nil(err)
@@ -51,13 +51,13 @@ func (s RotorTestSuite) TestGetRotorStationInfo() {
 	s.require.NotEmpty(res.Result[0].Station.ID.Tag)
 }
 
-func (s RotorTestSuite) TestGetRotorAccountStatus() {
+func (s *RotorTestSuite) TestGetRotorAccountStatus() {
 	res, err := s.cl.GetRotorAccountStatus(context.Background())
 	s.require.Nil(err)
 	s.require.Equal(res.Result.Account.UID, s.cl.UserId)
 }
 
-func (s RotorTestSuite) TestGetRotorStationsList() {
+func (s *RotorTestSuite) TestGetRotorStationsList() {
 	getWithLang := func(lang *string) {
 		res, err := s.cl.GetRotorStationsList(context.Background(), lang)
 		s.require.Nil(err)
@@ -71,7 +71,7 @@ func (s RotorTestSuite) TestGetRotorStationsList() {
 	getWithLang(nil)
 }
 
-func (s RotorTestSuite) TestGetRotorStationsFeedback() {
+func (s *RotorTestSuite) TestGetRotorStationsFeedback() {
 	ctx := context.Background()
 	stat := s.getStation()
 	tracks := s.getTracks(stat)

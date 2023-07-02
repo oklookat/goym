@@ -3,9 +3,8 @@ module github.com/oklookat/goym
 go 1.19
 
 require (
-	github.com/oklog/ulid/v2 v2.1.0
-	github.com/stretchr/testify v1.8.2
-	golang.org/x/time v0.3.0
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/time v0.3.0 // indirect
 )
 
 require (
@@ -20,4 +19,5 @@ require (
 require (
 	github.com/google/go-querystring v1.1.0
 	github.com/joho/godotenv v1.5.1
+	github.com/oklookat/vantuz v1.0.2
 )

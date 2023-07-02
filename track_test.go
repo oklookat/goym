@@ -25,13 +25,13 @@ func (s *TrackTestSuite) TestLikedTracks() {
 	s.require.NotNil(tracks.Result)
 }
 
-func (s TrackTestSuite) TestDislikedTracks() {
+func (s *TrackTestSuite) TestDislikedTracks() {
 	tracks, err := s.cl.DislikedTracks(context.Background())
 	s.require.Nil(err)
 	s.require.NotNil(tracks.Result)
 }
 
-func (s TrackTestSuite) TestLikeUnlikeTrack() {
+func (s *TrackTestSuite) TestLikeUnlikeTrack() {
 	ctx := context.Background()
 
 	// like
@@ -43,7 +43,7 @@ func (s TrackTestSuite) TestLikeUnlikeTrack() {
 	s.require.Nil(err)
 }
 
-func (s TrackTestSuite) TestLikeUnlikeTracks() {
+func (s *TrackTestSuite) TestLikeUnlikeTracks() {
 	ctx := context.Background()
 
 	// like
@@ -55,33 +55,33 @@ func (s TrackTestSuite) TestLikeUnlikeTracks() {
 	s.require.Nil(err)
 }
 
-func (s TrackTestSuite) TestGetTrackById() {
+func (s *TrackTestSuite) TestGetTrackById() {
 	tracks, err := s.cl.Track(context.Background(), trackIds[0])
 	s.require.Nil(err)
 	s.require.NotEmpty(tracks.Result)
 }
 
-func (s TrackTestSuite) TestTracksById() {
+func (s *TrackTestSuite) TestTracksById() {
 	tracks, err := s.cl.Tracks(context.Background(), trackIds[:])
 	s.require.Nil(err)
 	s.require.NotEmpty(tracks)
 }
 
-func (s TrackTestSuite) TestTrackDownloadInfo() {
+func (s *TrackTestSuite) TestTrackDownloadInfo() {
 	// get info
 	respInfo, err := s.cl.TrackDownloadInfo(context.Background(), trackIds[0])
 	s.require.Nil(err)
 	s.require.NotEmpty(respInfo.Result)
 }
 
-func (s TrackTestSuite) TestTrackSupplement() {
+func (s *TrackTestSuite) TestTrackSupplement() {
 	// get info
 	resp, err := s.cl.TrackSupplement(context.Background(), trackIds[0])
 	s.require.Nil(err)
 	s.require.NotNil(resp.Result)
 }
 
-func (s TrackTestSuite) TestSimilarTracks() {
+func (s *TrackTestSuite) TestSimilarTracks() {
 	_, err := s.cl.SimilarTracks(context.Background(), trackIds[0])
 	s.require.Nil(err)
 }

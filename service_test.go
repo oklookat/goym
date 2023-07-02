@@ -14,7 +14,7 @@ func (s *ServiceTestSuite) SetupSuite() {
 	s.require = s.Require()
 }
 
-func (s ServiceTestSuite) TestI2s() {
+func (s *ServiceTestSuite) TestI2s() {
 	var i int = 1234
 	var i32 int32 = 15135135
 	var i64 int64 = 531135531
@@ -26,7 +26,7 @@ func (s ServiceTestSuite) TestI2s() {
 	s.require.Equal(res, "531135531")
 }
 
-func (s ServiceTestSuite) TestGenApiPath() {
+func (s *ServiceTestSuite) TestGenApiPath() {
 	const expected = "https://api.music.yandex.net/users/1234/playlists/list"
 	result := genApiPath("users", iToString(1234), "playlists", "list")
 	s.require.Equal(expected, result)
