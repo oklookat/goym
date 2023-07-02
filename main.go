@@ -11,11 +11,6 @@ const (
 	errPrefix = "goym: "
 )
 
-var (
-//
-
-)
-
 // Получить Client для запросов к API.
 //
 // accessToken - его можно получить выполнив авторизацию в Яндексе.
@@ -24,6 +19,7 @@ func New(accessToken string) (*Client, error) {
 	cl := &Client{
 		Http: httpCl,
 	}
+	cl.SetUserAgent("goym")
 
 	status, err := cl.AccountStatus(context.Background())
 	if err != nil {
@@ -41,4 +37,9 @@ type Client struct {
 
 	// Отправляет запросы.
 	Http *vantuz.Client
+}
+
+// Установить user agent для запросов.
+func (c *Client) SetUserAgent(val string) {
+	c.Http.SetUserAgent(val)
 }
