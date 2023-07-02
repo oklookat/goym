@@ -13,13 +13,13 @@ const (
 )
 
 var (
-	// Токены авторизации истекли. Нужно вызывать Tokens.Refresh.
-	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh your current tokens")
+	// Нужно обновить токен.
+	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh tokens")
 
 	//
-	ErrNilResponse      = errors.New(errPrefix + "nil http or schema response (dev error?)")
+	ErrNilResponse      = errors.New(errPrefix + "nil http or schema response (???)")
 	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
-	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth or API changed?)")
+	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth / API changed?)")
 )
 
 // Получить Client для запросов к API.
