@@ -10,7 +10,13 @@
 
 2. Получите клиента вызвав `New`.
 
-Токен можно получить например используя [этот пакет](https://github.com/oklookat/yandexauth).
+Токен можно получить например через [этот пакет](https://github.com/oklookat/yandexauth).
+
+ID и Secret (приложение для Windows):
+
+ID: ```23cabbbdc6cd418abb4b39c32c41195d```
+
+Secret: ```53bc75238f0c4d08a118e51fe9203300```
 
 # Реализовано
 

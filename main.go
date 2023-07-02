@@ -2,7 +2,6 @@ package goym
 
 import (
 	"context"
-	"errors"
 
 	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/vantuz"
@@ -13,13 +12,8 @@ const (
 )
 
 var (
-	// Нужно обновить токен.
-	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh tokens")
+//
 
-	//
-	ErrNilResponse      = errors.New(errPrefix + "nil http or schema response (???)")
-	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
-	ErrNilStatus        = errors.New(errPrefix + "nil Status (bad auth / API changed?)")
 )
 
 // Получить Client для запросов к API.

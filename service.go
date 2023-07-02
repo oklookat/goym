@@ -1,6 +1,7 @@
 package goym
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -31,6 +32,17 @@ func genApiPath(paths ...string) string {
 
 	return base
 }
+
+var (
+	// Нужно обновить токен.
+	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh tokens")
+
+	// Странная ошибка.
+	ErrNilResponse = errors.New(errPrefix + "nil http or schema response (???)")
+
+	// Ответ с ошибкой, но поля Error в ответе нет.
+	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
+)
 
 // checkResponse проверяет наличие ошибки в ответе API.
 // Возвращает nil, если ошибки нет.
