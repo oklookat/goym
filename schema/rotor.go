@@ -55,7 +55,7 @@ const (
 type RotorMoodEnergyRestriction string
 
 const (
-	// Борое.
+	// Бодрое.
 	RotorMoodEnergyRestrictionActive = "active"
 
 	// Веселое.
