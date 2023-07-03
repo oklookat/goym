@@ -56,19 +56,19 @@ type RotorMoodEnergyRestriction string
 
 const (
 	// Бодрое.
-	RotorMoodEnergyRestrictionActive = "active"
+	RotorMoodEnergyRestrictionActive RotorMoodEnergyRestriction = "active"
 
 	// Веселое.
-	RotorMoodEnergyRestrictionFun = "fun"
+	RotorMoodEnergyRestrictionFun RotorMoodEnergyRestriction = "fun"
 
 	// Спокойное.
-	RotorMoodEnergyRestrictionCalm = "calm"
+	RotorMoodEnergyRestrictionCalm RotorMoodEnergyRestriction = "calm"
 
 	// Грустное.
-	RotorMoodEnergyRestrictionSad = "sad"
+	RotorMoodEnergyRestrictionSad RotorMoodEnergyRestriction = "sad"
 
 	// Любое.
-	RotorMoodEnergyRestrictionAll = "all"
+	RotorMoodEnergyRestrictionAll RotorMoodEnergyRestriction = "all"
 )
 
 // Сообщение о начале прослушивания радио, начале и конце трека, его пропуска.
