@@ -15,7 +15,7 @@ type (
 		MetaType string `json:"metaType"`
 
 		// Год релиза.
-		Year uint16 `json:"year"`
+		Year int `json:"year"`
 
 		// Дата релиза в формате ISO 8601.
 		ReleaseDate time.Time `json:"releaseDate"`
@@ -30,10 +30,10 @@ type (
 		Genre string `json:"genre"`
 
 		// Количество треков.
-		TrackCount uint16 `json:"trackCount"`
+		TrackCount int `json:"trackCount"`
 
 		// Количество лайков.
-		LikesCount uint32 `json:"likesCount"`
+		LikesCount int `json:"likesCount"`
 
 		// Является новинкой.
 		Recent bool `json:"recent"`
@@ -77,8 +77,8 @@ type (
 		StorageDir string `json:"storageDir"`
 
 		TrackPosition struct {
-			Volume uint8  `json:"volume"`
-			Index  uint16 `json:"index"`
+			Volume int `json:"volume"`
+			Index  int `json:"index"`
 		} `json:"trackPosition"`
 
 		Regions          []string      `json:"regions"`

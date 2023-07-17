@@ -107,7 +107,7 @@ type (
 	// Информация о страницах.
 	Pager struct {
 		// Текущая страница.
-		Page uint16 `json:"page"`
+		Page int `json:"page"`
 
 		// Сколько элементов на странице.
 		//
@@ -120,10 +120,10 @@ type (
 		//
 		// Например вы указали perPage = 20, и пришел ответ, где Total равен 22.
 		// В таком случае это поле (PerPage) будет равно 22.
-		PerPage uint16 `json:"perPage"`
+		PerPage int `json:"perPage"`
 
 		// Общее кол-во элементов.
-		Total uint16 `json:"total"`
+		Total int `json:"total"`
 	}
 )
 

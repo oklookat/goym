@@ -24,7 +24,7 @@ type (
 		AddNewTrackOnPlaylistTop bool `json:"addNewTrackOnPlaylistTop" url:"addNewTrackOnPlaylistTop,omitempty"`
 
 		// Громкость в процентах (example: 75).
-		VolumePercents uint8 `json:"volumePercents" url:"volumePercents,omitempty"`
+		VolumePercents int `json:"volumePercents" url:"volumePercents,omitempty"`
 
 		// Видимость музыкальной библиотеки.
 		UserMusicVisibility Visibility `json:"userMusicVisibility" url:"userMusicVisibility,omitempty"`

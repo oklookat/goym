@@ -117,8 +117,8 @@ type (
 	// Настройки станции.
 	RotorSettings struct {
 		Language  RotorLanguageRestriction  `json:"language"`
-		Mood      uint8                     `json:"mood"`
-		Energy    uint8                     `json:"energy"`
+		Mood      int                       `json:"mood"`
+		Energy    int                       `json:"energy"`
 		Diversity RotorDiversityRestriction `json:"diversity"`
 	}
 
@@ -225,14 +225,14 @@ type (
 
 		Min struct {
 			// Пример: 1.
-			Value uint8 `json:"value"`
+			Value int `json:"value"`
 
 			// Пример: "Спокойнее", "Грустнее".
 			Name string `json:"name"`
 		} `json:"min"`
 		Max struct {
 			// Пример: 4.
-			Value uint8 `json:"value"`
+			Value int `json:"value"`
 
 			// Пример: "Бодрее", "Веселее".
 			Name string `json:"name"`
@@ -247,8 +247,8 @@ type (
 			// Параметры трека.
 			TrackParameters struct {
 				// Кол-во ударов в минуту.
-				BPM uint16 `json:"bpm"`
-				Hue uint16 `json:"hue"`
+				BPM int `json:"bpm"`
+				Hue int `json:"hue"`
 				// Какой-то супер-точный показатель энергии (?).
 				Energy float64 `json:"energy"`
 			} `json:"trackParameters"`

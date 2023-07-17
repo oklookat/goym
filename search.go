@@ -20,7 +20,7 @@ import (
 // поля best, playlists, и подобные, будут nil (кроме поля Artists).
 //
 // noCorrect - не исправлять опечатки?
-func (c Client) Search(ctx context.Context, text string, page uint16, what schema.SearchType, noCorrect bool) (schema.Response[*schema.Search], error) {
+func (c Client) Search(ctx context.Context, text string, page int, what schema.SearchType, noCorrect bool) (schema.Response[*schema.Search], error) {
 	// GET /search
 	data := &schema.Response[*schema.Search]{}
 

@@ -52,15 +52,15 @@ type (
 		Modified time.Time `json:"modified"`
 
 		// Общая длина в миллисекундах.
-		DurationMs uint64 `json:"durationMs"`
+		DurationMs int `json:"durationMs"`
 
 		OgImage string `json:"ogImage"`
 
 		// Количество треков.
-		TrackCount uint64 `json:"trackCount"`
+		TrackCount int `json:"trackCount"`
 
 		// Количество лайков.
-		LikesCount uint32 `json:"likesCount"`
+		LikesCount int `json:"likesCount"`
 
 		// Видимость.
 		Visibility Visibility `json:"visibility"`
@@ -140,7 +140,7 @@ type (
 	PlaylistAddTracksOperation struct {
 		// insert.
 		Op     string `json:"op"`
-		At     uint64 `json:"at"`
+		At     int    `json:"at"`
 		Tracks []struct {
 			ID      ID `json:"id"`
 			AlbumID ID `json:"albumId"`
@@ -150,8 +150,8 @@ type (
 	PlaylistDeleteTracksOperation struct {
 		// delete.
 		Op     string `json:"op"`
-		From   uint64 `json:"from"`
-		To     uint64 `json:"to"`
+		From   int    `json:"from"`
+		To     int    `json:"to"`
 		Tracks []struct {
 			ID      ID `json:"id"`
 			AlbumID ID `json:"albumId"`

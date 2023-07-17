@@ -27,16 +27,16 @@ type Artist struct {
 	// Количество разных вещей.
 	Counts *struct {
 		// Общее количество треков исполнителя, доступных в каталоге ЯМ.
-		Tracks uint32 `json:"tracks"`
+		Tracks int `json:"tracks"`
 
 		// Количество собственных альбомов.
-		DirectAlbums uint32 `json:"directAlbums"`
+		DirectAlbums int `json:"directAlbums"`
 
 		// Количество альбомов, где представлен исполнитель.
-		AlsoAlbums uint32 `json:"alsoAlbums"`
+		AlsoAlbums int `json:"alsoAlbums"`
 
 		// Количество треков, где представлен исполнитель.
-		AlsoTracks uint32 `json:"alsoTracks"`
+		AlsoTracks int `json:"alsoTracks"`
 	} `json:"counts"`
 
 	// Треки исполнителя доступны?
@@ -45,13 +45,13 @@ type Artist struct {
 	// Рейтинги исполнителя.
 	Ratings *struct {
 		// За месяц.
-		Month uint32 `json:"month"`
+		Month int `json:"month"`
 
 		// За неделю.
-		Week *uint32 `json:"week"`
+		Week *int `json:"week"`
 
 		// За день.
-		Day *uint32 `json:"day"`
+		Day *int `json:"day"`
 	} `json:"ratings"`
 
 	// Список ссылок на сайты исполнителя.
@@ -79,7 +79,7 @@ type (
 			Artist
 
 			// Количество слушателей, оценивших исполнителя.
-			LikesCount uint32 `json:"likesCount"`
+			LikesCount int `json:"likesCount"`
 
 			// Описание.
 			Description struct {
@@ -133,7 +133,7 @@ type (
 		HasPromotions bool    `json:"hasPromotions"`
 		LastReleases  []any   `json:"lastReleases"`
 		Stats         struct {
-			LastMonthListeners uint32 `json:"lastMonthListeners"`
+			LastMonthListeners int `json:"lastMonthListeners"`
 		} `json:"stats"`
 		CustomWave struct {
 			Title        string `json:"title"`
@@ -149,16 +149,16 @@ type (
 	// GET /artists/{artistId}/tracks
 	GetArtistTracksQueryParams struct {
 		// Страница.
-		Page uint16 `url:"page"`
+		Page int `url:"page"`
 
 		// Кол-во результатов на странице (20, например).
-		PageSize uint16 `url:"page-size"`
+		PageSize int `url:"page-size"`
 	}
 
 	// GET /artists/{artistId}/direct-albums
 	GetArtistAlbumsQueryParams struct {
-		Page      uint16    `url:"page"`
-		PageSize  uint16    `url:"page-size"`
+		Page      int       `url:"page"`
+		PageSize  int       `url:"page-size"`
 		SortBy    SortBy    `url:"sort-by"`
 		SortOrder SortOrder `url:"sort-order"`
 	}

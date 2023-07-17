@@ -49,7 +49,7 @@ type (
 		ThumbnailUrl string `json:"thumbnailUrl"`
 
 		// Длительность видео в секундах.
-		Duration uint16 `json:"duration"`
+		Duration int `json:"duration"`
 
 		// Текст.
 		Text string `json:"text"`

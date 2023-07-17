@@ -63,7 +63,7 @@ func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like boo
 }
 
 // Получить список треков артиста по его ID.
-func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pageSize uint16) (schema.Response[*schema.ArtistTracksPaged], error) {
+func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page, pageSize int) (schema.Response[*schema.ArtistTracksPaged], error) {
 	// GET /artists/{artistId}/tracks
 	body := schema.GetArtistTracksQueryParams{
 		Page:     page,
@@ -87,7 +87,7 @@ func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page uint16, pag
 // Получить альбомы артиста по его ID.
 //
 // Приложение под Windows в качестве pageSize обычно использует 50.
-func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page uint16, pageSize uint16, sortBy schema.SortBy, sortOrder schema.SortOrder) (schema.Response[*schema.ArtistAlbumsPaged], error) {
+func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page, pageSize int, sortBy schema.SortBy, sortOrder schema.SortOrder) (schema.Response[*schema.ArtistAlbumsPaged], error) {
 	// GET /artists/{artistId}/direct-albums
 	body := schema.GetArtistAlbumsQueryParams{
 		Page:      page,

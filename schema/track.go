@@ -19,7 +19,7 @@ type (
 		ID            ID        `json:"id"`
 		Track         Track     `json:"track"`
 		Timestamp     time.Time `json:"timestamp"`
-		OriginalIndex uint64    `json:"originalIndex"`
+		OriginalIndex int       `json:"originalIndex"`
 		Recent        bool      `json:"recent"`
 	}
 
@@ -106,7 +106,7 @@ type (
 		Direct bool `json:"direct"`
 
 		// Битрейт аудиофайла в кбит/с.
-		BitrateInKbps uint16 `json:"bitrateInKbps"`
+		BitrateInKbps int `json:"bitrateInKbps"`
 	}
 
 	// POST /users/{userId}/likes/tracks/add
@@ -147,13 +147,13 @@ type (
 		Timestamp time.Time `url:"timestamp,omitempty"`
 
 		// Продолжительность трека в секундах.
-		TrackLengthSeconds uint16 `url:"track-length-seconds,omitempty"`
+		TrackLengthSeconds int `url:"track-length-seconds,omitempty"`
 
 		// Продолжительность трека в секундах.
-		TotalPlayedSeconds uint16 `url:"total-played-seconds,omitempty"`
+		TotalPlayedSeconds int `url:"total-played-seconds,omitempty"`
 
 		// Продолжительность трека в секундах.
-		EndPositionSeconds uint16 `url:"end-position-seconds,omitempty"`
+		EndPositionSeconds int `url:"end-position-seconds,omitempty"`
 
 		// Уникальный идентификатор альбома.
 		AlbumId ID `url:"album-id,omitempty"`
@@ -202,16 +202,16 @@ type Track struct {
 	StorageDir string `json:"storageDir"`
 
 	// Продолжительность трека в миллисекундах.
-	DurationMs uint64 `json:"durationMs"`
+	DurationMs int `json:"durationMs"`
 
 	// Размер трека в байтах.
-	FileSize uint64 `json:"fileSize"`
+	FileSize int `json:"fileSize"`
 
 	// Нормализация.
 	R128 *R128 `json:"r128"`
 
 	// Длина превью в миллисекундах.
-	PreviewDurationMs uint16 `json:"previewDurationMs"`
+	PreviewDurationMs int `json:"previewDurationMs"`
 
 	// Список исполнителей трека, в минимальной информации.
 	Artists []Artist `json:"artists"`
