@@ -35,7 +35,7 @@ var (
 
 func TestAll(t *testing.T) {
 	//TestDebug(t)
-	TestService(t)
+	TestUtil(t)
 	TestAccount(t)
 	TestAlbum(t)
 	TestArtist(t)
@@ -49,8 +49,8 @@ func TestDebug(t *testing.T) {
 	suite.Run(t, &DebugTestSuite{})
 }
 
-func TestService(t *testing.T) {
-	suite.Run(t, &ServiceTestSuite{})
+func TestUtil(t *testing.T) {
+	suite.Run(t, &UtilTestSuite{})
 }
 
 func TestAccount(t *testing.T) {
