@@ -3,6 +3,7 @@ package schema
 import (
 	"errors"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -20,6 +21,10 @@ var (
 // Сортировка по...
 type SortBy string
 
+func (e SortBy) String() string {
+	return string(e)
+}
+
 const (
 	// Сортировка по году.
 	SortByYear SortBy = "year"
@@ -30,6 +35,10 @@ const (
 
 // Сортировка по...
 type SortOrder string
+
+func (e SortOrder) String() string {
+	return string(e)
+}
 
 const (
 	// Сортировка по убыванию.
@@ -55,6 +64,10 @@ const (
 
 // Видимость.
 type Visibility string
+
+func (e Visibility) String() string {
+	return string(e)
+}
 
 const (
 	// Приватная.
@@ -93,15 +106,6 @@ type (
 		//
 		// string | int
 		ExecDurationMillis any `json:"exec-duration-millis"`
-	}
-
-	// Ошибка. Например ошибка валидации.
-	Error struct {
-		// Например: validate.
-		Name string `json:"name"`
-
-		// Например: Parameters requirements are not met.
-		Message string `json:"message"`
 	}
 
 	// Информация о страницах.
@@ -144,4 +148,49 @@ func (i *ID) UnmarshalJSON(data []byte) error {
 	}
 	*i = ID(str)
 	return nil
+}
+
+// Ошибка. Например ошибка валидации.
+type Error struct {
+	// Например: validate.
+	Name string `json:"name"`
+
+	// Например: Parameters requirements are not met.
+	Message string `json:"message"`
+}
+
+func (e Error) Error() string {
+	return e.Name + ": " + e.Message
+}
+
+// Ошибка валидации может быть в этих случаях:
+//
+// 1. Изменилось API.
+//
+// 2. Я допустил ошибку.
+//
+// 3. Неверные данные в теле запроса.
+// Например вы пытаетесь получить артиста с ID "-1", "0" и так далее.
+// Хотя в таких случаях нужно отдавать 404, но имеем что имеем.
+func (e Error) IsValidate() bool {
+	return strings.EqualFold(e.Name, "validate")
+}
+
+// Нужно обновить access token.
+func (e Error) IsSessionExpired() bool {
+	return strings.EqualFold(e.Message, "session-expired")
+}
+
+func NewErrWithStatusCode(statusCode int) ErrWithStatusCode {
+	return ErrWithStatusCode{
+		StatusCode: statusCode,
+	}
+}
+
+type ErrWithStatusCode struct {
+	StatusCode int
+}
+
+func (e ErrWithStatusCode) Error() string {
+	return strconv.Itoa(e.StatusCode)
 }

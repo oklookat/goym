@@ -19,10 +19,10 @@ import (
 // Например: если тип поиска будет "artist", то
 // поля best, playlists, и подобные, будут nil (кроме поля Artists).
 //
-// noCorrect - не исправлять опечатки?
-func (c Client) Search(ctx context.Context, text string, page int, what schema.SearchType, noCorrect bool) (schema.Response[*schema.Search], error) {
+// noCorrect - не исправлять опечатки.
+func (c Client) Search(ctx context.Context, text string, page int, what schema.SearchType, noCorrect bool) (schema.Response[schema.Search], error) {
 	// GET /search
-	data := &schema.Response[*schema.Search]{}
+	data := &schema.Response[schema.Search]{}
 
 	query := schema.SearchQueryParams{
 		Text:      text,
@@ -47,12 +47,12 @@ func (c Client) Search(ctx context.Context, text string, page int, what schema.S
 // Подсказать что-нибудь по поисковому запросу.
 //
 // например: SearchSuggest("emine")
-func (c Client) SearchSuggest(ctx context.Context, part string) (schema.Response[*schema.Suggestions], error) {
+func (c Client) SearchSuggest(ctx context.Context, part string) (schema.Response[schema.Suggestions], error) {
 	// GET /search/suggest
 	query := schema.SearchSuggestQueryParams{
 		Part: part,
 	}
-	data := &schema.Response[*schema.Suggestions]{}
+	data := &schema.Response[schema.Suggestions]{}
 
 	vals, err := schema.ParamsToValues(query)
 	if err != nil {

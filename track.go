@@ -7,13 +7,13 @@ import (
 )
 
 // Получить лайкнутые треки.
-func (c Client) LikedTracks(ctx context.Context) (schema.Response[*schema.TracksLibrary], error) {
-	return likesDislikes[*schema.TracksLibrary](ctx, &c, true, "tracks")
+func (c Client) LikedTracks(ctx context.Context) (schema.Response[schema.TracksLibrary], error) {
+	return likesDislikes[schema.TracksLibrary](ctx, &c, true, "tracks")
 }
 
 // Получить дизлайкнутые треки.
-func (c Client) DislikedTracks(ctx context.Context) (schema.Response[*schema.TracksLibrary], error) {
-	return likesDislikes[*schema.TracksLibrary](ctx, &c, false, "tracks")
+func (c Client) DislikedTracks(ctx context.Context) (schema.Response[schema.TracksLibrary], error) {
+	return likesDislikes[schema.TracksLibrary](ctx, &c, false, "tracks")
 }
 
 // Лайкнуть трек.
@@ -103,10 +103,10 @@ func (c Client) TrackDownloadInfo(ctx context.Context, id schema.ID) (schema.Res
 }
 
 // Получить дополнительную информацию о треке (текст песни, видео, etc).
-func (c Client) TrackSupplement(ctx context.Context, id schema.ID) (schema.Response[*schema.Supplement], error) {
+func (c Client) TrackSupplement(ctx context.Context, id schema.ID) (schema.Response[schema.Supplement], error) {
 	// GET /tracks/{trackId}/supplement
 	endpoint := genApiPath("tracks", id.String(), "supplement")
-	data := &schema.Response[*schema.Supplement]{}
+	data := &schema.Response[schema.Supplement]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
@@ -115,10 +115,10 @@ func (c Client) TrackSupplement(ctx context.Context, id schema.ID) (schema.Respo
 }
 
 // Получить похожие треки.
-func (c Client) SimilarTracks(ctx context.Context, id schema.ID) (schema.Response[*schema.SimilarTracks], error) {
+func (c Client) SimilarTracks(ctx context.Context, id schema.ID) (schema.Response[schema.SimilarTracks], error) {
 	// GET /tracks/{trackId}/similar
 	endpoint := genApiPath("tracks", id.String(), "similar")
-	data := &schema.Response[*schema.SimilarTracks]{}
+	data := &schema.Response[schema.SimilarTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)

@@ -31,9 +31,6 @@ type (
 		// Текст.
 		Lyrics Lyrics `json:"lyrics"`
 
-		// Видео (клипы?).
-		Videos *VideoSupplement `json:"videos"`
-
 		// Станция по треку доступна?
 		RadioIsAvailable bool `json:"radioIsAvailable"`
 
@@ -122,47 +119,6 @@ type (
 
 		// С позициями?
 		WithPositions bool `url:"with-positions"`
-	}
-
-	// POST /play-audio
-	//
-	// (!) Я не проверял эти параметры.
-	PlayAudioRequestBody struct {
-		// Уникальный идентификатор трека.
-		TrackId ID `url:"track-id,omitempty"`
-
-		// Проигрывается ли трек с кеша.
-		FromCache bool `url:"from-cache,omitempty"`
-
-		// Наименования клиента с которого происходит прослушивание.
-		From string `url:"from"`
-
-		// Уникальный идентификатор проигрывания.
-		PlayId string `url:"play-id,omitempty"`
-
-		// Уникальный идентификатор пользователя.
-		Uid ID `url:"uid,omitempty"`
-
-		// Текущая дата и время в ISO.
-		Timestamp time.Time `url:"timestamp,omitempty"`
-
-		// Продолжительность трека в секундах.
-		TrackLengthSeconds int `url:"track-length-seconds,omitempty"`
-
-		// Продолжительность трека в секундах.
-		TotalPlayedSeconds int `url:"total-played-seconds,omitempty"`
-
-		// Продолжительность трека в секундах.
-		EndPositionSeconds int `url:"end-position-seconds,omitempty"`
-
-		// Уникальный идентификатор альбома.
-		AlbumId ID `url:"album-id,omitempty"`
-
-		// Уникальный идентификатор проигрывания.
-		PlaylistId ID `url:"playlist-id,omitempty"`
-
-		// Текущая дата и время клиента в ISO.
-		ClientNow string `url:"client-now,omitempty"`
 	}
 )
 

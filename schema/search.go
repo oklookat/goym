@@ -77,15 +77,6 @@ type (
 
 		// Найденные плейлисты.
 		Playlists SearchResult[Playlist] `json:"playlists"`
-
-		// Найденные видео.
-		Videos SearchResult[Video] `json:"videos"`
-
-		// Найденные подкасты.
-		Podcasts SearchResult[any] `json:"podcasts"`
-
-		// Найденные эпизоды подкастов.
-		PodcastEpisodes SearchResult[any] `json:"podcast_episodes"`
 	}
 
 	SearchResult[T any] struct {

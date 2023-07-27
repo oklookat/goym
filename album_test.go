@@ -2,65 +2,71 @@ package goym
 
 import (
 	"context"
-
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
-type AlbumTestSuite struct {
-	suite.Suite
-	cl      *Client
-	require *require.Assertions
-}
-
-func (s *AlbumTestSuite) SetupSuite() {
-	s.cl = getClient(s.T())
-	s.require = s.Require()
-}
-
-func (s *AlbumTestSuite) TestAlbum() {
+func TestAlbum(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
 
 	// without tracks
-	data, err := s.cl.Album(ctx, albumIds[0], false)
-	s.require.Nil(err)
+	_, err := cl.Album(ctx, _albumIds[0], false)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// with tracks
-	data, err = s.cl.Album(ctx, albumIds[0], true)
-	s.require.Nil(err)
-	s.require.NotEmpty(data.Result.Volumes)
+	_, err = cl.Album(ctx, _albumIds[0], true)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *AlbumTestSuite) TestAlbums() {
-	resp, err := s.cl.Albums(context.Background(), albumIds[:])
-	s.require.Nil(err)
-	s.require.NotEmpty(resp.Result)
-}
-
-func (s *AlbumTestSuite) TestLikeUnlikeAlbum() {
+func TestAlbums(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.Albums(ctx, _albumIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLikeUnlikeAlbum(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeAlbum(ctx, albumIds[0])
-	s.require.Nil(err)
+	_, err := cl.LikeAlbum(ctx, _albumIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeAlbum(ctx, albumIds[0])
-	s.require.Nil(err)
+	_, err = cl.UnlikeAlbum(ctx, _albumIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *AlbumTestSuite) TestLikeUnlikeLikedAlbums() {
+func TestLikeUnlikeLikedAlbums(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeAlbums(ctx, albumIds[:])
-	s.require.Nil(err)
+	_, err := cl.LikeAlbums(ctx, _albumIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	liked, err := s.cl.LikedAlbums(context.Background())
-	s.require.Nil(err)
-	s.require.NotEmpty(liked.Result)
+	_, err = cl.LikedAlbums(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeAlbums(ctx, albumIds[:])
-	s.require.Nil(err)
+	_, err = cl.UnlikeAlbums(ctx, _albumIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 }

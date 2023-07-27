@@ -2,6 +2,8 @@ package goym
 
 import (
 	"context"
+	"net/url"
+	"strconv"
 
 	"github.com/oklookat/goym/schema"
 )
@@ -15,14 +17,9 @@ func (c Client) LikedArtists(ctx context.Context) (schema.Response[[]schema.Arti
 // Лайкнуть артиста по ID.
 func (c Client) LikeArtist(ctx context.Context, id schema.ID) (schema.Response[string], error) {
 	// POST /users/{userId}/likes/artists/add
-	body := schema.ArtistIdRequestBody{
-		ArtistId: id,
-	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return schema.Response[string]{}, err
-	}
-	return addRemove(ctx, &c, vals, true, "artists")
+	body := url.Values{}
+	body.Set("artist-id", id.String())
+	return addRemove(ctx, &c, body, true, "artists")
 }
 
 // Убрать лайк с артиста по ID.
@@ -63,21 +60,17 @@ func (c Client) likeUnlikeArtists(ctx context.Context, ids []schema.ID, like boo
 }
 
 // Получить список треков артиста по его ID.
-func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page, pageSize int) (schema.Response[*schema.ArtistTracksPaged], error) {
+func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page, pageSize int) (schema.Response[schema.ArtistTracksPaged], error) {
 	// GET /artists/{artistId}/tracks
-	body := schema.GetArtistTracksQueryParams{
-		Page:     page,
-		PageSize: pageSize,
-	}
-	data := &schema.Response[*schema.ArtistTracksPaged]{}
+	body := url.Values{}
+	body.Set("page", strconv.Itoa(page))
+	body.Set("page-size", strconv.Itoa(pageSize))
 
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return *data, err
-	}
+	data := &schema.Response[schema.ArtistTracksPaged]{}
 
 	endpoint := genApiPath("artists", string(id), "tracks")
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
+	resp, err := c.Http.R().SetError(data).
+		SetResult(data).SetFormUrlValues(body).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -87,22 +80,19 @@ func (c Client) ArtistTracks(ctx context.Context, id schema.ID, page, pageSize i
 // Получить альбомы артиста по его ID.
 //
 // Приложение под Windows в качестве pageSize обычно использует 50.
-func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page, pageSize int, sortBy schema.SortBy, sortOrder schema.SortOrder) (schema.Response[*schema.ArtistAlbumsPaged], error) {
+func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page, pageSize int, sortBy schema.SortBy, sortOrder schema.SortOrder) (schema.Response[schema.ArtistAlbumsPaged], error) {
 	// GET /artists/{artistId}/direct-albums
-	body := schema.GetArtistAlbumsQueryParams{
-		Page:      page,
-		PageSize:  pageSize,
-		SortBy:    sortBy,
-		SortOrder: sortOrder,
-	}
-	data := &schema.Response[*schema.ArtistAlbumsPaged]{}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return *data, err
-	}
+	body := url.Values{}
+	body.Set("page", strconv.Itoa(page))
+	body.Set("page-size", strconv.Itoa(pageSize))
+	body.Set("sort-by", sortBy.String())
+	body.Set("sort-order", sortOrder.String())
+
+	data := &schema.Response[schema.ArtistAlbumsPaged]{}
 
 	endpoint := genApiPath("artists", string(id), "direct-albums")
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Get(ctx, endpoint)
+	resp, err := c.Http.R().SetError(data).
+		SetResult(data).SetFormUrlValues(body).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -110,10 +100,10 @@ func (c Client) ArtistAlbums(ctx context.Context, id schema.ID, page, pageSize i
 }
 
 // Получить лучшие треки артиста по его ID.
-func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (schema.Response[*schema.ArtistTopTracks], error) {
+func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (schema.Response[schema.ArtistTopTracks], error) {
 	// GET /artists/{artistId}/track-ids-by-rating
 	endpoint := genApiPath("artists", string(id), "track-ids-by-rating")
-	data := &schema.Response[*schema.ArtistTopTracks]{}
+	data := &schema.Response[schema.ArtistTopTracks]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
@@ -122,10 +112,10 @@ func (c Client) ArtistTopTracks(ctx context.Context, id schema.ID) (schema.Respo
 }
 
 // Получить полную информацию об артисте по его ID.
-func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (schema.Response[*schema.ArtistBriefInfo], error) {
+func (c Client) ArtistInfo(ctx context.Context, id schema.ID) (schema.Response[schema.ArtistBriefInfo], error) {
 	// GET /artists/{artistId}/brief-info
 	endpoint := genApiPath("artists", string(id), "brief-info")
-	data := &schema.Response[*schema.ArtistBriefInfo]{}
+	data := &schema.Response[schema.ArtistBriefInfo]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)

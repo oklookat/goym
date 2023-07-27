@@ -1,7 +1,7 @@
 package schema
 
 type (
-	// Лейбл звукозаписи.
+	// Лейбл.
 	Label struct {
 		// ID лейбла.
 		ID ID `json:"id"`

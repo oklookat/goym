@@ -2,7 +2,7 @@ package goym
 
 import (
 	"context"
-	"errors"
+	"net/url"
 	"strings"
 
 	"github.com/oklookat/goym/schema"
@@ -35,10 +35,10 @@ func (c Client) LikedPlaylists(ctx context.Context) (schema.Response[[]schema.Re
 // Доступно только для плейлистов в библиотеке пользователя.
 //
 // Доступно поле Tracks.
-func (c Client) MyPlaylist(ctx context.Context, kind schema.ID) (schema.Response[*schema.Playlist], error) {
+func (c Client) MyPlaylist(ctx context.Context, kind schema.ID) (schema.Response[schema.Playlist], error) {
 	// GET /users/{userId}/playlists/{kind}
 	endpoint := genApiPath("users", string(c.UserId), "playlists", kind.String())
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
@@ -75,9 +75,9 @@ func (c Client) PlaylistsByKindUid(ctx context.Context, kindUid map[schema.ID]sc
 }
 
 // Создать плейлист.
-func (c Client) CreatePlaylist(ctx context.Context, name, description string, vis schema.Visibility) (schema.Response[*schema.Playlist], error) {
+func (c Client) CreatePlaylist(ctx context.Context, name, description string, vis schema.Visibility) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/create
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
 	body := schema.CreatePlaylistRequestBody{
 		Title:       name,
@@ -98,20 +98,16 @@ func (c Client) CreatePlaylist(ctx context.Context, name, description string, vi
 }
 
 // Переименовать плейлист.
-func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName string) (schema.Response[*schema.Playlist], error) {
+func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName string) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/name
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
-	body := schema.ValuePlaylistRequestBody{
-		Value: newName,
-	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return *data, err
-	}
+	body := url.Values{}
+	body.Set("value", newName)
 
 	endpoint := genApiPath("users", string(c.UserId), "playlists", kind.String(), "name")
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	resp, err := c.Http.R().SetError(data).
+		SetResult(data).SetFormUrlValues(body).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -119,20 +115,15 @@ func (c Client) RenamePlaylist(ctx context.Context, kind schema.ID, newName stri
 }
 
 // Изменить описание плейлиста.
-func (c Client) SetPlaylistDescription(ctx context.Context, kind schema.ID, description string) (schema.Response[*schema.Playlist], error) {
+func (c Client) SetPlaylistDescription(ctx context.Context, kind schema.ID, description string) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/description
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
-	body := schema.ValuePlaylistRequestBody{
-		Value: description,
-	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return *data, err
-	}
+	body := url.Values{}
+	body.Set("value", description)
 
 	endpoint := genApiPath("users", string(c.UserId), "playlists", kind.String(), "description")
-	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(vals).Post(ctx, endpoint)
+	resp, err := c.Http.R().SetError(data).SetResult(data).SetFormUrlValues(body).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -156,10 +147,10 @@ func (c Client) DeletePlaylist(ctx context.Context, kind schema.ID) (schema.Resp
 // Только для плейлистов, созданных пользователем.
 //
 // Если в плейлисте нет треков, рекомендаций не будет.
-func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.ID) (schema.Response[*schema.PlaylistRecommendations], error) {
+func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.ID) (schema.Response[schema.PlaylistRecommendations], error) {
 	// GET /users/{userId}/playlists/{kind}/recommendations
 	endpoint := genApiPath("users", string(c.UserId), "playlists", kind.String(), "recommendations")
-	data := &schema.Response[*schema.PlaylistRecommendations]{}
+	data := &schema.Response[schema.PlaylistRecommendations]{}
 	resp, err := c.Http.R().SetError(data).SetResult(data).Get(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
@@ -168,21 +159,16 @@ func (c Client) PlaylistRecommendations(ctx context.Context, kind schema.ID) (sc
 }
 
 // Изменить видимость плейлиста.
-func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.ID, vis schema.Visibility) (schema.Response[*schema.Playlist], error) {
+func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.ID, vis schema.Visibility) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/visibility
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
-	body := schema.ChangePlaylistVisibilityRequestBody{
-		Value: vis,
-	}
-	vals, err := schema.ParamsToValues(body)
-	if err != nil {
-		return *data, err
-	}
+	body := url.Values{}
+	body.Set("value", vis.String())
 
 	endpoint := genApiPath("users", string(c.UserId), "playlists", kind.String(), "visibility")
 	resp, err := c.Http.R().SetError(data).SetResult(data).
-		SetFormUrlValues(vals).Post(ctx, endpoint)
+		SetFormUrlValues(body).Post(ctx, endpoint)
 	if err == nil {
 		err = checkResponse(resp, data)
 	}
@@ -192,11 +178,11 @@ func (c Client) SetPlaylistVisibility(ctx context.Context, kind schema.ID, vis s
 // Добавить треки в плейлист.
 //
 // Возвращает плейлист без поля Tracks.
-func (c Client) AddToPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.Track) (schema.Response[*schema.Playlist], error) {
+func (c Client) AddToPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.Track) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	// ||
 	// POST /users/{userId}/playlists/{kind}/change
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
 	if len(tracks) == 0 {
 		return *data, nil
@@ -223,11 +209,11 @@ func (c Client) AddToPlaylist(ctx context.Context, pl schema.Playlist, tracks []
 // Возвращает плейлист без поля Tracks.
 //
 // track - TrackItem из плейлиста (pl).
-func (c Client) DeleteTracksFromPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.ID) (schema.Response[*schema.Playlist], error) {
+func (c Client) DeleteTracksFromPlaylist(ctx context.Context, pl schema.Playlist, tracks []schema.ID) (schema.Response[schema.Playlist], error) {
 	// POST /users/{userId}/playlists/{kind}/change-relative
 	//
 	// POST /users/{userId}/playlists/{kind}/change
-	data := &schema.Response[*schema.Playlist]{}
+	data := &schema.Response[schema.Playlist]{}
 
 	if len(tracks) == 0 {
 		return *data, nil
@@ -239,13 +225,10 @@ func (c Client) DeleteTracksFromPlaylist(ctx context.Context, pl schema.Playlist
 		if err != nil {
 			return *data, err
 		}
-		if myPl.Result == nil {
-			return *data, errors.New("deleteFromPlaylist: nil result")
-		}
 		if len(myPl.Result.Tracks) == 0 {
 			return *data, nil
 		}
-		pl = *myPl.Result
+		pl = myPl.Result
 	}
 
 	body := schema.NewDeletePlaylistTracksRequestBody(pl)

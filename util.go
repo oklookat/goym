@@ -3,19 +3,11 @@ package goym
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
-	"strconv"
-	"strings"
 
 	"github.com/oklookat/goym/schema"
 	"github.com/oklookat/vantuz"
 )
-
-// iToString преобразует число в строку (десятичная система).
-func iToString[T int | int64 | int32](val T) string {
-	return strconv.FormatInt(int64(val), 10)
-}
 
 // genApiPath создает URL-адрес для запроса к API, используя заданный путь.
 //
@@ -36,14 +28,8 @@ func genApiPath(paths ...string) string {
 }
 
 var (
-	// Нужно обновить токен.
-	ErrTokensExpired = errors.New(errPrefix + "tokens expired. You need to refresh tokens")
-
 	// Странная ошибка.
-	ErrNilResponse = errors.New(errPrefix + "nil http or schema response (???)")
-
-	// Ответ с ошибкой, но поля Error в ответе нет.
-	ErrNilResponseError = errors.New(errPrefix + "nil Response.Error (API changed?)")
+	ErrNilResponse = errors.New("nil http or schema response")
 )
 
 // checkResponse проверяет наличие ошибки в ответе API.
@@ -58,12 +44,9 @@ func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error
 		return nil
 	}
 	if data.Error == nil {
-		return ErrNilResponseError
+		return schema.NewErrWithStatusCode(resp.StatusCode)
 	}
-	if strings.EqualFold(data.Error.Message, "session-expired") {
-		return ErrTokensExpired
-	}
-	return fmt.Errorf(errPrefix+"%v: %v", data.Error.Name, data.Error.Message)
+	return data.Error
 }
 
 func addRemoveMultiple(

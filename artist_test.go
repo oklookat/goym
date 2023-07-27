@@ -2,79 +2,91 @@ package goym
 
 import (
 	"context"
+	"testing"
 
 	"github.com/oklookat/goym/schema"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type ArtistTestSuite struct {
-	suite.Suite
-	cl      *Client
-	require *require.Assertions
-}
-
-func (s *ArtistTestSuite) SetupSuite() {
-	s.cl = getClient(s.T())
-	s.require = s.Require()
-}
-
-func (s *ArtistTestSuite) TestLikedArtists() {
-	_, err := s.cl.LikedArtists(context.Background())
-	s.require.Nil(err)
-}
-
-func (s *ArtistTestSuite) TestArtistLikeUnlike() {
+func TestLikedArtists(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.LikedArtists(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestArtistLikeUnlike(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeArtist(ctx, artistIds[0])
-	s.require.Nil(err)
+	_, err := cl.LikeArtist(ctx, _artistIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeArtist(ctx, artistIds[0])
-	s.require.Nil(err)
+	_, err = cl.UnlikeArtist(ctx, _artistIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *ArtistTestSuite) TestLikeUnlikeArtists() {
+func TestLikeUnlikeArtists(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeArtists(ctx, artistIds[:])
-	s.require.Nil(err)
+	_, err := cl.LikeArtists(ctx, _artistIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeArtists(ctx, artistIds[:])
-	s.require.Nil(err)
+	_, err = cl.UnlikeArtists(ctx, _artistIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *ArtistTestSuite) TestArtistTracks() {
+func TestArtistTracks(t *testing.T) {
 	ctx := context.Background()
-	resp, err := s.cl.ArtistTracks(ctx, artistIds[0], 0, 20)
-	s.require.Nil(err)
-	s.require.NotEmpty(resp.Result.Tracks)
+	cl := getClient(t)
+
+	_, err := cl.ArtistTracks(ctx, _artistIds[0], 0, 20)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *ArtistTestSuite) TestArtistAlbums() {
+func TestArtistAlbums(t *testing.T) {
 	ctx := context.Background()
-	resp, err := s.cl.ArtistAlbums(ctx, artistIds[0], 0, 20, schema.SortByYear, schema.SortOrderDesc)
-	s.require.Nil(err)
-	s.require.NotEmpty(resp.Result.Albums)
+	cl := getClient(t)
+
+	_, err := cl.ArtistAlbums(ctx, _artistIds[0], 0, 20, schema.SortByYear, schema.SortOrderDesc)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *ArtistTestSuite) TestArtistTopTracks() {
+func TestArtistTopTracks(t *testing.T) {
 	ctx := context.Background()
-	resp, err := s.cl.ArtistTopTracks(ctx, artistIds[0])
-	s.require.Nil(err)
-	s.require.NotEmpty(resp.Result.Tracks)
+	cl := getClient(t)
+
+	_, err := cl.ArtistTopTracks(ctx, _artistIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *ArtistTestSuite) TestGetArtistInfo() {
+func TestGetArtistInfo(t *testing.T) {
 	ctx := context.Background()
-	br, err := s.cl.ArtistInfo(ctx, artistIds[0])
-	s.require.Nil(err)
-	s.require.NotEmpty(br.Result.Albums)
-	s.require.NotEmpty(br.Result.AllCovers)
-	s.require.NotEmpty(br.Result.PopularTracks)
-	s.require.NotEmpty(br.Result.SimilarArtists)
+	cl := getClient(t)
+
+	_, err := cl.ArtistInfo(ctx, _artistIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }

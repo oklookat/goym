@@ -94,20 +94,6 @@ type (
 		Default []any     `json:"default"`
 	}
 
-	PromocodeStatus struct {
-		// Статус активации промо-кода.
-		//
-		// Например: "code-not-exists".
-		Status string `json:"status"`
-
-		// Описание статуса.
-		//
-		// Например: "Gift code does not exist".
-		StatusDesc string `json:"statusDesc"`
-
-		AccountStatus *Status `json:"accountStatus"`
-	}
-
 	// Информация о подписках пользователя
 	Subscription struct {
 		HadAnySubscription bool `json:"hadAnySubscription"`
@@ -137,27 +123,4 @@ type (
 		// (?) Плейлист от редакции.
 		Verified bool `json:"verified"`
 	}
-
-	// POST /account/consume-promo-code
-	AccountConsumePromocodeRequestBody struct {
-		// Промокод.
-		Code string `url:"code"`
-
-		// Язык *чего-то*.
-		Language string `url:"language"`
-	}
 )
-
-// POST /account/settings
-//
-// Используйте метод Change().
-type ChangeAccountSettingsRequestBody struct {
-	AccountSettings
-}
-
-// Изменить настройки.
-//
-// Настройку нельзя изменить, если в поле структуры есть url:"-".
-func (c *ChangeAccountSettingsRequestBody) Change(a AccountSettings) {
-	c.AccountSettings = a
-}

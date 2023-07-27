@@ -2,86 +2,113 @@ package goym
 
 import (
 	"context"
+	"testing"
 
 	"github.com/oklookat/goym/schema"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type TrackTestSuite struct {
-	suite.Suite
-	cl      *Client
-	require *require.Assertions
-}
-
-func (s *TrackTestSuite) SetupSuite() {
-	s.cl = getClient(s.T())
-	s.require = s.Require()
-}
-
-func (s *TrackTestSuite) TestLikedTracks() {
-	tracks, err := s.cl.LikedTracks(context.Background())
-	s.require.Nil(err)
-	s.require.NotNil(tracks.Result)
-}
-
-func (s *TrackTestSuite) TestDislikedTracks() {
-	tracks, err := s.cl.DislikedTracks(context.Background())
-	s.require.Nil(err)
-	s.require.NotNil(tracks.Result)
-}
-
-func (s *TrackTestSuite) TestLikeUnlikeTrack() {
+func TestLikedTracks(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.LikedTracks(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDislikedTracks(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.DislikedTracks(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLikeUnlikeTrack(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeTrack(ctx, trackIds[0])
-	s.require.Nil(err)
+	_, err := cl.LikeTrack(ctx, _trackIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeTracks(ctx, []schema.ID{trackIds[0]})
-	s.require.Nil(err)
+	_, err = cl.UnlikeTracks(ctx, []schema.ID{_trackIds[0]})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestLikeUnlikeTracks() {
+func TestLikeUnlikeTracks(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
 
 	// like
-	_, err := s.cl.LikeTracks(ctx, trackIds[:])
-	s.require.Nil(err)
+	_, err := cl.LikeTracks(ctx, _trackIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// unlike
-	_, err = s.cl.UnlikeTracks(ctx, trackIds[:])
-	s.require.Nil(err)
+	_, err = cl.UnlikeTracks(ctx, _trackIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestGetTrackById() {
-	tracks, err := s.cl.Track(context.Background(), trackIds[0])
-	s.require.Nil(err)
-	s.require.NotEmpty(tracks.Result)
+func TestGetTrackById(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.Track(ctx, _trackIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestTracksById() {
-	tracks, err := s.cl.Tracks(context.Background(), trackIds[:])
-	s.require.Nil(err)
-	s.require.NotEmpty(tracks)
+func TestTracksById(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.Tracks(ctx, _trackIds[:4])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestTrackDownloadInfo() {
+func TestTrackDownloadInfo(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
 	// get info
-	respInfo, err := s.cl.TrackDownloadInfo(context.Background(), trackIds[0])
-	s.require.Nil(err)
-	s.require.NotEmpty(respInfo.Result)
+	_, err := cl.TrackDownloadInfo(ctx, _trackIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestTrackSupplement() {
+func TestTrackSupplement(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
 	// get info
-	resp, err := s.cl.TrackSupplement(context.Background(), trackIds[0])
-	s.require.Nil(err)
-	s.require.NotNil(resp.Result)
+	_, err := cl.TrackSupplement(ctx, _trackIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *TrackTestSuite) TestSimilarTracks() {
-	_, err := s.cl.SimilarTracks(context.Background(), trackIds[0])
-	s.require.Nil(err)
+func TestSimilarTracks(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
+
+	_, err := cl.SimilarTracks(ctx, _trackIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 }

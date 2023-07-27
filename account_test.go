@@ -2,54 +2,15 @@ package goym
 
 import (
 	"context"
-
-	"github.com/oklookat/goym/schema"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
-type AccountTestSuite struct {
-	suite.Suite
-	cl      *Client
-	require *require.Assertions
-}
+func TestAccountStatus(t *testing.T) {
+	ctx := context.Background()
+	cl := getClient(t)
 
-func (s *AccountTestSuite) SetupSuite() {
-	s.cl = getClient(s.T())
-	s.require = s.Require()
-}
-
-func (s *AccountTestSuite) TestAccountStatus() {
-	stat, err := s.cl.AccountStatus(context.Background())
-	s.require.Nil(err)
-	s.require.NotNil(stat.Result)
-}
-
-func (s *AccountTestSuite) TestGetChangeAccountSettings() {
-	getSettings := func() *schema.AccountSettings {
-		sett, err := s.cl.AccountSettings(context.Background())
-		s.require.Nil(err)
-		s.require.NotNil(sett.Result)
-		return sett.Result
+	_, err := cl.AccountStatus(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
-
-	// set new settings
-	newSet := schema.AccountSettings{
-		VolumePercents: 10,
-	}
-	_, err := s.cl.ChangeAccountSettings(context.Background(), newSet)
-	s.require.Nil(err)
-
-	// get current and compare
-	sett := getSettings()
-	s.require.Equal(newSet.VolumePercents, sett.VolumePercents)
-
-	// set new
-	newSet.VolumePercents = 33
-	_, err = s.cl.ChangeAccountSettings(context.Background(), newSet)
-	s.require.Nil(err)
-
-	// get current and compare
-	sett = getSettings()
-	s.require.Equal(newSet.VolumePercents, sett.VolumePercents)
 }

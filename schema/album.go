@@ -12,7 +12,7 @@ type (
 		Title string `json:"title"`
 
 		// Мета тип (single, podcast, music, remix).
-		MetaType string `json:"metaType"`
+		MetaType AlbumMetaType `json:"metaType"`
 
 		// Год релиза.
 		Year int `json:"year"`
@@ -72,7 +72,7 @@ type (
 		Type string `json:"type"`
 
 		// Ремиксы, и прочее. Не пуст, например когда запрашивается альбом с треками.
-		Duplicates []*Album `json:"duplicates"`
+		Duplicates []Album `json:"duplicates"`
 
 		StorageDir string `json:"storageDir"`
 
@@ -115,3 +115,13 @@ func (l *AlbumIdsRequestBody) SetIds(ids ...ID) {
 	l.AlbumIds = []ID{}
 	l.AlbumIds = append(l.AlbumIds, ids...)
 }
+
+// Тип альбома.
+type AlbumMetaType string
+
+const (
+	AlbumMetaTypeSingle  AlbumMetaType = "single"
+	AlbumMetaTypePodcast AlbumMetaType = "podcast"
+	AlbumMetaTypeMusic   AlbumMetaType = "music"
+	AlbumMetaTypeRemix   AlbumMetaType = "remix"
+)

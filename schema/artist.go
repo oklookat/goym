@@ -1,79 +1,79 @@
 package schema
 
-// Артист.
-//
-// Много полей могут быть nil. Например, когда Artist находится в составе Track.
-type Artist struct {
-	ID ID `json:"id"`
-
-	// Имя.
-	Name string `json:"name"`
-
-	// Исполнитель относится к категории сборник.
-	Various bool `json:"various"`
-
-	// Исполнитель является композитором.
-	Composer bool `json:"composer"`
-
-	// Фото.
-	Cover *Cover `json:"cover"`
-
-	// По сути дублирует Cover.URI.
-	OgImage *string `json:"ogImage"`
-
-	// Жанры исполнителя.
-	Genres []string `json:"genres"`
-
-	// Количество разных вещей.
-	Counts *struct {
-		// Общее количество треков исполнителя, доступных в каталоге ЯМ.
-		Tracks int `json:"tracks"`
-
-		// Количество собственных альбомов.
-		DirectAlbums int `json:"directAlbums"`
-
-		// Количество альбомов, где представлен исполнитель.
-		AlsoAlbums int `json:"alsoAlbums"`
-
-		// Количество треков, где представлен исполнитель.
-		AlsoTracks int `json:"alsoTracks"`
-	} `json:"counts"`
-
-	// Треки исполнителя доступны?
-	Available bool `json:"available"`
-
-	// Рейтинги исполнителя.
-	Ratings *struct {
-		// За месяц.
-		Month int `json:"month"`
-
-		// За неделю.
-		Week *int `json:"week"`
-
-		// За день.
-		Day *int `json:"day"`
-	} `json:"ratings"`
-
-	// Список ссылок на сайты исполнителя.
-	Links []struct {
-		// Заголовок ссылки.
-		Title string `json:"title"`
-
-		// Сама ссылка. YouTube, Twitter, персональный сайт, etc.
-		Href string `json:"href"`
-
-		// social | official
-		Type string `json:"type"`
-
-		// twitter | youtube | vk | telegram. Может быть nil, когда Type == official.
-		SocialNetwork *string `json:"socialNetwork"`
-	} `json:"links"`
-
-	// Доступны билеты на концерт?
-	TicketsAvailable *bool `json:"ticketsAvailable"`
-}
-
 type (
+	// Артист.
+	//
+	// Много полей могут быть nil. Например, когда Artist находится в составе Track.
+	Artist struct {
+		ID ID `json:"id"`
+
+		// Имя.
+		Name string `json:"name"`
+
+		// Исполнитель относится к категории сборник.
+		Various bool `json:"various"`
+
+		// Исполнитель является композитором.
+		Composer bool `json:"composer"`
+
+		// Фото.
+		Cover *Cover `json:"cover"`
+
+		// По сути дублирует Cover.URI.
+		OgImage *string `json:"ogImage"`
+
+		// Жанры исполнителя.
+		Genres []string `json:"genres"`
+
+		// Количество разных вещей.
+		Counts *struct {
+			// Общее количество треков исполнителя, доступных в каталоге ЯМ.
+			Tracks int `json:"tracks"`
+
+			// Количество собственных альбомов.
+			DirectAlbums int `json:"directAlbums"`
+
+			// Количество альбомов, где представлен исполнитель.
+			AlsoAlbums int `json:"alsoAlbums"`
+
+			// Количество треков, где представлен исполнитель.
+			AlsoTracks int `json:"alsoTracks"`
+		} `json:"counts"`
+
+		// Треки исполнителя доступны?
+		Available bool `json:"available"`
+
+		// Рейтинги исполнителя.
+		Ratings *struct {
+			// За месяц.
+			Month int `json:"month"`
+
+			// За неделю.
+			Week *int `json:"week"`
+
+			// За день.
+			Day *int `json:"day"`
+		} `json:"ratings"`
+
+		// Список ссылок на сайты исполнителя.
+		Links []struct {
+			// Заголовок ссылки.
+			Title string `json:"title"`
+
+			// Сама ссылка. YouTube, Twitter, персональный сайт, etc.
+			Href string `json:"href"`
+
+			// social | official
+			Type string `json:"type"`
+
+			// twitter | youtube | vk | telegram. Может быть nil, когда Type == official.
+			SocialNetwork *string `json:"socialNetwork"`
+		} `json:"links"`
+
+		// Доступны билеты на концерт?
+		TicketsAvailable *bool `json:"ticketsAvailable"`
+	}
+
 	ArtistBriefInfo struct {
 		Artist *struct {
 			Artist
@@ -125,47 +125,21 @@ type (
 		// Все изображения исполнителя.
 		AllCovers []Cover `json:"allCovers"`
 
-		// Список концертов исполнителя.
-		Concerts      []any   `json:"concerts"`
-		Videos        []Video `json:"videos"`
-		Clips         []any   `json:"clips"`
-		Vinyls        []any   `json:"vinyls"`
-		HasPromotions bool    `json:"hasPromotions"`
-		LastReleases  []any   `json:"lastReleases"`
-		Stats         struct {
+		Stats struct {
 			LastMonthListeners int `json:"lastMonthListeners"`
 		} `json:"stats"`
+
 		CustomWave struct {
 			Title        string `json:"title"`
 			AnimationURL string `json:"animationUrl"`
 		} `json:"customWave"`
+
 		PlaylistIds []struct {
 			UID  ID `json:"uid"`
 			Kind ID `json:"kind"`
 		} `json:"playlistIds"`
+
 		Playlists []Playlist `json:"playlists"`
-	}
-
-	// GET /artists/{artistId}/tracks
-	GetArtistTracksQueryParams struct {
-		// Страница.
-		Page int `url:"page"`
-
-		// Кол-во результатов на странице (20, например).
-		PageSize int `url:"page-size"`
-	}
-
-	// GET /artists/{artistId}/direct-albums
-	GetArtistAlbumsQueryParams struct {
-		Page      int       `url:"page"`
-		PageSize  int       `url:"page-size"`
-		SortBy    SortBy    `url:"sort-by"`
-		SortOrder SortOrder `url:"sort-order"`
-	}
-
-	// POST /users/{userId}/likes/artists/add
-	ArtistIdRequestBody struct {
-		ArtistId ID `url:"artist-id"`
 	}
 
 	ArtistTracksPaged struct {

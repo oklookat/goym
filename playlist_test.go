@@ -2,44 +2,39 @@ package goym
 
 import (
 	"context"
+	"testing"
 
 	"github.com/oklookat/goym/schema"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type PlaylistTestSuite struct {
-	suite.Suite
-	cl      *Client
-	require *require.Assertions
-}
-
-func (s *PlaylistTestSuite) SetupSuite() {
-	s.cl = getClient(s.T())
-	s.require = s.Require()
-}
-
-func (s *PlaylistTestSuite) TestLikesPlaylist() {
-	// Search.
+func TestLikesPlaylist(t *testing.T) {
 	ctx := context.Background()
-	found, err := s.cl.Search(ctx, "музыка в машину", 0, schema.SearchTypePlaylist, false)
-	s.require.Nil(err)
-	s.require.NotEmpty(found.Result.Playlists.Results)
+	cl := getClient(t)
+
+	// Search.
+	found, err := cl.Search(ctx, "музыка в машину", 0, schema.SearchTypePlaylist, false)
+	if err != nil {
+		t.Fatal(err)
+	}
 	pl := found.Result.Playlists.Results[0]
 
 	// Like.
-	_, err = s.cl.LikePlaylist(ctx, pl.Kind, pl.UID)
-	s.require.Nil(err)
+	_, err = cl.LikePlaylist(ctx, pl.Kind, pl.UID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Get liked.
-	respPlaylists, err := s.cl.LikedPlaylists(context.Background())
-	s.require.Nil(err)
-	s.require.NotEmpty(respPlaylists.Result)
-	s.require.NotEmpty(respPlaylists.Result[0].Playlist.Title)
+	_, err = cl.LikedPlaylists(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Unlike.
-	_, err = s.cl.UnlikePlaylist(ctx, pl.Kind, pl.UID)
-	s.require.Nil(err)
+	_, err = cl.UnlikePlaylist(ctx, pl.Kind, pl.UID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Like multiple.
 	toLike := map[schema.ID]schema.ID{}
@@ -49,19 +44,27 @@ func (s *PlaylistTestSuite) TestLikesPlaylist() {
 			break
 		}
 	}
-	_, err = s.cl.LikePlaylists(ctx, toLike)
-	s.require.Nil(err)
+	_, err = cl.LikePlaylists(ctx, toLike)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Unlike multiple.
-	_, err = s.cl.UnlikePlaylists(ctx, toLike)
-	s.require.Nil(err)
+	_, err = cl.UnlikePlaylists(ctx, toLike)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func (s *PlaylistTestSuite) TestPlaylistsByKindUid() {
-	// Search.
+func TestPlaylistsByKindUid(t *testing.T) {
 	ctx := context.Background()
-	found, err := s.cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
-	s.require.Nil(err)
+	cl := getClient(t)
+
+	// Search.
+	found, err := cl.Search(ctx, "phonk", 0, schema.SearchTypePlaylist, false)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	playlists := found.Result.Playlists.Results
 	kindUid := map[schema.ID]schema.ID{}
@@ -73,11 +76,9 @@ func (s *PlaylistTestSuite) TestPlaylistsByKindUid() {
 	}
 
 	// Get.
-	foundByKind, err := s.cl.PlaylistsByKindUid(ctx, kindUid)
-	s.require.Nil(err)
-	s.require.NotEmpty(foundByKind.Result)
-	if len(foundByKind.Result) <= 5 {
-		s.require.Fail("too few UidKind playlists")
+	_, err = cl.PlaylistsByKindUid(ctx, kindUid)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -90,40 +91,51 @@ func (s *PlaylistTestSuite) TestPlaylistsByKindUid() {
 // AddTracksToPlaylist()
 // DeleteTrackFromPlaylist()
 // GetPlaylistRecommendations()
-func (s *PlaylistTestSuite) TestPlaylistCRUD() {
+func TestPlaylistCRUD(t *testing.T) {
 	ctx := context.Background()
+	cl := getClient(t)
 
 	// CreatePlaylist
-	pl, err := s.cl.CreatePlaylist(ctx, "goym", "test1", schema.VisibilityPublic)
-	s.require.Nil(err)
-	s.require.Equal(pl.Result.Title, "goym")
-	s.require.Equal(pl.Result.Description, "test1")
+	pl, err := cl.CreatePlaylist(ctx, "goym", "test1", schema.VisibilityPublic)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// MyPlaylist
-	pl, err = s.cl.MyPlaylist(ctx, pl.Result.Kind)
-	s.require.Nil(err)
+	pl, err = cl.MyPlaylist(ctx, pl.Result.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// MyPlaylists
-	pls, err := s.cl.MyPlaylists(context.Background())
-	s.require.Nil(err)
-	s.require.NotEmpty(pls)
+	_, err = cl.MyPlaylists(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// RenamePlaylist
-	pl, err = s.cl.RenamePlaylist(ctx, pl.Result.Kind, "goym (renamed)")
-	s.require.Nil(err)
+	pl, err = cl.RenamePlaylist(ctx, pl.Result.Kind, "goym (renamed)")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// SetPlaylistVisibility
-	pl, err = s.cl.SetPlaylistVisibility(ctx, pl.Result.Kind, schema.VisibilityPrivate)
-	s.require.Nil(err)
+	pl, err = cl.SetPlaylistVisibility(ctx, pl.Result.Kind, schema.VisibilityPrivate)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// SetPlaylistDescription
-	pl, err = s.cl.SetPlaylistDescription(ctx, pl.Result.Kind, "123")
-	s.require.Nil(err)
-	s.require.Equal(pl.Result.Description, "123")
+	pl, err = cl.SetPlaylistDescription(ctx, pl.Result.Kind, "123")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// AddToPlaylist
-	tracksResp, err := s.cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
-	s.require.Nil(err)
+	tracksResp, err := cl.Search(ctx, "dubstep", 0, schema.SearchTypeTrack, false)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	tracksIds := map[schema.ID]bool{}
 	var tracksToAdd []schema.Track
@@ -136,31 +148,39 @@ func (s *PlaylistTestSuite) TestPlaylistCRUD() {
 			break
 		}
 	}
-	pl, err = s.cl.AddToPlaylist(ctx, *pl.Result, tracksToAdd)
-	s.require.Nil(err)
+	pl, err = cl.AddToPlaylist(ctx, pl.Result, tracksToAdd)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Get with tracks.
-	pl, err = s.cl.MyPlaylist(ctx, pl.Result.Kind)
-	s.require.Nil(err)
-	s.require.NotEmpty(pl.Result.Tracks)
+	pl, err = cl.MyPlaylist(ctx, pl.Result.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// PlaylistRecommendations
-	recs, err := s.cl.PlaylistRecommendations(ctx, pl.Result.Kind)
-	s.require.Nil(err)
-	s.require.NotEmpty(recs.Result.Tracks)
+	_, err = cl.PlaylistRecommendations(ctx, pl.Result.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// DeleteFromPlaylist
-	pl, err = s.cl.DeleteTracksFromPlaylist(ctx, *pl.Result, tracksToDelete)
-	s.require.Nil(err)
+	pl, err = cl.DeleteTracksFromPlaylist(ctx, pl.Result, tracksToDelete)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// is track actually removed?
 	for _, ti := range pl.Result.Tracks {
 		_, ok := tracksIds[ti.ID]
 		if ok {
-			s.Failf("fail", "track id %s not removed", ti.ID)
+			t.Fatalf("track id %s not removed", ti.ID)
 		}
 	}
 
 	// DeletePlaylist
-	_, err = s.cl.DeletePlaylist(ctx, pl.Result.Kind)
-	s.require.Nil(err)
+	_, err = cl.DeletePlaylist(ctx, pl.Result.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

@@ -110,19 +110,6 @@ type (
 		Description string `url:"description"`
 	}
 
-	// POST /users/{userId}/playlists/{kind}/name
-	//
-	// POST /users/{userId}/playlists/{kind}/description
-	ValuePlaylistRequestBody struct {
-		// Новое значение.
-		Value string `url:"value"`
-	}
-
-	// POST /users/{userId}/playlists/{kind}/visibility
-	ChangePlaylistVisibilityRequestBody struct {
-		Value Visibility `url:"value"`
-	}
-
 	// POST /users/{userId}/likes/playlists/add
 	KindOwnerUidRequestBody struct {
 		// Kind плейлиста.
