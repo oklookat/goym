@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	errPrefix = "goym/schema: "
+	_errPrefix = "goym/schema: "
 
 	ApiUrl = "https://api.music.yandex.net"
 )
 
 var (
-	ErrNilTrack    = errors.New(errPrefix + "nil track")
-	ErrNilTracks   = errors.New(errPrefix + "nil tracks")
-	ErrNilPlaylist = errors.New(errPrefix + "nil playlist")
+	ErrNilTrack    = errors.New(_errPrefix + "nil track")
+	ErrNilTracks   = errors.New(_errPrefix + "nil tracks")
+	ErrNilPlaylist = errors.New(_errPrefix + "nil playlist")
 )
 
 // Сортировка по...

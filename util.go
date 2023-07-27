@@ -3,6 +3,7 @@ package goym
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/oklookat/goym/schema"
@@ -29,7 +30,7 @@ func genApiPath(paths ...string) string {
 
 var (
 	// Странная ошибка.
-	ErrNilResponse = errors.New("nil http or schema response")
+	ErrNilResponse = errors.New(_errPrefix + ": nil http or schema response")
 )
 
 // checkResponse проверяет наличие ошибки в ответе API.
@@ -44,9 +45,9 @@ func checkResponse[T any](resp *vantuz.Response, data *schema.Response[T]) error
 		return nil
 	}
 	if data.Error == nil {
-		return schema.NewErrWithStatusCode(resp.StatusCode)
+		return fmt.Errorf("%s: %w", _errPrefix, schema.NewErrWithStatusCode(resp.StatusCode))
 	}
-	return data.Error
+	return fmt.Errorf("%s: %w", _errPrefix, data.Error)
 }
 
 func addRemoveMultiple(

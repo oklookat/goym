@@ -7,6 +7,10 @@ import (
 	"github.com/oklookat/vantuz"
 )
 
+const (
+	_errPrefix = "goym"
+)
+
 // Получить Client для запросов к API.
 //
 // accessToken - его можно получить выполнив авторизацию в Яндексе.
