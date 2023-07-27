@@ -176,6 +176,12 @@ func (e Error) IsValidate() bool {
 	return strings.EqualFold(e.Name, "validate")
 }
 
+// Вероятно если ID валидный (см. IsValidate),
+// то в каких-то случаях может быть и ошибка not found.
+func (e Error) IsNotFound() bool {
+	return strings.Contains(e.Name, "not-found")
+}
+
 // Нужно обновить access token.
 func (e Error) IsSessionExpired() bool {
 	return strings.EqualFold(e.Message, "session-expired")
