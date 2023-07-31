@@ -11,7 +11,7 @@ type (
 		// Название альбома.
 		Title string `json:"title"`
 
-		// Мета тип (single, podcast, music, remix).
+		// Тип альбома.
 		MetaType AlbumMetaType `json:"metaType"`
 
 		// Год релиза.
@@ -67,9 +67,6 @@ type (
 
 		// ID лучших треков альбома.
 		Bests []ID `json:"bests"`
-
-		// например: "single".
-		Type string `json:"type"`
 
 		// Ремиксы, и прочее. Не пуст, например когда запрашивается альбом с треками.
 		Duplicates []Album `json:"duplicates"`

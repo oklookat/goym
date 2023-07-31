@@ -197,9 +197,14 @@ type Track struct {
 		HasAvailableTextLyrics bool `json:"hasAvailableTextLyrics"`
 	} `json:"lyricsInfo"`
 
-	// OWN.
-	TrackSource    string `json:"trackSource"`
-	AvailableAsRbt bool   `json:"availableAsRbt"`
+	// Источник трека.
+	TrackSource TrackSource `json:"trackSource"`
+
+	// Если трек загружен пользователем,
+	// то здесь будет имя файла.
+	Filename *string `json:"filename"`
+
+	AvailableAsRbt bool `json:"availableAsRbt"`
 
 	// Трек 18+? (E)
 	Explicit bool `json:"explicit"`
@@ -235,3 +240,13 @@ func (l *TrackIdsRequestBody) SetIds(ids ...ID) {
 	l.TrackIds = []ID{}
 	l.TrackIds = append(l.TrackIds, ids...)
 }
+
+type TrackSource string
+
+const (
+	// (?) Трек из библиотеки ЯМ.
+	TrackSourceOwn TrackSource = "OWN"
+
+	// Трек загружен пользователем.
+	TrackSourceUgc TrackSource = "UGC"
+)
